@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "fi_tech",
+    "slug": "fi_tech",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ]
+  }
+}
