@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@infinitered/react-native-mlkit-object-detection": "^2.0.1",
+    "@react-navigation/native": "^7.0.14",
+    "@thinksys/react-native-mediapipe": "^0.0.13",
     "expo": "^52.0.16",
     "react": "18.3.1",
     "react-dom": "18.3.1",
