@@ -1,3 +1,4 @@
+//file outdated and obsolete
 import {createSlice} from '@reduxjs/toolkit'; 
 import Home from '../Pages/home';
 import AuthScreen from '../Pages/Auth';
@@ -46,5 +47,5 @@ export const navSlice = createSlice({
 
 export const {nav} = navSlice.actions; 
 export const {render} = navSlice.actions; 
-export const selectNavigation = (state) => state.navigation.value; 
+export const selectNavigation = (state) => state.nav; 
 export default navSlice.reducer; 

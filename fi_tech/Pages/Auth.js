@@ -53,7 +53,7 @@ export default function AuthScreen(){
                 <TextInput placeholder="password" style={styles.textInput} placeholderTextColor={"rgba(0,0,0, .25)"}/>
             </TouchableOpacity>
 
-            <TouchableOpacity style = {styles.authButtons}>
+            <TouchableOpacity style = {styles.authButtons} onPress={() => dispatch(nav("Home"))}>
                 <Text style = {styles.authButtons_text}>SignIn</Text>
             </TouchableOpacity>
 
@@ -78,7 +78,7 @@ export default function AuthScreen(){
                 <TextInput placeholder="password" style={styles.textInput} placeholderTextColor={"rgba(0,0,0, .25)"}/>
             </TouchableOpacity>
             
-            <TouchableOpacity style = {styles.authButtons} onPress={() => dispatch(nav("IntroCustomization"))}>
+            <TouchableOpacity style = {styles.authButtons} onPress={() => dispatch(nav("Home"))}>
                 <Text style = {styles.authButtons_text}>SignUp</Text>
             </TouchableOpacity>
 
@@ -90,9 +90,9 @@ export default function AuthScreen(){
     const [AuthType, setAuthType] = useState(true);
    
     return(
-        <SafeAreaView style={{alignItems:"center", justifyContent:"center"}}>
+        <SafeAreaView style={{alignItems:"center", justifyContent:"center", backgroundColor: "white", height:"200%"}}>
       
-    
+       {LogoImg}
         {AuthType? LogIn : SignUp}
         </SafeAreaView>
     )
@@ -100,12 +100,11 @@ export default function AuthScreen(){
 
 const styles = StyleSheet.create({
     logoContainer:{
-        
     },
     logo:{
 
         bottom: -50,
-        width: 95, 
+        width: 150, 
         height: 150
     },
 
