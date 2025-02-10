@@ -1,10 +1,10 @@
 import {View, StyleSheet, Text, ImageBackground, Image, BackHandler, Button, TouchableOpacity, FlatList, ScrollView, Dimensions, Modal, Pressable} from "react-native";
 import {useState} from "react";
-import coachSlideBackImage from "../assets/images/coachSlideImg.jpg"; 
+import coachSlideBackImage from "../assets/coachSlideImg.jpg"; 
 import AnimatedDotsCarousel  from "react-native-animated-dots-carousel"; 
-import ChatBotImg from "../assets/images/bot.png"; 
+import ChatBotImg from "../assets/bot.png"; 
 
-import WorkoutCat from "../assets/images/workoutCat.jpg"; 
+import WorkoutCat from "../assets/workoutCat.jpg"; 
 export default function Home({navigation}){
     let screenHeight = Dimensions.get("screen").height,
         screenWidth = Dimensions.get("screen").width; 
@@ -143,7 +143,7 @@ export default function Home({navigation}){
     const [scrollIndex, setScrollIndex] = useState(0);
     const [modalView, setModalView] = useState(false); 
     return(
-        <View style = {{backgroundColor: "black"}}>
+        <View style = {{backgroundColor: "black", height: Dimensions.get("screen").height}}>
 
             <ScrollView
             pagingEnabled
@@ -152,6 +152,7 @@ export default function Home({navigation}){
             style = {{
                 height: screenHeight,
                 width: screenWidth,
+            
             
             }}>
                 
