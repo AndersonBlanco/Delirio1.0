@@ -1,6 +1,6 @@
 //file outdated and obsolete
 import {createSlice} from '@reduxjs/toolkit'; 
-import Home from '../Pages/home';
+import Home from '../Pages/Intro';
 import AuthScreen from '../Pages/Auth';
 export const navSlice = createSlice({
     name: "navigator",

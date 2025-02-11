@@ -6,19 +6,29 @@ const navSlice = createSlice({
     initialState:{
         value: {
             routes:{
-                "Auth":{
-                    name: "SignIn",
+                "Intro":{
+                    name: "Intro",
                     id: 0,
-                    params: []
+                    params: [],
+                    style:{
+                        backColor: "transparent"
+                    }
+                },
+                "Auth":{
+                    name: "Auth",
+                    id: 1,
+                    params:[],
+                    style: {backColor: "white"}
                 },
                 "Home":{
                     name: "Home",
-                    id: 1,
-                    params:[]
+                    id: 2,
+                    params:[],
+                    style: {backColor: "rgb(26, 26, 26)"}
                 }
             },
 
-            currentRoute: "Auth"
+            currentRoute: "Home"
         }
     },
 
@@ -27,12 +37,14 @@ const navSlice = createSlice({
             state.value.currentRoute = action.payload; 
         },
         render: (state) =>{
+          /*
             switch(state.value.currentRoute){
                 case "Home": 
                     return <Home/>;
                 case "Auth":
                     return <AuthScreen/>
             }
+                    */ 
         }
 
     }

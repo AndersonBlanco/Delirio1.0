@@ -90,7 +90,7 @@ export default function AuthScreen(){
     const [AuthType, setAuthType] = useState(true);
    
     return(
-        <SafeAreaView style={{alignItems:"center", justifyContent:"center", backgroundColor: "white", height:"200%"}}>
+        <SafeAreaView style={{alignItems:"center", justifyContent:"center", height:"200%"}}>
       
        {LogoImg}
         {AuthType? LogIn : SignUp}
