@@ -22,7 +22,8 @@ export const navSlice = createSlice({
                     name: "Home",
                     id: 2,
                     params:[]
-                }
+                },
+     
             },
 
             currentRoute: "AuthScreen"

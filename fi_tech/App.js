@@ -7,12 +7,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import AuthScreen from './Pages/Auth.js';
 import { store } from './redux/store.js';
 import Home from './Pages/home.js';
+import Settings from './Pages/Settings.js';
+import SideNav from './components/sideNav.js';
 export default function App() {
  const navState = useSelector(selectNavigation); 
  
   let currentRoute = store.getState().nav.value.routes[store.getState().nav.value.currentRoute];
  let id = currentRoute.id;
  let background_color = currentRoute.style.backColor; 
+ let uiColor = currentRoute.style.uiColor; 
 
   return (
     <SafeAreaView style = {[styles.container, {backgroundColor: background_color}]}>
@@ -24,10 +27,19 @@ export default function App() {
         <AuthScreen/>
         :
         id == 2?
+        <>
         <Home/>
+        </>
+        :
+        id == 3?
+        <>
+        <Settings txtColor = {uiColor}/>
+        </>
+    
         :
         <View><Text>No ROute found</Text></View>
       }
+  
       </SafeAreaView>
   );
 }

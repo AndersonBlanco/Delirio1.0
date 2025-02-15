@@ -11,24 +11,30 @@ const navSlice = createSlice({
                     id: 0,
                     params: [],
                     style:{
-                        backColor: "transparent"
+                        backColor: "black",  uiColor: "black"
                     }
                 },
                 "Auth":{
                     name: "Auth",
                     id: 1,
                     params:[],
-                    style: {backColor: "white"}
+                    style: {backColor: "white",  uiColor: "black"}
                 },
                 "Home":{
                     name: "Home",
                     id: 2,
                     params:[],
-                    style: {backColor: "rgb(26, 26, 26)"}
+                    style: {backColor: "rgb(26, 26, 26)", uiColor: "black"}
+                },
+                "Settings":{
+                    name: "Settings",
+                    id: 3,
+                    params:[],
+                    style: {backColor: "white", uiColor: "white"}
                 }
             },
 
-            currentRoute: "Home"
+            currentRoute: "Settings"
         }
     },
 

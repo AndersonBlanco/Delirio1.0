@@ -1,11 +1,11 @@
 import {View, StyleSheet, Text, ImageBackground, Image, BackHandler, Button, TouchableOpacity, FlatList, ScrollView, Dimensions, Modal, Pressable} from "react-native";
-import {useState} from "react";
+import {Profiler, useState} from "react";
 import coachSlideBackImage from "../assets/coachSlideImg.jpg"; 
 import AnimatedDotsCarousel  from "react-native-animated-dots-carousel"; 
 import ChatBotImg from "../assets/bot.png"; 
 import { nav } from "../redux/navigationSlice";
 import { useDispatch, useSelector} from "react-redux";
-
+import User from "../assets/user.png"; 
 import WorkoutCat from "../assets/workoutCat.jpg"; 
 import SideNav from "../components/sideNav";
 export default function Services({navigation}){
@@ -132,7 +132,7 @@ export default function Services({navigation}){
     const [modalView, setModalView] = useState(false); 
     return(
         <View style = {{backgroundColor: "black", height: Dimensions.get("screen").height}}>
-            
+           
             <ScrollView
             pagingEnabled
             horizontal
