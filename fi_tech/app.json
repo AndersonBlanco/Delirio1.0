@@ -4,7 +4,6 @@
     "slug": "fi_tech",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/fiTech_logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -13,16 +12,29 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.ander913.fitech",
+      "supportsTablet": true,
+      "icon": "./assets/fiTech_logo.png",
+      "splash": {
+        "image": "./assets/FiTech.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anderson913.fi_tech"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3958ddfd-2601-450b-84fb-c1094932ac85"
+      }
     }
   }
 }

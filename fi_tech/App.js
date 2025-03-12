@@ -9,6 +9,7 @@ import { store } from './redux/store.js';
 import Home from './Pages/home.js';
 import Settings from './Pages/Settings.js';
 import SideNav from './components/sideNav.js';
+import Shop from './Pages/shop.js';
 export default function App() {
  const navState = useSelector(selectNavigation); 
  
@@ -28,12 +29,18 @@ export default function App() {
         :
         id == 2?
         <>
-        <Home/>
+        <Home theme = {uiColor}/>
         </>
         :
         id == 3?
         <>
-        <Settings txtColor = {uiColor}/>
+        <Settings theme = {uiColor}/>
+        </>
+    
+        :
+        id == 4?
+        <>
+        <Shop theme = {uiColor}/>
         </>
     
         :
