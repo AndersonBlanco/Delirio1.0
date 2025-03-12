@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store } from '../redux/store';
 import { nav, selectNavigation, render } from "../redux/navigationSlice"; 
+import { useNavigation } from "@react-navigation/native";
 
 
 let screenWidth = Dimensions.get("screen").width,
@@ -16,7 +17,10 @@ let screenWidth = Dimensions.get("screen").width,
 
         
 export default function AuthScreen(){
- const dispatch = useDispatch(); 
+ //const dispatch = useDispatch(); 
+
+ const navigation = useNavigation(); 
+
     const LogoImg = (
         <View style = {styles.logoContainer}>
             <Image source={Logo} style= {styles.logo} />
@@ -53,7 +57,7 @@ export default function AuthScreen(){
                 <TextInput placeholder="password" style={styles.textInput} placeholderTextColor={"rgba(0,0,0, .25)"}/>
             </TouchableOpacity>
 
-            <TouchableOpacity style = {styles.authButtons} onPress={() => dispatch(nav("Home"))}>
+            <TouchableOpacity style = {styles.authButtons} onPress={() => navigation.replace("H_ome")}>
                 <Text style = {styles.authButtons_text}>SignIn</Text>
             </TouchableOpacity>
 
@@ -78,7 +82,7 @@ export default function AuthScreen(){
                 <TextInput placeholder="password" style={styles.textInput} placeholderTextColor={"rgba(0,0,0, .25)"}/>
             </TouchableOpacity>
             
-            <TouchableOpacity style = {styles.authButtons} onPress={() => dispatch(nav("Home"))}>
+            <TouchableOpacity style = {styles.authButtons} onPress={() => navigation.replace("H_ome")}>
                 <Text style = {styles.authButtons_text}>SignUp</Text>
             </TouchableOpacity>
 
@@ -90,11 +94,10 @@ export default function AuthScreen(){
     const [AuthType, setAuthType] = useState(true);
    
     return(
-        <SafeAreaView style={{alignItems:"center", justifyContent:"center", height:"200%"}}>
-      
+  <>
        {LogoImg}
         {AuthType? LogIn : SignUp}
-        </SafeAreaView>
+      </>
     )
 }
 

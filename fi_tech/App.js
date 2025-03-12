@@ -10,44 +10,45 @@ import Home from './Pages/home.js';
 import Settings from './Pages/Settings.js';
 import SideNav from './components/sideNav.js';
 import Shop from './Pages/shop.js';
+
+import {NavigationContainer} from "@react-navigation/native"; 
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Root = createNativeStackNavigator({
+  screenOptions: {headerShown: false, contentStyle:{alignItems: "center", justifyContent:"center", backgroundColor:"rgba(255, 255, 255, 1)"}},
+  initialRouteName: "I_ntro", 
+  screens:{
+    I_ntro: Intro,
+    Auth: AuthScreen, 
+    H_ome: {
+      screen: Home,
+      
+      options: {contentStyle:{backgroundColor:"rgba(0,0,0,1)", alignItems:"center", justifyContent:"flex-start"}}
+    },
+    S_ettings: Settings,
+    S_hop: {
+      screen: Shop,
+      options:{
+        contentStyle:{
+
+        }
+      }
+    },
+
+
+
+  }
+}); 
+const Navigation = createStaticNavigation(Root); 
+
 export default function App() {
- const navState = useSelector(selectNavigation); 
- 
-  let currentRoute = store.getState().nav.value.routes[store.getState().nav.value.currentRoute];
- let id = currentRoute.id;
- let background_color = currentRoute.style.backColor; 
- let uiColor = currentRoute.style.uiColor; 
+// const navState = useSelector(selectNavigation); 
 
   return (
-    <SafeAreaView style = {[styles.container, {backgroundColor: background_color}]}>
-      {
-        id == 0?
-        <Intro/>
-        :
-        id == 1?
-        <AuthScreen/>
-        :
-        id == 2?
-        <>
-        <Home theme = {uiColor}/>
-        </>
-        :
-        id == 3?
-        <>
-        <Settings theme = {uiColor}/>
-        </>
-    
-        :
-        id == 4?
-        <>
-        <Shop theme = {uiColor}/>
-        </>
-    
-        :
-        <View><Text>No ROute found</Text></View>
-      }
-  
-      </SafeAreaView>
+ 
+    <Navigation/>
+ 
   );
 }
 

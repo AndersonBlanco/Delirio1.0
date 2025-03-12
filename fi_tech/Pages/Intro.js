@@ -8,9 +8,12 @@ import { useDispatch, useSelector} from "react-redux";
 import User from "../assets/user.png"; 
 import WorkoutCat from "../assets/workoutCat.jpg"; 
 import SideNav from "../components/sideNav";
-export default function Services({navigation}){
 
-    const dispatch = useDispatch(); 
+import { useNavigation } from "@react-navigation/native";
+
+export default function Services(){
+    const navigation = useNavigation(); 
+    //const dispatch = useDispatch(); 
 
     let screenHeight = Dimensions.get("screen").height,
         screenWidth = Dimensions.get("screen").width; 
@@ -22,9 +25,10 @@ export default function Services({navigation}){
     }
 
     const ActionButton = ({text}) =>{
+        //dispatch(nav("Auth"))
         return(
             <TouchableOpacity 
-            onPress={() => dispatch(nav("Auth"))}
+            onPress={() =>  navigation.replace("Auth")}
             style = {{
                 backgroundColor: "white", 
              position: 'absolute',

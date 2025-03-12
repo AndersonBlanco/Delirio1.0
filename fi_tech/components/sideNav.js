@@ -9,9 +9,11 @@ import Home from "../assets/home.png";
 import Explore from "../assets/workouts.png";
 import Shop from "../assets/shop.png";
 import SettingsIcon from "../assets/settings.png"; 
+import { useNavigation } from "@react-navigation/native";
 
 export default function SideNav({style, buttonColor}){
-    const dispatch = useDispatch(); 
+    //const dispatch = useDispatch(); 
+    const navigation = useNavigation(); 
 
     const [modalView, setModalView] = useState(false); 
        let screenHeight = Dimensions.get("screen").height,
@@ -34,12 +36,12 @@ export default function SideNav({style, buttonColor}){
                      <View style = {{backgroundColor: "rgba(0,0,0, .5)", height: "100%", width: "100%"}}>
                         <View onTouchMove={() => setModalView(false)} style = {{ backgroundColor: "white", width:screenWidth/2.2, height: screenHeight, position:'absolute', left: 0, padding: 25, flexDirection: "column", rowGap: 25, paddingTop: 150, paddingLeft: 34}}>
                         
-                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() =>dispatch(nav("Home"))}><Image style = {{height: iconSize, width: iconSize}} source={Home}/><Text>Home</Text></TouchableOpacity>
-                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() =>dispatch(nav("Shop"))}><Image source= {Shop} style = {{height: iconSize, width: iconSize}}/><Text>Shop</Text></TouchableOpacity>
-                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => dispatch(nav("Home"))}><Image style = {{height: iconSize, width: iconSize}} source = {Explore} /><Text>Explore Workouts</Text></TouchableOpacity>
-                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => dispatch(nav("Home"))}><Image source = {Advice} style = {{height: iconSize, width: iconSize}}/><Text>Advising</Text></TouchableOpacity>
-                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => dispatch(nav("Home"))}><Image source = {Bot} style = {{height: iconSize, width: iconSize}}/><Text>Chat</Text></TouchableOpacity>
-                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => dispatch(nav("Settings"))}><Image source = {SettingsIcon} style = {{height: iconSize, width: iconSize}}/><Text>Settings</Text></TouchableOpacity>
+                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() =>navigation.replace("H_ome")}><Image style = {{height: iconSize, width: iconSize}} source={Home}/><Text>Home</Text></TouchableOpacity>
+                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() =>navigation.replace("S_hop")}><Image source= {Shop} style = {{height: iconSize, width: iconSize}}/><Text>Shop</Text></TouchableOpacity>
+                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => navigation.replace("H_ome")}><Image style = {{height: iconSize, width: iconSize}} source = {Explore} /><Text>Explore Workouts</Text></TouchableOpacity>
+                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => navigation.replace("H_ome")}><Image source = {Advice} style = {{height: iconSize, width: iconSize}}/><Text>Advising</Text></TouchableOpacity>
+                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => navigation.replace("H_ome")}><Image source = {Bot} style = {{height: iconSize, width: iconSize}}/><Text>Chat</Text></TouchableOpacity>
+                            <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() => navigation.replace("S_ettings")}><Image source = {SettingsIcon} style = {{height: iconSize, width: iconSize}}/><Text>Settings</Text></TouchableOpacity>
                             <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20, position: "absolute", left: 155, top: 50}]} onPress = {() => setModalView(false)}><Text style = {{fontSize: 20}}>X</Text></TouchableOpacity>
 
                             <View style = {[styles.column, {position: "relative", bottom: -Dimensions.get("screen").height/1.7}]}>

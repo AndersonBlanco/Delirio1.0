@@ -108,6 +108,7 @@ const Timeline = ({data, orientation = 0})=>{
             <View style = {{height: 55, width: 10}}></View>
             <View style = {{height: 55, width: 10}}></View>
             <View style = {{height: 55, width: 10}}></View>
+            <View style = {{height: 55, width: 10}}></View>
         </ScrollView>
     )
 
@@ -122,7 +123,7 @@ const DayPlan = ({day}) =>{
             width: Dimensions.get("screen").width,
             height: 150,
             position:"relative",
-            marginTop: 345,
+             
             overflow: "hidden",
             justifyContent:"center",
             alignItems:"center",
@@ -155,7 +156,7 @@ const WeekPlanDisplay = (
 return(
     <>
     <StatusBar barStyle="light-content" backgroundColor="#000" />
-    <SideNav buttonColor={theme? "black": "white"} style = {{top: 62}}/>
+    <SideNav buttonColor={theme? "black": "white"} style = {{top: 62, left: -170, marginBottom: 50, position:"relative"}}/>
     <View style = {{backgroundColor: "gray", width: "100%", height: 1, top: -735}}/>
     <DayPlan day = {weekPlan[0]}/>
     <View style = {{marginVertical: 10, backgroundColor:"gray", height: 1, width: Dimensions.get("screen").width}}/>

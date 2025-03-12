@@ -11,6 +11,7 @@ import { SearchBar, Input, Icon} from "react-native-elements";
 import SearchIcon from "../assets/searchIcon.png"
 import Item1 from "../assets/item1.jpg"
 import Item2 from "../assets/item2.jpg"
+import { color } from "react-native-elements/dist/helpers";
 export default function Shop({theme}){
 const dispatch = useDispatch();
 const [hover, setHover] = useState(0);
@@ -125,9 +126,8 @@ const hanfleFInalSearch = (event) =>{
  
 return(
     <>
-
+ <SideNav buttonColor={"black"} style = {{top: 57, position: "relative", left: 30, marginBottom: 0}} />
  <View style = {[styles.row, {top: -370, columnGap: 10}]}>
- <SideNav buttonColor={theme? "black" :"white"} style = {{left: 0, right: 0, top: 0, position:"relative"}} />
   <TextInput value = {search} placeholderTextColor={theme? "gray": "white"} onEndEditing={hanfleFInalSearch} onChangeText={(val) => setSearch(val) } placeholder="search here.." style = {{fontSize: 15, textAlign:"center", borderColor: "white", borderWidth: theme? 0 : 1, backgroundColor: theme? "lightgray": "transparent", width: Dimensions.get("screen").width * .75, borderRadius: 100, paddingHorizontal: 10, paddingVertical: 5}} />
   <TouchableOpacity onPress={() => setFinalSearch(search)} style = {{ position:"absolute", top: 7, left: 40}}>
   <Icon color={theme? "gray": "white"} name = "search" style = {{}}/>
