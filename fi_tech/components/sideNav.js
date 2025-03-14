@@ -10,7 +10,7 @@ import Explore from "../assets/workouts.png";
 import Shop from "../assets/shop.png";
 import SettingsIcon from "../assets/settings.png"; 
 import { useNavigation } from "@react-navigation/native";
-
+import { Icon } from "react-native-elements";
 export default function SideNav({style, buttonColor}){
     //const dispatch = useDispatch(); 
     const navigation = useNavigation(); 
@@ -27,9 +27,7 @@ export default function SideNav({style, buttonColor}){
            
             onPress = {() => setModalView(true)}
             style = {[{position:"absolute", top: 50, left: 25}, style]}>
-                <Text style = {{color: buttonColor, fontSize: 25}}>
-                    =
-                </Text>
+                <Icon name = "menu" color = {buttonColor} style = {{color: buttonColor, fontSize: 25}}/>
             </TouchableOpacity>
         
          <Modal animationType="fade" animationInTiming={100} animationOutTiming = {100} animationIn = "slideInLeft" animationOut= "slideOutLeft"    visible = {modalView} transparent={true}>

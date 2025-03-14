@@ -15,48 +15,64 @@ import {NavigationContainer} from "@react-navigation/native";
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const Root = createNativeStackNavigator({
-  screenOptions: {headerShown: false, contentStyle:{alignItems: "center", justifyContent:"center", backgroundColor:"rgba(255, 255, 255, 1)"}},
-  initialRouteName: "I_ntro", 
-  screens:{
-    I_ntro: Intro,
-    Auth: AuthScreen, 
-    H_ome: {
-      screen: Home,
-      
-      options: {contentStyle:{backgroundColor:"rgba(0,0,0,1)", alignItems:"center", justifyContent:"flex-start"}}
-    },
-    S_ettings: Settings,
-    S_hop: {
-      screen: Shop,
-      options:{
-        contentStyle:{
-
-        }
-      }
-    },
-
-
-
-  }
-}); 
-const Navigation = createStaticNavigation(Root); 
-
-export default function App() {
-// const navState = useSelector(selectNavigation); 
-
+const Stack = createNativeStackNavigator();
+const colorScheme = {
+  sixty: "rgba(29, 29, 29, 0.75)",
+  thirty: "rgba(255, 255, 255,1)",
+  ten: "rgba(252, 255,255, 1)"
+}
+function App() {
   return (
- 
-    <Navigation/>
- 
+    <NavigationContainer>
+      <View style = {{flex: 1, paddingTop: 15}}>
+      <Stack.Navigator 
+      
+        screenOptions={{
+          animation:"none",
+          headerShown: false,
+          contentStyle: {
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colorScheme.ten
+          },
+          
+        }}
+        initialRouteName="S_hop"
+      >
+        <Stack.Screen name="I_ntro" component={Intro} />
+        <Stack.Screen name="Auth" component={AuthScreen} />
+        <Stack.Screen 
+          name="H_ome" 
+          component={Home}
+          options={{
+            contentStyle: {
+              backgroundColor: colorScheme.sixty,
+              alignItems: "center",
+              justifyContent: "flex-start"
+            }
+          }}
+        />
+        <Stack.Screen name="S_ettings" component={Settings} />
+        <Stack.Screen 
+        name="S_hop" 
+        component={Shop} 
+        options ={{
+          contentStyle:{
+            backgroundColor: colorScheme.sixty
+          }
+        }}/>
+      </Stack.Navigator>
+      </View>
+    </NavigationContainer>
   );
 }
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    
   },
 });
