@@ -24,7 +24,7 @@ const colorScheme = {
 function App() {
   return (
     <NavigationContainer>
-      <View style = {{flex: 1, paddingTop: 15}}>
+      <View style = {{flex: 1, paddingTop: 0}}>
       <Stack.Navigator 
       
         screenOptions={{
@@ -37,9 +37,9 @@ function App() {
           },
           
         }}
-        initialRouteName="S_hop"
+        initialRouteName="I_ntro"
       >
-        <Stack.Screen name="I_ntro" component={Intro} />
+        <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen 
           name="H_ome" 

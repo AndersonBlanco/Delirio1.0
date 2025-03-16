@@ -175,7 +175,7 @@ return(
 
 const styles = StyleSheet.create({
     cont:{
-        backgroundColor: "white",
+   
         height: "100%",
         width:"200%"
     },
