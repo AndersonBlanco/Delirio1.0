@@ -11,7 +11,7 @@ import Settings from './Pages/Settings.js';
 import SideNav from './components/sideNav.js';
 import Shop from './Pages/shop.js';
 
-import {NavigationContainer} from "@react-navigation/native"; 
+import {NavigationContainer, DefaultTheme} from "@react-navigation/native"; 
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -23,10 +23,11 @@ const colorScheme = {
 }
 function App() {
   return (
-    <NavigationContainer>
-      <View style = {{flex: 1, paddingTop: 15}}>
+    <NavigationContainer theme={DefaultTheme}>
+      <StatusBar style="light" />
+
+      <View style = {{flex: 1, paddingTop: 15, backgroundColor:colorScheme.sixty}}>
       <Stack.Navigator 
-      
         screenOptions={{
           animation:"none",
           headerShown: false,
