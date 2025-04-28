@@ -11,9 +11,10 @@ import Settings from './Pages/Settings.js';
 import SideNav from './components/sideNav.js';
 import Shop from './Pages/shop.js';
 
-import {NavigationContainer} from "@react-navigation/native"; 
+import {NavigationContainer, DefaultTheme} from "@react-navigation/native"; 
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AICam from './Pages/aiCam.js';
 
 const Stack = createNativeStackNavigator();
 const colorScheme = {
@@ -23,10 +24,11 @@ const colorScheme = {
 }
 function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={DefaultTheme}>
+      <StatusBar style="light" />
+
       <View style = {{flex: 1, paddingTop: 0}}>
       <Stack.Navigator 
-      
         screenOptions={{
           animation:"none",
           headerShown: false,
@@ -37,7 +39,7 @@ function App() {
           },
           
         }}
-        initialRouteName="I_ntro"
+        initialRouteName="AI_Cam"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
@@ -61,6 +63,15 @@ function App() {
             backgroundColor: colorScheme.sixty
           }
         }}/>
+
+        <Stack.Screen
+         name = "AI_Cam" 
+         component = {AICam}
+         options = {{
+          contentStyle:{
+            backgroundColor:"transparent" 
+          }
+         }}/> 
       </Stack.Navigator>
       </View>
     </NavigationContainer>

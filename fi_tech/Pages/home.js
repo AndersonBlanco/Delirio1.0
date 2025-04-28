@@ -155,8 +155,6 @@ const WeekPlanDisplay = (
         ); 
 return(
     <>
-    <StatusBar barStyle="light-content" backgroundColor="#000" />
-
     <View style = {[styles.row, {paddingBottom: 43,paddingHorizontal: 15, justifyContent:"center", alignItems:"center", alignContent:"center"}]}>
     <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: 25, marginBottom: 50, position:"relative"}}/>
     <View style = {{backgroundColor: "gray", width: "100%", height: 1, top: -735}}/>
