@@ -19,7 +19,8 @@ export default function SideNav({style, buttonColor}){
        let screenHeight = Dimensions.get("screen").height,
             screenWidth = Dimensions.get("screen").width; 
             const fontS = 20,
-            profileImgSize = 75; 
+            profileImgSize = 75,
+            iconSize = 20;
     return(
         <>
           <TouchableOpacity
@@ -31,7 +32,7 @@ export default function SideNav({style, buttonColor}){
         
          <Modal animationType="fade" animationInTiming={100} animationOutTiming = {100} animationIn = "slideInLeft" animationOut= "slideOutLeft"    visible = {modalView} transparent={true}>
                      <View style = {{backgroundColor: "rgba(0,0,0, .5)", height: "100%", width: "100%"}}>
-                        <View onTouchMove={() => setModalView(false)} style = {{backgroundColor: "white", width:screenWidth/2, height: screenHeight, position:'absolute', left: 0, padding: 25, flexDirection: "column", rowGap: 25, paddingTop: 150, paddingLeft: 50}}>
+                        <View onTouchMove={() => setModalView(false)} style = {{ backgroundColor: "white", width:screenWidth/2.2, height: screenHeight, position:'absolute', left: 0, padding: 25, flexDirection: "column", rowGap: 25, paddingTop: 150, paddingLeft: 34}}>
                         
                             <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() =>navigation.replace("H_ome")}><Image style = {{height: iconSize, width: iconSize}} source={Home}/><Text>Home</Text></TouchableOpacity>
                             <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20}]} onPress={() =>navigation.replace("S_hop")}><Image source= {Shop} style = {{height: iconSize, width: iconSize}}/><Text>Shop</Text></TouchableOpacity>
@@ -42,8 +43,8 @@ export default function SideNav({style, buttonColor}){
                             <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20, position: "absolute", left: 155, top: 50}]} onPress = {() => setModalView(false)}><Text style = {{fontSize: 20}}>X</Text></TouchableOpacity>
 
                             <View style = {[styles.column, {position: "relative", bottom: -Dimensions.get("screen").height/1.7}]}>
-                            <View style = {[[styles.lineBreak, {top: -65, left: -15}]]}/>
-                            <TouchableOpacity style = {{bottom: 50, flexDirection:"row", justifyContent:"center", alignItems:"center", columnGap: 15, display:"relative", left: -17 }}>
+                            <View style = {[[styles.lineBreak, {top: -160, left: -15}]]}/>
+                            <TouchableOpacity style = {{bottom: 140, flexDirection:"row", justifyContent:"center", alignItems:"center", columnGap: 15, display:"relative", left: -17 }}>
                                <Image source = {User} style = {{height: profileImgSize*.5, width: profileImgSize*.5}} />
                                <Text style = {{fontSize: 12.5}}>My Profile</Text>
                            </TouchableOpacity>
