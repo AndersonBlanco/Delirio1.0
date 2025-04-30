@@ -1,0 +1,5 @@
+terminal details: 
+expo@52.0.38 - expected version: ~52.0.46
+  expo-camera@13.4.4 - expected version: ~16.0.18
+  react-native@0.76.7 - expected version: 0.76. 
+  

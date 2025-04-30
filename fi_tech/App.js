@@ -39,7 +39,7 @@ function App() {
           },
           
         }}
-        initialRouteName="AI_Cam"
+        initialRouteName="Home"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
