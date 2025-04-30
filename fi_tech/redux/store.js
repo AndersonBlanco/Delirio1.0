@@ -2,9 +2,7 @@ import { configureStore, createSlice} from '@reduxjs/toolkit';
 //import navigationReducer from "./navigationSlice"; 
 const navSlice = createSlice({
     name: "navigator",
-//0 = black 
 
-//1 = white
     initialState:{
         value: {
             routes:{
@@ -13,36 +11,30 @@ const navSlice = createSlice({
                     id: 0,
                     params: [],
                     style:{
-                        backColor: "black",  uiColor: 1
+                        backColor: "black",  uiColor: "black"
                     }
                 },
                 "Auth":{
                     name: "Auth",
                     id: 1,
                     params:[],
-                    style: {backColor: "white",  uiColor: 1}
+                    style: {backColor: "white",  uiColor: "black"}
                 },
                 "Home":{
                     name: "Home",
                     id: 2,
                     params:[],
-                    style: {backColor: "rgb(0, 0, 0)", uiColor:0}
+                    style: {backColor: "rgb(26, 26, 26)", uiColor: "black"}
                 },
                 "Settings":{
                     name: "Settings",
                     id: 3,
                     params:[],
-                    style: {backColor: "white", uiColor: 1}
-                },
-                "Shop":{
-                    name: "Shop",
-                    id: 4,
-                    params:[],
-                    style: {backColor: "white", uiColor: 1}
+                    style: {backColor: "white", uiColor: "white"}
                 }
             },
 
-            currentRoute: "Intro"
+            currentRoute: "Settings"
         }
     },
 

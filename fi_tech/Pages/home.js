@@ -7,7 +7,7 @@ import SideMenu from "../components/sideMenu";
 import SideNav from "../components/sideNav";
 import CardioImg from "../assets/run.jpg"; 
 import User from "../assets/user.png"; 
-export default function Home({theme}){
+export default function Home(){
 const dispatch = useDispatch();
 const [hover, setHover] = useState(0);
 const TopNav = (
@@ -86,7 +86,7 @@ const Timeline = ({data, orientation = 0})=>{
             <View style = {[styles.column, {rowGap: 34}]}>
             {
                 data.map(item =>
-                    <View style = {[styles.column, {rowGap: 15, }]} key={item.dayID}>
+                    <View style = {[styles.column, {rowGap: 25, }]} key={item.dayID}>
                     <View style = {{backgroundColor: item.dayID == 0? "transparent" : "gray", height: 1, width: Dimensions.get("screen").width, marginBottom: 10}}/>
                    
                     <TouchableOpacity style = {[styles.column, {borderColor: "transparent", borderWidth: 2, borderRadius: 10, rowGap: 0, backgroundColor: "transparents", alignItems:"center", justifyContent:"center", width: "100%"}]}>
@@ -96,7 +96,7 @@ const Timeline = ({data, orientation = 0})=>{
                       </View>
                     </TouchableOpacity>
                     <View style = {[styles.row]}>
-                        <Text style = {{ fontSize: 15,color:theme? "black": "white",  textDecorationLine:"none"}}>{item.day} —</Text><Text style = {{ borderRadius: 10, borderColor: "transparent", borderWidth: 1, color: theme? "gray": "white", alignSelf: "left", paddingHorizontal: 25}}>{item.title}</Text>
+                        <Text style = {{ fontSize: 15,color: "white",  textDecorationLine:"none"}}>{item.day} —</Text><Text style = {{ borderRadius: 10, borderColor: "transparent", borderWidth: 1, color: "lightgray", alignSelf: "left", paddingHorizontal: 25}}>{item.title}</Text>
                         </View>
                     </View>
                 )
@@ -133,7 +133,7 @@ const DayPlan = ({day}) =>{
 
         
         }}>
-            <Text style = {{alignSelf:"left", color: theme? "black": "white", fontSize: 20, marginVertical: 25}}>Today's Plan <Text style = {{color: theme? "gray": "lightgray"}}>— {day.title}</Text></Text>
+            <Text style = {{alignSelf:"left", color: "white", fontSize: 20, marginVertical: 25}}>Today's Plan <Text style = {{color: "gray"}}>— {day.title}</Text></Text>
 
           <TouchableOpacity style = {[styles.column, {borderColor: "transparent", borderWidth: 2, borderRadius: 10, rowGap: 0, backgroundColor: "transparents", alignItems:"center", justifyContent:"center", width: "100%"}]}>
                        
@@ -148,7 +148,7 @@ const DayPlan = ({day}) =>{
 };
 const WeekPlanDisplay = (
     <View style = {{position:"relative", bottom: -40, marginTop: 25}}>
-        <Text style = {{ fontSize: 20,color: theme? "black": "white", bottom: 59, marginVertical: 5, marginBottom: 25}}>My Week</Text>
+        <Text style = {{ fontSize: 20,color: "white", bottom: 59, marginVertical: 5, marginBottom: 25}}>My Week</Text>
         <Timeline data = {weekPlan} orientation={0}/>
    
         </View>
