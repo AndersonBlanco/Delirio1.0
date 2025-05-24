@@ -43,7 +43,7 @@ function App() {
           },
           
         }}
-        initialRouteName="H_ome"
+        initialRouteName="I_ntro"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
