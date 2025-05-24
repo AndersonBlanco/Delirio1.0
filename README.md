@@ -1,7 +1,5 @@
 # FiTech
 
-<hr/>
-
 ## Content overview:
 
 * FiTech2.0_Model -> ML model 
