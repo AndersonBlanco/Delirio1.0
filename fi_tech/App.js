@@ -14,6 +14,7 @@ import Shop from './Pages/shop.js';
 import {NavigationContainer} from "@react-navigation/native"; 
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Advice from './Pages/advice.js';
 
 const Stack = createNativeStackNavigator();
 const colorScheme = {
@@ -21,6 +22,11 @@ const colorScheme = {
   thirty: "rgba(255, 255, 255,1)",
   ten: "rgba(252, 255,255, 1)"
 }
+
+console.log("reading json file: ")
+const fileRead = new FileReader();
+fileRead.readAsDataURL("../componen")
+
 function App() {
   return (
     <NavigationContainer>
@@ -37,11 +43,7 @@ function App() {
           },
           
         }}
-<<<<<<< HEAD
-        initialRouteName="Home"
-=======
-        initialRouteName="I_ntro"
->>>>>>> parent of f530c56 (ai cam update)
+        initialRouteName="H_ome"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
@@ -56,7 +58,21 @@ function App() {
             }
           }}
         />
+
+
+          <Stack.Screen 
+          name="Advice" 
+          component={Advice}
+          options={{
+            contentStyle: {
+              backgroundColor: colorScheme.ten,
+              alignItems: "center",
+              justifyContent: "flex-start"
+            }
+          }}
+        />
         <Stack.Screen name="S_ettings" component={Settings} />
+
         <Stack.Screen 
         name="S_hop" 
         component={Shop} 

@@ -1,0 +1,89 @@
+
+{
+    "Professionals": [
+  {
+    "name": "Alex R. Monroe",
+    "certification": "Fitness & Nutrition",
+    "img": "",
+    "appCertified": true,
+    "bio": "Experienced coach offering personalized fitness and meal plans tailored for body and mind transformation.",
+    "cost": 95
+  },
+  {
+    "name": "Samantha H. Lee",
+    "certification": "Nutrition",
+    "img": "",
+    "appCertified": false,
+    "bio": "Licensed nutritionist designing long-term dietary strategies focused on health, balance, and sustainability.",
+    "cost": 75
+  },
+  {
+    "name": "Marcus A. Grant",
+    "certification": "Fitness",
+    "img": "",
+    "appCertified": true,
+    "bio": "Dedicated trainer focused on strength, recovery, and endurance through data-driven, proven methodologies.",
+    "cost": 88
+  },
+  {
+    "name": "Olivia M. Chen",
+    "certification": "Fitness",
+    "img": "",
+    "appCertified": true,
+    "bio": "Dynamic personal trainer blending HIIT and mobility techniques to create empowering, energizing routines.",
+    "cost": 82
+  },
+  {
+    "name": "Daniel T. Gray",
+    "certification": "Fitness & Nutrition",
+    "img": "",
+    "appCertified": false,
+    "bio": "Integrative fitness and nutrition expert helping clients reach peak performance with science-based programs.",
+    "cost": 100
+  },
+  {
+    "name": "Rachel V. Patel",
+    "certification": "Nutrition",
+    "img": "",
+    "appCertified": true,
+    "bio": "Certified nutrition consultant with a results-first approach to meal planning, coaching, and accountability.",
+    "cost": 78
+  },
+  {
+    "name": "Ethan C. Wells",
+    "certification": "Fitness",
+    "img": "",
+    "appCertified": true,
+    "bio": "Strength specialist crafting safe, progressive programs that boost muscle development and confidence alike.",
+    "cost": 85
+  },
+  {
+    "name": "Nina L. Morris",
+    "certification": "Fitness",
+    "img": "",
+    "appCertified": false,
+    "bio": "Holistic trainer combining functional movement, core strength, and wellness coaching for full-body results.",
+    "cost": 72
+  },
+  {
+    "name": "Brian K. O'Neil",
+    "certification": "Fitness & Nutrition",
+    "img": "",
+    "appCertified": true,
+    "bio": "Elite dual coach with a whole-body approach, blending nutrition science and smart workouts for fast gains.",
+    "cost": 98
+  },
+  {
+    "name": "Jasmine D. Park",
+    "certification": "Nutrition",
+    "img": "",
+    "appCertified": true,
+    "bio": "Expert dietitian specializing in gut health, plant-based living, and lifestyle plans that deliver real change.",
+    "cost": 70
+  }
+]
+
+
+
+
+}
