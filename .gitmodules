@@ -1,0 +1,6 @@
+[submodule "FiTech2.0.web"]
+	path = FiTech2.0.web
+	url = https://github.com/AndersonBlanco/FiTech2.0.web.git
+[submodule "FiTech2.0_Model"]
+	path = FiTech2.0_Model
+	url = https://github.com/AndersonBlanco/FiTech2.0_Model.git
