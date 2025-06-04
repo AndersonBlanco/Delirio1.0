@@ -16,6 +16,26 @@ import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Advice from './Pages/advice.js';
 
+//mediapipe api:
+import * as poseDetection from '@tensorflow-models/pose-detection';
+import '@tensorflow/tfjs-core';
+// Register WebGL backend.
+import '@tensorflow/tfjs-backend-webgl';
+import '@mediapipe/pose';
+
+const model = poseDetection.SupportedModels.BlazePose;
+const detectorConfig = {
+  runtime: 'mediapipe',
+  solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose'
+                // or 'base/node_modules/@mediapipe/pose' in npm.
+};
+detector = await poseDetection.createDetector(model, detectorConfig);
+
+const estimationConfig = {enableSmoothing: true};
+const poses = await detector.estimatePoses(image, estimationConfig);
+//*//
+
+
 const Stack = createNativeStackNavigator();
 const colorScheme = {
   sixty: "rgba(29, 29, 29, 0.75)",
@@ -27,6 +47,9 @@ console.log("reading json file: ")
 const fileRead = new FileReader();
 fileRead.readAsDataURL("../componen")
 
+const TestScreen = () =>{
+  
+}
 function App() {
   return (
     <NavigationContainer>
