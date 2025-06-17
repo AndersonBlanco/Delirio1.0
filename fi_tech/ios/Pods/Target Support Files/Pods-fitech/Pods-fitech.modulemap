@@ -1,0 +1,6 @@
+module Pods_fitech {
+  umbrella header "Pods-fitech-umbrella.h"
+
+  export *
+  module * { export * }
+}
