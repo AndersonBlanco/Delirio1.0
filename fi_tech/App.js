@@ -15,26 +15,23 @@ import {NavigationContainer} from "@react-navigation/native";
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Advice from './Pages/advice.js';
+import AICam from './Pages/aiCam.js';
 
 
 const Stack = createNativeStackNavigator();
 const colorScheme = {
-  sixty: "rgba(29, 29, 29, 0.75)",
+  sixty: "rgba(22, 22, 22, 1)",
   thirty: "rgba(255, 255, 255,1)",
   ten: "rgba(252, 255,255, 1)"
 }
 
-console.log("reading json file: ")
-const fileRead = new FileReader();
-fileRead.readAsDataURL("../componen")
 
-const TestScreen = () =>{
-  
-}
 function App() {
   return (
-    <NavigationContainer>
       <View style = {{flex: 1, paddingTop: 0}}>
+    <NavigationContainer>
+      
+    
       <Stack.Navigator 
       
         screenOptions={{
@@ -47,7 +44,7 @@ function App() {
           },
           
         }}
-        initialRouteName="I_ntro"
+        initialRouteName="S_hop"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
@@ -85,9 +82,19 @@ function App() {
             backgroundColor: colorScheme.sixty
           }
         }}/>
+
+        <Stack.Screen 
+        name="AI_Cam" 
+        component={AICam} 
+        options ={{
+          contentStyle:{
+            backgroundColor: colorScheme.sixty
+          }
+        }}/>
       </Stack.Navigator>
-      </View>
+    
     </NavigationContainer>
+      </View>
   );
 }
 

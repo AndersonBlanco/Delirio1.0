@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View, TouchableOpacity, Text, TextInput, Dimensions, ImageBackground} from "react-native"; 
+import { StyleSheet, View, TouchableOpacity, Text, TextInput, Dimensions, ImageBackground} from "react-native"; 
 import { Icon } from "react-native-elements";
 import {useState} from "react"; 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,7 +17,7 @@ import Profile7 from "../assets/profile7.png";
 import Profile8 from "../assets/profile8.png";
 import Profile9 from "../assets/profile9.png";
 import Profile10 from "../assets/profile10.png";
-
+import {Image} from "expo-image"; 
 export default function Advice({theme}){
     
     const [search, setSearch] = useState(""); 
@@ -85,8 +85,8 @@ style = {{
 ItemSeparatorComponent={() => <View style = {{height: 25, width: "100%",}}/>}
 showsVerticalScrollIndicator = {false}
 data = {pros.Professionals}
-renderItem={(pro) =>{
-    return(
+renderItem={async (pro) =>{
+    return (
         <TouchableOpacity style = {[styles.column, {  rowGap: 10, textAlign:"center", alignItems:"center", justifyContent:"center", borderColor: "rgba(0,0,0,.2)", borderWidth: 2, borderRadius: 25, borderTopWidth: 0, borderRightWidth: 0, borderLeftWidth: 0, paddingHorizontal: 10, paddingVertical: 25}]}>
         <View style = {{paddingHorizontal:15, justifyContent:"space-evenly", flexDirection: "row", display:"flex", columnGap: 15, alignItems:"center", backgroundColor:"transparent", width: "100%"}}> 
 

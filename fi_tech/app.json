@@ -1,13 +1,15 @@
 {
   "expo": {
+    "expo.jsEngine": "hermes",
     "name": "fi_tech",
+    "displayName": "FiTech",
     "slug": "fi_tech",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/FiTech.png",
+      "image": "./assets/fiTech_logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,7 +18,7 @@
       "supportsTablet": true,
       "icon": "./assets/fiTech_logo.png",
       "splash": {
-        "image": "./assets/FiTech.png",
+        "image": "./assets/fiTech_logo.png",
         "resizeMode": "contain",
         "backgroundColor": "#ffffff"
       }
@@ -35,6 +37,11 @@
       "eas": {
         "projectId": "3958ddfd-2601-450b-84fb-c1094932ac85"
       }
-    }
+    },
+    
+    "plugins": [
+      "react-native-vision-camera"
+      
+    ]
   }
 }

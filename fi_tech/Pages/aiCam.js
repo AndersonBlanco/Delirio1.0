@@ -1,28 +1,83 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, requireNativeComponent  } from 'react-native';
+import SideNav from '../components/sideNav';
+import { StatusBar } from 'expo-status-bar';
+import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+//import { useSharedValue } from 'react-native-worklets-core';
 
-import { Camera } from 'expo-camera';
 
-import * as tf from '@tensorflow/tfjs';
-import * as posedetection from '@tensorflow-models/pose-detection';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import {
-  bundleResourceIO,
-  cameraWithTensors,
-} from '@tensorflow/tfjs-react-native';
-import Svg, { Circle } from 'react-native-svg';
-import { ExpoWebGLRenderingContext } from 'expo-gl';
-import { CameraType } from 'expo-camera/build/Camera.types';
-export default function AICam(){
+
+export default function AICam({theme}){
+    //nativeModules: 
+
+
     
-    const onFlip = () => {
-        switchCamera();
-    };
+    //handling frames:
+    const frameProcessor = useFrameProcessor((frame) =>{
+        'worklet';
+        //converting frame to array based frame
+        if(frame.pixelFormat == "rgb"){
+            //console.log('pixel format IS rgb')
 
+            const array_based_frame = frame.toArrayBuffer();
+            let f =  new Uint8Array(array_based_frame); 
+            
+            //console.log(f.toString());
+        }else{
+            console.log("Frame not in rgb pixel format")
+        }
+
+    },[]);
+
+
+    const device = useCameraDevice("front");
+    const {hasPermission} = useCameraPermission();
+    const customFormat = useCameraFormat(device, [{fps:"max"}]) //fps set to max
+const handleTest = () =>{
+    alert("Hello Universe"); 
+}
+//<View style ={{justifyContent:"center", alignItems:"center"}}>
     return(
-        <View>
- 
-            <TouchableOpacity onPress={onFlip}><Text>Switch</Text></TouchableOpacity>
-        </View>
+    <>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+         <Camera
+        style = {{
+            height:Dimensions.get("screen").height,
+            width: Dimensions.get("screen").width,
+            backgroundColor:"red",
+            position:"absolute"
+        }}
+        device={device}
+      isActive={true}
+      zoom={device.minZoom}
+      enableZoomGesture
+      format={customFormat}
+      frameProcessor={frameProcessor}
+      pixelFormat={"rgb"}
+      />
+        <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+       
+    
+
+           <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
+    </>
     )
+
+    
+ 
+    /*
+    //native modules:
+    return(
+           <>
+        <StatusBar barStyle="light-content" backgroundColor="#000" />
+        
+
+                <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+       
+    
+
+           <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
+         </>
+    )
+         */
 }
