@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules,  } from 'react-native';
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
-//import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useCameraFormat, useCameraPermission } from 'react-native-vision-camera';
 //import { useSharedValue } from 'react-native-worklets-core';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+//import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 export default function AICam({theme}){
     //nativeModules: 
@@ -64,7 +64,7 @@ const handleTest = () =>{
 */
     
  
-    
+    /*
     //expo-camera
      const [permission, requestPermission] = useCameraPermissions();
    const [facing, setFacing] = useState("front")
@@ -87,9 +87,9 @@ const handleTest = () =>{
             </>
         )
     }
-    return(
-           <>
-           <CameraView
+
+    /*
+      <CameraView
                 facing={facing}
                 active={true}
                 style = {{
@@ -100,9 +100,48 @@ const handleTest = () =>{
                 }}
 
                 />
+    */
+        /**/
+const {hasPermission, requestPermission} = useCameraPermission();
+const device = useCameraDevice("front"); 
+
+useEffect(() =>{
+    if(!hasPermission){
+        requestPermission();
+    }
+}, [hasPermission]);
+
+if(!hasPermission){
+    return(
+        <>
             <StatusBar barStyle="light-content" backgroundColor="#000" />
             <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
+            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Go to settings and allow permission for this appplication</Text>
+         </>
+    )
+}
+
+if(!device){
+    return(
+        <>
+            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera Device not identitified</Text>
+        </>
+    )
+}
+    return(
+           <>
+         <Camera
+         isActive = {true}
+         device={device}
+         style = {{
+            height: Dimensions.get("screen").height,
+            width:Dimensions.get("screen").width,
+            position:"absolute"
+         }}
+         />
+            <StatusBar barStyle="light-content" backgroundColor="#000" />
+            <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello Universe</Text>
          </>
     )
          

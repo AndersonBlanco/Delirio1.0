@@ -5,7 +5,8 @@
 
   <key>NSCameraUsageDescription</key>
 <string>This app needs camera access to function properly.</string>
-
+<key>NSMicrophoneUsageDescription</key>
+<string>This app needs microphone access to record audio and video.</string>
 
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
