@@ -5,65 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor} from 'react-native-vision-camera';
 //import { useSharedValue } from 'react-native-worklets-core';
 //import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { RNMediapipe } from '@thinksys/react-native-mediapipe';
 
 export default function AICam({theme}){
-    //nativeModules: 
-
-/*
-    
-    //handling frames:
-    const frameProcessor = useFrameProcessor((frame) =>{
-        'worklet';
-        //converting frame to array based frame
-        if(frame.pixelFormat == "rgb"){
-            //console.log('pixel format IS rgb')
-
-            const array_based_frame = frame.toArrayBuffer();
-            let f =  new Uint8Array(array_based_frame); 
-            
-            //console.log(f.toString());
-        }else{
-            console.log("Frame not in rgb pixel format")
-        }
-
-    },[]);
-
-
-    const device = useCameraDevice("front");
-    const {hasPermission} = useCameraPermission();
-    const customFormat = useCameraFormat(device, [{fps:"max"}]) //fps set to max
-const handleTest = () =>{
-    alert("Hello Universe"); 
-}
-//<View style ={{justifyContent:"center", alignItems:"center"}}>
-    return(
-    <>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
-         <Camera
-        style = {{
-            height:Dimensions.get("screen").height,
-            width: Dimensions.get("screen").width,
-            backgroundColor:"red",
-            position:"absolute"
-        }}
-        device={device}
-      isActive={true}
-      zoom={device.minZoom}
-      enableZoomGesture
-      format={customFormat}
-      frameProcessor={frameProcessor}
-      pixelFormat={"rgb"}
-      />
-        <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-       
-    
-
-           <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
-    </>
-    )
-*/
-    
- 
+   
     /*
     //expo-camera
      const [permission, requestPermission] = useCameraPermissions();
@@ -145,8 +90,9 @@ const customFrameProcessor = useFrameProcessor((frame) =>{
         console.log("Error inside 'customFrameProcessor' : ", e)
     }
 })
+
+const CamExpo = () =>{
     return(
-           <>
          <Camera
          isActive = {true}
          device={device}
@@ -159,6 +105,23 @@ const customFrameProcessor = useFrameProcessor((frame) =>{
             position:"absolute"
          }}
          />
+    )
+}
+    return(
+           <>
+
+             <RNMediapipe 
+        
+        style={{
+            position:"absolute"
+        }}
+        width={Dimensions.get("screen").width}
+        height={Dimensions.get("screen").height}
+        onLandmark={(data) => {
+            console.log(data); 
+        }}
+      />
+         
             <StatusBar barStyle="light-content" backgroundColor="#000" />
             <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
             <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello Universe</Text>

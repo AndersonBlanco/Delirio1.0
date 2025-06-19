@@ -343,6 +343,9 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
+  - MediaPipeTasksCommon (0.10.21)
+  - MediaPipeTasksVision (0.10.21):
+    - MediaPipeTasksCommon (= 0.10.21)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -2372,6 +2375,31 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1)
+  - ThinkSysRNMediapipe (0.0.13):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - MediaPipeTasksVision
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - VisionCamera (4.7.0):
     - VisionCamera/Core (= 4.7.0)
     - VisionCamera/FrameProcessors (= 4.7.0)
@@ -2488,6 +2516,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - "ThinkSysRNMediapipe (from `../node_modules/@thinksys/react-native-mediapipe`)"
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2496,6 +2525,8 @@ SPEC REPOS:
     - libavif
     - libdav1d
     - libwebp
+    - MediaPipeTasksCommon
+    - MediaPipeTasksVision
     - SDWebImage
     - SDWebImageAVIFCoder
     - SDWebImageSVGCoder
@@ -2693,6 +2724,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  ThinkSysRNMediapipe:
+    :path: "../node_modules/@thinksys/react-native-mediapipe"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -2727,6 +2760,8 @@ SPEC CHECKSUMS:
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
+  MediaPipeTasksCommon: 6cfa29170d4900f04d250ad95ec058f14a741f38
+  MediaPipeTasksVision: 7b1c0f5a5820e87e9d96926f5e65d8cd3744fac2
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 0418ac97b9f53b2e37f473da1663ef3061e46beb
   RCTRequired: b9fde7f981b11aa898f03a70d3d4d36b80f1b16d
@@ -2801,6 +2836,7 @@ SPEC CHECKSUMS:
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  ThinkSysRNMediapipe: c708501fb1f5203bf0ee38f2750e92fd0e77b609
   VisionCamera: 1470a7fa013e22de7481640a4d9c597ad6f13919
   Yoga: a6cb833e04fb8c59a012b49fb1d040fcb0cbb633
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
