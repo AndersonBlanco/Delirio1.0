@@ -1742,6 +1742,30 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-worklets-core (1.5.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - React-NativeModulesApple (0.79.4):
     - glog
     - hermes-engine
@@ -2350,10 +2374,16 @@ PODS:
   - SocketRocket (0.7.1)
   - VisionCamera (4.7.0):
     - VisionCamera/Core (= 4.7.0)
+    - VisionCamera/FrameProcessors (= 4.7.0)
     - VisionCamera/React (= 4.7.0)
   - VisionCamera/Core (4.7.0)
+  - VisionCamera/FrameProcessors (4.7.0):
+    - React
+    - React-callinvoker
+    - react-native-worklets-core
   - VisionCamera/React (4.7.0):
     - React-Core
+    - VisionCamera/FrameProcessors
   - Yoga (0.0.0)
   - ZXingObjC/Core (3.6.9)
   - ZXingObjC/OneD (3.6.9):
@@ -2421,6 +2451,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-worklets-core (from `../node_modules/react-native-worklets-core`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -2588,6 +2619,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-worklets-core:
+    :path: "../node_modules/react-native-worklets-core"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-oscompat:
@@ -2726,6 +2759,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: a0ee08ac29b8a2c08692aa0d51cefa1c88860e17
   React-microtasksnativemodule: ef2292ca147fa8793305e4693586ad0caf3afad3
   react-native-safe-area-context: 562163222d999b79a51577eda2ea8ad2c32b4d06
+  react-native-worklets-core: 4c6969589870354d6051217406145a200f6fdc91
   React-NativeModulesApple: da60186ad0aafff031a9bc86b048711d34acc813
   React-oscompat: 472a446c740e39ee39cd57cd7bfd32177c763a2b
   React-perflogger: bbca3688c62f4f39e972d6e21969c95fe441fb6c
@@ -2767,7 +2801,7 @@ SPEC CHECKSUMS:
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  VisionCamera: c5c07db74721d37f4c9f8331ad1f8da7b2539995
+  VisionCamera: 1470a7fa013e22de7481640a4d9c597ad6f13919
   Yoga: a6cb833e04fb8c59a012b49fb1d040fcb0cbb633
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
