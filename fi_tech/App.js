@@ -44,7 +44,7 @@ function App() {
           },
           
         }}
-        initialRouteName="S_hop"
+        initialRouteName="AI_Cam"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />

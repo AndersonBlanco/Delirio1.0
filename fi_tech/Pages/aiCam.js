@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, requireNativeComponent  } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules,  } from 'react-native';
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
-import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+//import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
 //import { useSharedValue } from 'react-native-worklets-core';
-
-
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 export default function AICam({theme}){
     //nativeModules: 
 
-
+/*
     
     //handling frames:
     const frameProcessor = useFrameProcessor((frame) =>{
@@ -62,22 +61,49 @@ const handleTest = () =>{
            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
     </>
     )
-
+*/
     
  
-    /*
-    //native modules:
+    
+    //expo-camera
+     const [permission, requestPermission] = useCameraPermissions();
+   const [facing, setFacing] = useState("front")
+
+    if(!permission){
+        return(
+            <>
+                <StatusBar barStyle="light-content" backgroundColor="#000" />
+                <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera permission loading.....</Text>
+            </>
+        )
+    }
+
+    if(!permission.granted){
+        requestPermission();
+        return(
+            <>
+                <StatusBar barStyle="light-content" backgroundColor="#000" />
+                <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera permission denied. Requesting.....</Text>
+            </>
+        )
+    }
     return(
            <>
-        <StatusBar barStyle="light-content" backgroundColor="#000" />
-        
+           <CameraView
+                facing={facing}
+                active={true}
+                style = {{
+                    height: Dimensions.get("screen").height,
+                    width:Dimensions.get("screen").width,
+                    position:"absolute"
 
-                <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-       
-    
+                }}
 
-           <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
+                />
+            <StatusBar barStyle="light-content" backgroundColor="#000" />
+            <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Hello universe</Text>
          </>
     )
-         */
+         
 }
