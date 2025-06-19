@@ -104,6 +104,8 @@ const handleTest = () =>{
         /**/
 const {hasPermission, requestPermission} = useCameraPermission();
 const device = useCameraDevice("front"); 
+const customFormat = useCameraFormat(device, [{fps:"max"}]) //fps set to max
+
 
 useEffect(() =>{
     if(!hasPermission){
@@ -133,6 +135,8 @@ if(!device){
          <Camera
          isActive = {true}
          device={device}
+         format={customFormat}
+         pixelFormat={"rgb"}
          style = {{
             height: Dimensions.get("screen").height,
             width:Dimensions.get("screen").width,
