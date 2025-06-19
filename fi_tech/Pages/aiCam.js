@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules,  } from 'react-native';
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
-import { Camera, useCameraDevice, useCameraFormat, useCameraPermission } from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor} from 'react-native-vision-camera';
 //import { useSharedValue } from 'react-native-worklets-core';
 //import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
@@ -130,6 +130,21 @@ if(!device){
         </>
     )
 }
+
+const customFrameProcessor = useFrameProcessor((frame) =>{
+    'worklet';
+    try{
+        if(frame.pixelFormat == "rgb"){
+        let buffer = frame.toArrayBuffer();
+        let rgbObj = new Uint8Array(buffer); 
+        //console.log("rgb: ", rgbObj.slice(0,1))
+    }else{
+        //console.log("pixel form != rgb")
+    }
+    }catch(e){
+        console.log("Error inside 'customFrameProcessor' : ", e)
+    }
+})
     return(
            <>
          <Camera
@@ -137,6 +152,7 @@ if(!device){
          device={device}
          format={customFormat}
          pixelFormat={"rgb"}
+         frameProcessor={customFrameProcessor}
          style = {{
             height: Dimensions.get("screen").height,
             width:Dimensions.get("screen").width,
