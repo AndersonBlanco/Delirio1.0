@@ -24,9 +24,10 @@ const colorScheme = {
   thirty: "rgba(255, 255, 255,1)",
   ten: "rgba(252, 255,255, 1)"
 }
-
-
+ 
 function App() {
+
+
   return (
       <View style = {{flex: 1, paddingTop: 0}}>
     <NavigationContainer>
