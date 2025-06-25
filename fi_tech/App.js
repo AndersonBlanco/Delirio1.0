@@ -16,7 +16,7 @@ import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Advice from './Pages/advice.js';
 import AICam from './Pages/aiCam.js';
-
+import Lessons from './Pages/lessons.js';
 
 const Stack = createNativeStackNavigator();
 const colorScheme = {
@@ -45,7 +45,7 @@ function App() {
           },
           
         }}
-        initialRouteName="AI_Cam"
+        initialRouteName="Lessons"
       >
         <Stack.Screen name="I_ntro" component={Intro}  />
         <Stack.Screen name="Auth" component={AuthScreen} />
@@ -85,6 +85,15 @@ function App() {
         }}/>
 
         <Stack.Screen 
+        name="Lessons" 
+        component={Lessons} 
+        options ={{
+          contentStyle:{
+            backgroundColor: colorScheme.sixty
+          }
+        }}/>
+
+          <Stack.Screen 
         name="AI_Cam" 
         component={AICam} 
         options ={{
