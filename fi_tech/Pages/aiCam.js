@@ -104,13 +104,20 @@ if(!hasPermission){
     )
 }
 
-
+if(!device){
+    return(
+        <>
+            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera Device not identitified</Text>
+        </>
+    )
+}
 //let predictionLaebl = useSharedValue("None"); 
 const [textLabel, setTextLabel] = useState("None"); 
 const updateUIText = Worklets.createRunOnJS((v) =>{
     //predictionLaebl.value = v; 
    setTextLabel(v);
 })
+const camRef = useRef(); 
 
 const frameProcessor_executableBody = (frame) =>{
     'worklet';
@@ -312,26 +319,13 @@ const flipIcon = (
     </TouchableOpacity>     
 );
 
-const [lessonsLoaded, setLessonsLoaded] = useState(true); 
 const LessonTemplate = ({title, imgSrc})  =>{
     return(
-        <>
-           
         <ImageBackground style = {{alignSelf:"center", height: 200, backgroundColor:"blue", width: 125, borderRadius: 10,overflow: 'hidden'}} source={imgSrc}>
             <View style = {{flex: 1,backgroundColor:"rgba(1, 1, 1, 0.35)", padding: 10}}>
             <Text style ={{color: "white", fontSize: 14 }}>{title}</Text>
             </View>
         </ImageBackground>
-         {!lessonsLoaded? (
-    
-                <ActivityIndicator size={'small'} color={"black"} style = {{flex:1,position:"absolute", backgroundColor:"white", height: 200, width:125}} />
-   
-            ):
-            null
-        }
-        
-        
-        </>
     )
 };
 
@@ -403,7 +397,6 @@ const lessons = [
 
 ];
 
-
 const Section = ({sectionTitle,sectionLssons}) =>{
     return (
            <View style = {[styles.column, { backgroundColor:"transparent", position:"relative", alignItems:"center", justifyContent:"center", alignContent:"center"}]}>
@@ -431,7 +424,7 @@ const Section = ({sectionTitle,sectionLssons}) =>{
             {
                 sectionLssons.map((item) =>{
                     return(
-                        <TouchableOpacity style = {{alignItems:"center", justifyContent:"center"}} key = {item.title} onPress={async () =>{ await setLessonTitle(item.title); setLessonClicked(!lessonClicked); }}>
+                        <TouchableOpacity key = {item.title}>
                            <LessonTemplate key = {item.title} title = {item.title} imgSrc={item.imgSrc}/>
                         </TouchableOpacity>
                 )
@@ -446,8 +439,7 @@ const Section = ({sectionTitle,sectionLssons}) =>{
 
 const Catalogue = () =>{
 return <>
-
-    <SideNav buttonColor={'black'} style = {{zIndex: 1, top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+          <SideNav buttonColor={'black'} style = {{zIndex: 1, top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
        <View style = {[styles.column, {
        paddingBottom: 25,
         height: "auto", 
@@ -467,13 +459,10 @@ return <>
     </>
 }
 
- const [camLoaded, setCamLoaded] = useState(false); 
- //camRef.current.loaded = false; 
-
-const DisplayCamera = ({lessonTitle}) =>{
-        
+const DisplayCamera = ({lessonTitle = ""}) =>{
     return <>
-     <Camera
+    <Camera
+           
            shouldRasterizeIOS = {false}
             enableBufferCompression = {true}
          enableFpsGraph = {false}
@@ -490,7 +479,6 @@ const DisplayCamera = ({lessonTitle}) =>{
             position:"absolute"
          }}
          />
-
         {flipIcon}
 
          <View style = {{ alignSelf:"center", bottom: 0, backgroundColor:"white", 
@@ -507,26 +495,9 @@ const DisplayCamera = ({lessonTitle}) =>{
             <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabel}</Animated.Text>
             </View>
             <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-
-                {
-                camLoaded?
-     <ActivityIndicator size={100} color={"black"} style = {{flex: 1, height: Dimensions.get("screen").height, backgroundColor:"white", top: -75}}/>
-                :
-                null
-            }
             </>
 };
 
-const [lessonClicked, setLessonClicked] = useState(false);
-const [lessonTitle, setLessonTitle] = useState(""); 
-
- if(!device){
-    return(
-        <>
-          <ActivityIndicator size={'large'} color={"black"} />
-        </>
-    )
-};
 
     return(
            <View style = {{
@@ -534,13 +505,42 @@ const [lessonTitle, setLessonTitle] = useState("");
             backgroundColor: "white",
            }}>
             <StatusBar barStyle="light-content" backgroundColor="#000" />
-            {
-                lessonClicked? 
-                <DisplayCamera lessonTitle={lessonTitle}/>
-                :
-                 <Catalogue/>
-            }
-       
+           <Camera
+           
+           shouldRasterizeIOS = {false}
+            enableBufferCompression = {true}
+         enableFpsGraph = {false}
+         fps={customFormat.maxFps}
+         isActive = {true}
+         device={device}
+         format={customFormat}
+         pixelFormat={"rgb"}
+         frameProcessor={customFrameProcessor}
+        videoBitRate={"extra-low"}
+         style = {{
+            height: Dimensions.get("screen").height,
+            width:Dimensions.get("screen").width,
+            position:"absolute"
+         }}
+         />
+        {flipIcon}
+
+         <View style = {{ alignSelf:"center", bottom: 0, backgroundColor:"white", 
+                height: Dimensions.get("screen").height*.25,
+                width:Dimensions.get("screen").width,
+                position:"absolute",
+                borderTopEndRadius: 25,
+                borderTopLeftRadius: 25,
+                alignItems:"center",
+                justifyContent:"center",
+           
+            }}>
+
+            <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabel}</Animated.Text>
+            </View>
+            <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+            
+
           </View>
     )
          
