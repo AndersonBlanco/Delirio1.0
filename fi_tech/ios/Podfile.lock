@@ -1767,7 +1767,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-skia (2.0.5):
+  - react-native-skia (2.0.0-next.4):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2450,6 +2450,8 @@ PODS:
   - TensorFlowLiteC (2.17.0):
     - TensorFlowLiteC/Core (= 2.17.0)
   - TensorFlowLiteC/Core (2.17.0)
+  - TextToSpeech (4.1.1):
+    - React-Core
   - VisionCamera (4.7.0):
     - VisionCamera/Core (= 4.7.0)
     - VisionCamera/FrameProcessors (= 4.7.0)
@@ -2569,6 +2571,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - TextToSpeech (from `../node_modules/react-native-tts`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2781,6 +2784,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  TextToSpeech:
+    :path: "../node_modules/react-native-tts"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -2848,7 +2853,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: ef2292ca147fa8793305e4693586ad0caf3afad3
   react-native-fast-tflite: 98dadc806e07b767f32ab7c6915df221c58b0ebd
   react-native-safe-area-context: 562163222d999b79a51577eda2ea8ad2c32b4d06
-  react-native-skia: bb10bc5aae326d5d30f61ba629e7e279ffa79d4a
+  react-native-skia: 5c086469906cf854e26126b5b88dcbb6c93eb90f
   react-native-worklets-core: 4c6969589870354d6051217406145a200f6fdc91
   React-NativeModulesApple: da60186ad0aafff031a9bc86b048711d34acc813
   React-oscompat: 472a446c740e39ee39cd57cd7bfd32177c763a2b
@@ -2893,6 +2898,7 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
+  TextToSpeech: 89b239221ec378d213af422d14789a729705360b
   VisionCamera: 1470a7fa013e22de7481640a4d9c597ad6f13919
   Yoga: a6cb833e04fb8c59a012b49fb1d040fcb0cbb633
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5

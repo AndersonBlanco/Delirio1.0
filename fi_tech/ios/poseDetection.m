@@ -13,31 +13,58 @@
 #import <math.h>
 
 double getAngle(NSArray *jointTrio){ // get angle method
-
-  NSDictionary *p1 = jointTrio[0];
-  NSDictionary *p2 = jointTrio[1];// point of interest, which is located at the point of angle of interest
-  NSDictionary *p3 = jointTrio[2];
   
-  double a = sqrt( pow( ( [p1[@"x"] doubleValue] - [p2[@"x"] doubleValue]),2) + pow( ( [p1[@"y"] doubleValue] - [p2[@"y"] doubleValue]),2));
-  
-  double b = sqrt( pow( ( [p3[@"x"] doubleValue] - [p2[@"x"] doubleValue]),2) + pow( ( [p3[@"y"] doubleValue] - [p2[@"y"] doubleValue]),2));
-  
-  double c = sqrt( pow( ( [p3[@"x"] doubleValue] - [p1[@"x"] doubleValue]),2) + pow( ( [p3[@"y"] doubleValue] - [p1[@"y"] doubleValue]),2));
-  
-  if(a == 0 || b == 0){
-    return 0;
-  }
-  return acos((pow(c,2) - pow(a,2) - pow(b, 2))/(-2*a*b)) *(180/M_PI);
+  if (jointTrio == nil || jointTrio.count != 3) {
+        return 0.0;
+    }
+    
+    NSDictionary *p1 = jointTrio[0];
+    NSDictionary *p2 = jointTrio[1]; // vertex point
+    NSDictionary *p3 = jointTrio[2];
+    
+    if (!p1 || !p2 || !p3) {
+        return 0.0;
+    }
+    
+    double x1 = [p1[@"x"] doubleValue];
+    double y1 = [p1[@"y"] doubleValue];
+    double x2 = [p2[@"x"] doubleValue];
+    double y2 = [p2[@"y"] doubleValue];
+    double x3 = [p3[@"x"] doubleValue];
+    double y3 = [p3[@"y"] doubleValue];
+    
+    // Calculate vectors from vertex to other points
+    double v1x = x1 - x2;
+    double v1y = y1 - y2;
+    double v2x = x3 - x2;
+    double v2y = y3 - y2;
+    
+    // Calculate magnitudes
+    double mag1 = sqrt(v1x * v1x + v1y * v1y);
+    double mag2 = sqrt(v2x * v2x + v2y * v2y);
+    
+    if (mag1 == 0 || mag2 == 0) {
+        return 0.0;
+    }
+    
+    // Calculate dot product and angle
+    double dotProduct = v1x * v2x + v1y * v2y;
+    double cosAngle = dotProduct / (mag1 * mag2);
+    
+    // Clamp to avoid numerical errors
+    cosAngle = fmax(-1.0, fmin(1.0, cosAngle));
+    
+  return acos(cosAngle) * (180.0 / M_PI)/180; 
 };
 
 NSString* getLabel(MLMultiArray *pred){
-  int maxConfidenceIndex_in_pred = 0;
+  int maxConfidenceIndex_in_pred = 1;
   NSArray *labelArray = @[@"good jab", @"bad jab - knee level lack",
                          @"good straight", @"bad straight, lack of rotation",@"good rest", @"bad rest, wrong stance",
                           @"good kick", @"bad kick, don't lounge leg out"];
   
   for(int i = 0; i < 8; i++){
-    if(pred[maxConfidenceIndex_in_pred] < pred[i]){
+    if([pred[maxConfidenceIndex_in_pred] doubleValue] < [pred[i] doubleValue]){
       maxConfidenceIndex_in_pred = i;
     }
   }
@@ -45,40 +72,43 @@ NSString* getLabel(MLMultiArray *pred){
   return labelArray[maxConfidenceIndex_in_pred];
 }
 
-@interface poseDetectionPlugin : FrameProcessorPlugin
+@interface poseDetectionPlugin : FrameProcessorPlugin{
+  int count;
+  bool reached40;
+  BOOL nilValuefound;
+  MLMultiArray *angles_40frame;
+  GRUsmd *model;
+}
 @end
 
-int count = 0;
-bool reached40 = false;
-BOOL nilValuefound = NO;
 
 @implementation poseDetectionPlugin
-
 - (instancetype _Nonnull)initWithProxy:(VisionCameraProxyHolder*)proxy
                            withOptions:(NSDictionary* _Nullable)options {
   self = [super initWithProxy:proxy withOptions:options];
-  if(self){
+  NSError *_error;
 
+   if(self){
+     count = 0;
+     reached40 = false;
+     nilValuefound = NO;
+    angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
+     
+    model = [[GRUsmd alloc] init];
   }
   return self;
 }
-
-
 
 
 - (id _Nullable)callback:(Frame* _Nonnull)frame
            withArguments:(NSDictionary* _Nullable)arguments {
   
   NSError *error;
-  NSError *_error = nil;
-  MLMultiArray *angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
+ 
   
   //incirment count - used to keep track of number of frames passed, and set threshold for custom GRU model call once count == 40:
   
-  if(count == 40){
-    reached40 = true;
-  }
-  
+ 
 
 
   
@@ -102,8 +132,6 @@ BOOL nilValuefound = NO;
      NSLog(@"Human body pose detection failed: %@", error.localizedDescription);
      return nil; // Or handle the error appropriately
    }
-
-  NSMutableArray *poseResults = [NSMutableArray array];
   NSMutableDictionary *joints = [NSMutableDictionary dictionary];
  
 
@@ -135,13 +163,10 @@ BOOL nilValuefound = NO;
             
           }; //end of obj to be added to joints array
         }
-        
-       
-          [poses addObject:joints];
-        
-        
+      
       }
       
+      [poses addObject:joints];
       /*
       VNHumanBodyPose3DPoint *rightAnkle = [poseObservation recognizedPointForJointName:VNHumanBodyPoseObservationJointNameRightAnkle error:nil];
            if (rightAnkle) {
@@ -167,7 +192,18 @@ BOOL nilValuefound = NO;
   //NSArray *finalRes = @[jointNames, poses];
   
   //rightElbowAngle - test :
-
+  
+  
+ // NSMutableArray *temp = [[NSMutableArray alloc] init];
+  /*
+  for(int x = 0; x < 40; x++){
+    NSMutableArray *arr = [[NSMutableArray alloc] init];
+    for(int y = 0; y < 8; y++){
+      [arr addObject:angles_40frame[@[@0, @(x), @(y)]]];
+    }
+    [temp addObject:arr];
+  }
+*/
   if(joints[@"left_shoulder_1_joint"] != nil && joints[@"left_forearm_joint"] != nil && joints[@"left_hand_joint"] != nil && joints[@"left_upLeg_joint"] != nil && joints[@"left_leg_joint"] != nil && joints[@"left_foot_joint"] != nil && joints[@"right_shoulder_1_joint"] != nil && joints[@"right_forearm_joint"] != nil && joints[@"right_hand_joint"] != nil && joints[@"right_upLeg_joint"] != nil && joints[@"right_leg_joint"] != nil && joints[@"right_foot_joint"] != nil){
     
     double RightElbowAngle = getAngle(@[joints[@"left_shoulder_1_joint"], joints[@"left_forearm_joint"], joints[@"left_hand_joint"]]);
@@ -200,27 +236,26 @@ BOOL nilValuefound = NO;
 
     
     NSArray *anglesOfInterest = @[
-      @(RightElbowAngle), @(LeftElbowAngle),
-      @(RightShoulderAngle), @(LeftShoulderAngle),
-      @(RightHipAngle), @(LeftHipAngle),
-      @(RightKneeAngle), @(LeftKneeAngle)
+      @(LeftElbowAngle),
+      @(LeftShoulderAngle),
+      @(LeftHipAngle),
+      @(LeftKneeAngle),
+      @(RightElbowAngle),
+      @(RightShoulderAngle),
+      @(RightHipAngle),
+      @(RightKneeAngle)
+  
     ];
     
     
     
-       for(int i = 0; i < anglesOfInterest.count; i++){
-         [angles_40frame setObject:anglesOfInterest[i] forKeyedSubscript:@[@0,@(count), @(i)]];
-       }
-     
+   
     
     
     //[angles_40frame setObject: anglesOfInterest forKeyedSubscript:@[@1, @(count)]];
     //angles_40frame[count] = anglesOfInterest;
-    count++; //incriment count after each subsequent frame
-    
-    
     //custom GRU model load:
-    GRUsmd *model = [[GRUsmd alloc] init];
+    //GRUsmd *model = [[GRUsmd alloc] init];
     //VNCoreMLModel *_m = [VNCoreMLModel modelForMLModel:model error:nil];
    
     
@@ -236,18 +271,43 @@ BOOL nilValuefound = NO;
     */
     //model prediction:
     
+    for(int i = 0; i < anglesOfInterest.count; i++){
+      if(isnan([anglesOfInterest[i] doubleValue])){
+        [angles_40frame setObject:@0.0 forKeyedSubscript:@[@0, @(count), @(i)]];
+      }else{
+        [angles_40frame setObject:anglesOfInterest[i] forKeyedSubscript:@[@0, @(count), @(i)]];
+
+      }
+    };
+    
+    count++; //incriment count after each subsequent frame
     
     
-    if(count == 40){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
+
+    if(count == 39){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
+      
+
+    
+      NSMutableArray *temp = [[NSMutableArray alloc] init];
       GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
       GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
       
+      for(int x = 0; x < model_output.Identity.count; x++){
+        [temp addObject:model_output.Identity[x]];
+      }
       NSString *label = getLabel(model_output.Identity);
-      
+     
+      /*
+      NSMutableArray *confidenceValues = [NSMutableArray arrayWithCapacity:model_output.Identity.count];
+      for (int i = 0; i < model_output.Identity.count; i++) {
+        [confidenceValues addObject:model_output.Identity[i]];
+      }
+       */
       count = 0;
-  
+
+      
       return @[
-        jointNames,
+        @(count),
         poses,
         @[
           @[@(RightElbowAngle), @(LeftElbowAngle)],
@@ -255,24 +315,32 @@ BOOL nilValuefound = NO;
           @[@(RightHipAngle), @(LeftHipAngle)],
           @[@(RightKneeAngle), @(LeftKneeAngle)]
         ],
-        label //predictions
+        label, //predictions,
+        temp //montioring size
       ];
     }else{
       return @[
-        jointNames,
+       @(count), //was: jointNames,
         poses,
-      @[],
-        @(count) // predictions
+       @[
+         @[@(RightElbowAngle), @(LeftElbowAngle)],
+         @[@(RightShoulderAngle), @(LeftShoulderAngle)],
+         @[@(RightHipAngle), @(LeftHipAngle)],
+         @[@(RightKneeAngle), @(LeftKneeAngle)]
+       ],
+       @-1, //no predicitons available yet,
+       @-1
       ];
     }
     
   };
   
     return @[
-      jointNames,
+      @(count),
       poses,
     @[],
-      @"Get into camera view" // predictions
+      @"Get into camera view",// predictions
+      @-1
     ];
   
 

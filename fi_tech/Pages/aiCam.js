@@ -17,6 +17,7 @@ import {Icon} from "react-native-elements";
 import { ImageBackground } from 'expo-image';
 import { ScrollView } from 'react-native-gesture-handler';
 import TestImg from "../assets/workoutCat.jpg"; 
+import Tts from 'react-native-tts';
 const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{}); 
  
 /*angles utilized for custom GRU prediction: 
@@ -81,10 +82,10 @@ const [camFlip, setCamFlip] = useState(true);
 const device = useCameraDevice(camFlip? "front" : "back", {}); 
 
 const customFormat = useCameraFormat(device, [{
-    fps: "max", 
+    fps: 30, 
     videoStabilizationMode:'off', 
     photoAspectRatio: 1/2,
-    //videoAspectRatio: 1/2
+    videoAspectRatio: 1/2
 }]) //fps set to max
 
  
@@ -118,7 +119,11 @@ const updateUIText = Worklets.createRunOnJS((v) =>{
    setTextLabel(v);
 })
 const camRef = useRef(); 
+Tts.setDefaultLanguage('en-IE');
+Tts.setDefaultVoice('com.apple.ttsbundle.Moira-compact');
 
+//Tts.addEventListener('tts-start', (event) => console.log("start", event));
+ 
 const frameProcessor_executableBody = (frame) =>{
     'worklet';
         try{ 
@@ -138,9 +143,28 @@ const frameProcessor_executableBody = (frame) =>{
 
       //console.log(res[2]); //console logs the 1 if frame count == 40 
 
-      console.log(textLabel);
-      
-     updateUIText(res[3]); 
+   // console.log(textLabel);
+   
+    //if(res[0] == 39){
+       
+            //updateUIText(res[3]);
+           // console.log("Anngles: ", res[2]);
+            //console.log("Prediction array: ", res[4]);
+   // }
+  
+
+
+    //console.log(res[0]);
+    if(res[4] != -1){
+    console.log('Hot encioding raw prediction arr:', res[4]); 
+    } 
+    //console.log(res[2]); 
+    if(res[0] == 0){
+    updateUIText(res[3]); 
+    console.log(res[3]); 
+   Tts.speak("Hello Universe")
+    }
+ 
      
 
 //      runOnJS(update_predictionLaebl)(res[3][0]); 
@@ -299,7 +323,9 @@ const customFrameProcessor = useSkiaFrameProcessor((frame) =>{
    jointId = 16; 
   rect = Skia.XYWHRect( frame.width* res[1][0]['left_shoulder_1_joint']['x'], frame.height*res[1][0]['left_shoulder_1_joint']['y'] , 10, 10)
   frame.drawRect(rect, paint);
+ 
 
+  
    
   /**/
 
@@ -347,17 +373,18 @@ const flipIcon = (
          />
         {flipIcon}
 
-         <View style = {{ alignSelf:"center", bottom: 0, backgroundColor:"white", 
-                height: Dimensions.get("screen").height*.25,
-                width:Dimensions.get("screen").width,
+         <View style = {{ alignSelf:"center", bottom: 340, backgroundColor:"white", 
+                height: Dimensions.get("screen").height*.07,
+                width:Dimensions.get("screen").width*.75,
                 position:"absolute",
                 borderTopEndRadius: 25,
                 borderTopLeftRadius: 25,
+                borderRadius: 25, 
                 alignItems:"center",
                 justifyContent:"center",
+            
            
             }}>
-            <Animated.Text style = {{color: "black", fontSize: 20}} >""</Animated.Text>
             <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabel}</Animated.Text>
             </View>
             <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
