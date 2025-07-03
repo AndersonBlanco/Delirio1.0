@@ -9,10 +9,14 @@
 #import <Vision/Vision.h>
 #import <CoreML/CoreML.h>
 #import <Foundation/Foundation.h>
+#import <dispatch/dispatch.h>
+
 #import "GRUsmd.h"
 #import <math.h>
+#import "TTS.h"
 
-double getAngle(NSArray *jointTrio){ // get angle method
+
+double getAngle(NSArray *jointTrio, BOOL normalize){ // get angle method
   
   if (jointTrio == nil || jointTrio.count != 3) {
         return 0.0;
@@ -26,12 +30,12 @@ double getAngle(NSArray *jointTrio){ // get angle method
         return 0.0;
     }
     
-    double x1 = [p1[@"x"] doubleValue];
-    double y1 = [p1[@"y"] doubleValue];
-    double x2 = [p2[@"x"] doubleValue];
-    double y2 = [p2[@"y"] doubleValue];
-    double x3 = [p3[@"x"] doubleValue];
-    double y3 = [p3[@"y"] doubleValue];
+    double x1 = fabs([p1[@"x"] doubleValue]);
+    double y1 = fabs([p1[@"y"] doubleValue]);
+    double x2 = fabs([p2[@"x"] doubleValue]);
+    double y2 = fabs([p2[@"y"] doubleValue]);
+    double x3 = fabs([p3[@"x"] doubleValue]);
+    double y3 = fabs([p3[@"y"] doubleValue]);
     
     // Calculate vectors from vertex to other points
     double v1x = x1 - x2;
@@ -49,19 +53,22 @@ double getAngle(NSArray *jointTrio){ // get angle method
     
     // Calculate dot product and angle
     double dotProduct = v1x * v2x + v1y * v2y;
+  double crossProduct = v1x*v2y - v1y*v2x;
+  
     double cosAngle = dotProduct / (mag1 * mag2);
     
     // Clamp to avoid numerical errors
-    cosAngle = fmax(-1.0, fmin(1.0, cosAngle));
+    //cosAngle = fmax(-1.0, fmin(1.0, cosAngle));
     
-  return acos(cosAngle) * (180.0 / M_PI)/180; 
+  if(normalize){
+    return fabs(acos(cosAngle) * (180.0 / M_PI));
+  }else{
+    return fabs(acos(cosAngle) * (180.0 / M_PI));
+  }
 };
 
-NSString* getLabel(MLMultiArray *pred){
-  int maxConfidenceIndex_in_pred = 1;
-  NSArray *labelArray = @[@"good jab", @"bad jab - knee level lack",
-                         @"good straight", @"bad straight, lack of rotation",@"good rest", @"bad rest, wrong stance",
-                          @"good kick", @"bad kick, don't lounge leg out"];
+int getLabel(MLMultiArray *pred){
+  int maxConfidenceIndex_in_pred = 0;
   
   for(int i = 0; i < 8; i++){
     if([pred[maxConfidenceIndex_in_pred] doubleValue] < [pred[i] doubleValue]){
@@ -69,7 +76,8 @@ NSString* getLabel(MLMultiArray *pred){
     }
   }
   
-  return labelArray[maxConfidenceIndex_in_pred];
+ 
+  return maxConfidenceIndex_in_pred;
 }
 
 @interface poseDetectionPlugin : FrameProcessorPlugin{
@@ -78,6 +86,12 @@ NSString* getLabel(MLMultiArray *pred){
   BOOL nilValuefound;
   MLMultiArray *angles_40frame;
   GRUsmd *model;
+  NSArray *labelArray;
+  BOOL moveWindowIsOpen;
+  NSTimeInterval lastSampleTimestamp;
+  NSTimeInterval sampleInterval;
+  TTS *tts;
+  int maxConf_idx;
 }
 @end
 
@@ -93,16 +107,78 @@ NSString* getLabel(MLMultiArray *pred){
      reached40 = false;
      nilValuefound = NO;
     angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
-     
     model = [[GRUsmd alloc] init];
+    self->moveWindowIsOpen = YES;
+     self->lastSampleTimestamp = -1.0;
+     self->sampleInterval = 5.0 / 40.0; // e.g. sample at 30 fps
+     self->tts = [[TTS alloc] init];
+     self->maxConf_idx = -1;
+     labelArray = @[
+       @"good jab",
+       @"bad jab - knee level lack",
+       
+       @"good straight",
+       @"bad straight, lack of rotation",
+       
+       @"good rest",
+       @"bad rest, wrong stance",
+       
+       @"good kick",
+       @"bad kick, don't lounge leg out"];
+     
+     //initiate audio session:
+     AVAudioSession *session = [AVAudioSession sharedInstance];
+     
+     NSLog(@"Output route: %@", [[AVAudioSession sharedInstance] currentRoute]);
+     
+     NSError *audioSessionError = nil;
+
+     BOOL success = [session setCategory:AVAudioSessionCategoryPlayback
+                             withOptions:AVAudioSessionCategoryOptionMixWithOthers
+                                   error:&audioSessionError];
+
+     if (!success) {
+       NSLog(@"Failed to set audio session category: %@", audioSessionError.localizedDescription);
+     }
+
+     success = [session setActive:YES error:&audioSessionError];
+     if (!success) {
+       NSLog(@"Failed to activate audio session: %@", audioSessionError.localizedDescription);
+     }
+     
   }
+  if (_error) {
+             NSLog(@"Error initializing MLMultiArray: %@", _error.localizedDescription);
+         } else {
+             // Initialize all values to 0
+             for (int frame = 0; frame < 40; frame++) {
+                 for (int angle = 0; angle < 8; angle++) {
+                     [angles_40frame setObject:@0.0 forKeyedSubscript:@[@0, @(frame), @(angle)]];
+                 }
+             }
+         }
   return self;
 }
 
 
 - (id _Nullable)callback:(Frame* _Nonnull)frame
            withArguments:(NSDictionary* _Nullable)arguments {
+
   
+  BOOL userStrikedOut = NO;
+  if(arguments[@"userStrikedOut"] != nil){
+    userStrikedOut = [arguments[@"userStrikedOut"] boolValue];
+  };
+  
+  /*
+  if(self->maxConf_idx > 0){
+    if(userStrikedOut){
+      [tts speak: labelArray[maxConf_idx]];
+    }
+  }
+  */
+  
+
   NSError *error;
  
   
@@ -116,11 +192,48 @@ NSString* getLabel(MLMultiArray *pred){
   NSMutableArray *jointNames = [NSMutableArray array];
 
   CMSampleBufferRef buffer = frame.buffer;
-  UIImageOrientation orientation = frame.orientation;
+  //time component execution to handle consistent frame prediction and extract per desired time elapse
+  CMTime timestamp = CMSampleBufferGetPresentationTimeStamp(buffer);
+  NSTimeInterval currentTimeSec = CMTimeGetSeconds(timestamp);
+  
+  if (self->lastSampleTimestamp < 0) {
+    self->lastSampleTimestamp = currentTimeSec;
+  }
+  
+ // UIImageOrientation orientation = frame.orientation;
   // code goes here
+  /**
+  //native based drawing test:----------------
+  CVImageBufferRef *imgBuffer = CMSampleBufferGetImageBuffer(buffer);
+  CVPixelBufferLockBaseAddress(imgBuffer, 0);
+  OSType pixelFormat = CVPixelBufferGetPixelFormatType(imgBuffer);
+  size_t width = CVPixelBufferGetWidth(imgBuffer);
+  size_t height = CVPixelBufferGetHeight(imgBuffer);
+  size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imgBuffer);
+  void *baseAddress = CVPixelBufferGetBaseAddress(imgBuffer);
+  
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+  
+  CGContextRef ctxRef = CGBitmapContextCreate(baseAddress, width, height, 8, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedFirst |  kCGBitmapByteOrder32Little);
+  
+  //drawing section : START:
+  CGContextSetFillColorWithColor(ctxRef, [[UIColor redColor] CGColor]);
+  CGContextFillRect(ctxRef, CGRectMake(50,25,100, 100));
+  //drawing section : END
+  
+  
+  //release the altered color-space and cotext:
+  CGColorSpaceRelease(colorSpace);
+  CGContextRelease(ctxRef);
+  CVPixelBufferUnlockBaseAddress(imgBuffer, 0);
+  //--------------------------------------
+  */
+  
   
   //setting up VNHumanBodyPoseDetection class from Vision framework
-  VNImageRequestHandler *requestHandler = [[VNImageRequestHandler alloc] initWithCMSampleBuffer:buffer options:@{}];
+  VNImageRequestHandler *requestHandler = [[VNImageRequestHandler alloc] initWithCMSampleBuffer:buffer options:@{
+   // VNImageOptionOrientation: @(orientation)
+  }];
 
   
   VNDetectHumanBodyPoseRequest *request = [[VNDetectHumanBodyPoseRequest alloc] init];
@@ -132,24 +245,29 @@ NSString* getLabel(MLMultiArray *pred){
      NSLog(@"Human body pose detection failed: %@", error.localizedDescription);
      return nil; // Or handle the error appropriately
    }
-  NSMutableDictionary *joints = [NSMutableDictionary dictionary];
+//  NSMutableDictionary *joints = [NSMutableDictionary dictionary];
  
 
   NSMutableArray *poses = [NSMutableArray array];
   
   for(VNRecognizedObjectObservation *observation in request.results){
+    //lock buffer address here
+    
     if ([observation isKindOfClass:[VNHumanBodyPoseObservation class]]) {
       VNHumanBodyPoseObservation *poseObserv = (VNHumanBodyPoseObservation*)observation;
-   
+      NSMutableDictionary *joints = [NSMutableDictionary dictionary];
+
+      
       NSArray<VNHumanBodyPoseObservationJointName> *allJoints= [poseObserv availableJointNames];
       
       for(VNHumanBodyPoseObservationJointName j in allJoints){
+        
         [jointNames addObject: j];
         NSError *jError = nil;
         VNRecognizedPoint *recognPoint = [poseObserv recognizedPointForJointName:j error:&jError];
         if(recognPoint != nil && recognPoint.confidence>0.0){
         
-          CGPoint normPoint = CGPointMake(recognPoint.location.x, 1.0 - recognPoint.location.y);
+          CGPoint normPoint = CGPointMake(recognPoint.location.x, 1.0 -  recognPoint.location.y); //was mirrored with 1.0 - recognPoint.location.y
           if(recognPoint == nil){
             nilValuefound = YES;
           }else{
@@ -166,7 +284,7 @@ NSString* getLabel(MLMultiArray *pred){
       
       }
       
-      [poses addObject:joints];
+      [poses addObject:[joints copy]];
       /*
       VNHumanBodyPose3DPoint *rightAnkle = [poseObservation recognizedPointForJointName:VNHumanBodyPoseObservationJointNameRightAnkle error:nil];
            if (rightAnkle) {
@@ -178,9 +296,8 @@ NSString* getLabel(MLMultiArray *pred){
            }
        */
       
-      
-   
     }
+    //unlock buffer address here.
   }
   
   //const allJoints = ["right_upLeg_joint", "right_forearm_joint", "left_leg_joint", "left_hand_joint", "left_ear_joint", "left_forearm_joint", "right_leg_joint", "right_foot_joint", "right_shoulder_1_joint", "neck_1_joint", "left_upLeg_joint", "left_foot_joint", "root", "right_hand_joint", "left_eye_joint", "head_joint", "right_eye_joint", "right_ear_joint", "left_shoulder_1_joint"] -------------> utilize to extarct index_TO_joinName from array joints[index] = {name: ..., x: .., y: ..}
@@ -204,23 +321,41 @@ NSString* getLabel(MLMultiArray *pred){
     [temp addObject:arr];
   }
 */
-  if(joints[@"left_shoulder_1_joint"] != nil && joints[@"left_forearm_joint"] != nil && joints[@"left_hand_joint"] != nil && joints[@"left_upLeg_joint"] != nil && joints[@"left_leg_joint"] != nil && joints[@"left_foot_joint"] != nil && joints[@"right_shoulder_1_joint"] != nil && joints[@"right_forearm_joint"] != nil && joints[@"right_hand_joint"] != nil && joints[@"right_upLeg_joint"] != nil && joints[@"right_leg_joint"] != nil && joints[@"right_foot_joint"] != nil){
+  
+  if(!moveWindowIsOpen || userStrikedOut){
+    return @[
+      @(count),
+      poses,
+    @[],
+       @"Wait for break to end",// predictions, could also be any other string
+      @0, //max confidence index | returns 0 when unavailable
+      @(moveWindowIsOpen) //if this is false, then the string above likey is true, else, string above ,ight not fit context of situation
+    ];
+  }
+  
+  
+  
+  
+  
+  NSDictionary *latestJoints = [poses lastObject];
+  
+  if( latestJoints[@"left_shoulder_1_joint"] != nil && latestJoints[@"left_forearm_joint"] != nil && latestJoints[@"left_hand_joint"] != nil && latestJoints[@"left_upLeg_joint"] != nil && latestJoints[@"left_leg_joint"] != nil && latestJoints[@"left_foot_joint"] != nil && latestJoints[@"right_shoulder_1_joint"] != nil && latestJoints[@"right_forearm_joint"] != nil && latestJoints[@"right_hand_joint"] != nil && latestJoints[@"right_upLeg_joint"] != nil && latestJoints[@"right_leg_joint"] != nil && latestJoints[@"right_foot_joint"] != nil){
     
-    double RightElbowAngle = getAngle(@[joints[@"left_shoulder_1_joint"], joints[@"left_forearm_joint"], joints[@"left_hand_joint"]]);
+    double RightElbowAngle = getAngle(@[latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_forearm_joint"], latestJoints[@"left_hand_joint"]], NO);
     
-    double LeftElbowAngle = getAngle(@[joints[@"right_shoulder_1_joint"], joints[@"right_forearm_joint"], joints[@"right_hand_joint"]]);
+    double LeftElbowAngle = getAngle(@[latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_forearm_joint"], latestJoints[@"right_hand_joint"]], YES);
     
-    double RightShoulderAngle = getAngle(@[joints[@"left_upLeg_joint"], joints[@"left_shoulder_1_joint"], joints[@"left_forearm_joint"]]);
+    double RightShoulderAngle = getAngle(@[latestJoints[@"left_upLeg_joint"], latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_forearm_joint"]], NO);
     
-    double LeftShoulderAngle = getAngle(@[joints[@"right_upLeg_joint"], joints[@"right_shoulder_1_joint"], joints[@"right_forearm_joint"]]);
+    double LeftShoulderAngle = getAngle(@[latestJoints[@"right_upLeg_joint"], latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_forearm_joint"]], YES);
     
-    double RightHipAngle = getAngle(@[joints[@"left_shoulder_1_joint"], joints[@"left_upLeg_joint"], joints[@"left_leg_joint"]]);
+    double RightHipAngle = getAngle(@[latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_upLeg_joint"], latestJoints[@"left_leg_joint"]], NO);
     
-    double LeftHipAngle = getAngle(@[joints[@"right_shoulder_1_joint"], joints[@"right_upLeg_joint"], joints[@"right_leg_joint"]]);
+    double LeftHipAngle = getAngle(@[latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_upLeg_joint"], latestJoints[@"right_leg_joint"]], YES);
 
-    double RightKneeAngle = getAngle(@[joints[@"left_upLeg_joint"], joints[@"left_leg_joint"], joints[@"left_foot_joint"]]);
+    double RightKneeAngle = getAngle(@[latestJoints[@"left_upLeg_joint"], latestJoints[@"left_leg_joint"], latestJoints[@"left_foot_joint"]], NO);
     
-    double LeftKneeAngle = getAngle(@[joints[@"right_upLeg_joint"], joints[@"right_leg_joint"], joints[@"right_foot_joint"]]);
+    double LeftKneeAngle = getAngle(@[latestJoints[@"right_upLeg_joint"], latestJoints[@"right_leg_joint"], latestJoints[@"right_foot_joint"]], YES);
     
     
     
@@ -236,14 +371,15 @@ NSString* getLabel(MLMultiArray *pred){
 
     
     NSArray *anglesOfInterest = @[
+      @(RightElbowAngle),
+      @(RightShoulderAngle),
+      @(RightHipAngle),
+      @(RightKneeAngle),
       @(LeftElbowAngle),
       @(LeftShoulderAngle),
       @(LeftHipAngle),
       @(LeftKneeAngle),
-      @(RightElbowAngle),
-      @(RightShoulderAngle),
-      @(RightHipAngle),
-      @(RightKneeAngle)
+
   
     ];
     
@@ -271,31 +407,46 @@ NSString* getLabel(MLMultiArray *pred){
     */
     //model prediction:
     
-    for(int i = 0; i < anglesOfInterest.count; i++){
-      if(isnan([anglesOfInterest[i] doubleValue])){
-        [angles_40frame setObject:@0.0 forKeyedSubscript:@[@0, @(count), @(i)]];
-      }else{
-        [angles_40frame setObject:anglesOfInterest[i] forKeyedSubscript:@[@0, @(count), @(i)]];
-
+    if (currentTimeSec - lastSampleTimestamp >= sampleInterval) {
+      lastSampleTimestamp = currentTimeSec;
+      for (int i = 0; i < anglesOfInterest.count; i++) {
+        double angleValue = [anglesOfInterest[i] doubleValue];
+        if (isnan(angleValue) || isinf(angleValue)) {
+          [angles_40frame setObject:@0.0 forKeyedSubscript:@[@0, @(count), @(i)]];
+        } else {
+          [angles_40frame setObject:anglesOfInterest[i] forKeyedSubscript:@[@0, @(count), @(i)]];
+        }
       }
-    };
-    
-    count++; //incriment count after each subsequent frame
-    
+      
+  
+      count++; //incriment count after each subsequent frame
+    }
     
 
-    if(count == 39){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
+    if(count >= 40){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
+    
+      //set moveWindowIsOpen to false since now the frame cap ha sbeen reached, so the minor break for / to improve GRU model preformance must initiate
+      self->moveWindowIsOpen = NO;
+      //[tts speak:self->labelArray[self->maxConf_idx]];
       
+     //automatic start timer
+      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+          self->moveWindowIsOpen = YES;
+          self->count = 0;
+        self->lastSampleTimestamp =-1.0;
+      });
+      
+      GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
 
     
       NSMutableArray *temp = [[NSMutableArray alloc] init];
-      GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
-      GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
+      //GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
+   
       
       for(int x = 0; x < model_output.Identity.count; x++){
         [temp addObject:model_output.Identity[x]];
       }
-      NSString *label = getLabel(model_output.Identity);
+      self->maxConf_idx = getLabel(model_output.Identity);
      
       /*
       NSMutableArray *confidenceValues = [NSMutableArray arrayWithCapacity:model_output.Identity.count];
@@ -303,9 +454,10 @@ NSString* getLabel(MLMultiArray *pred){
         [confidenceValues addObject:model_output.Identity[i]];
       }
        */
-      count = 0;
-
+      //count = 0;
+// temp,//raw prediciotn hot-encoding array
       
+
       return @[
         @(count),
         poses,
@@ -315,10 +467,12 @@ NSString* getLabel(MLMultiArray *pred){
           @[@(RightHipAngle), @(LeftHipAngle)],
           @[@(RightKneeAngle), @(LeftKneeAngle)]
         ],
-        label, //predictions,
-        temp //montioring size
+        labelArray[maxConf_idx], //predictions,
+        @(maxConf_idx),
+        @(moveWindowIsOpen)
       ];
     }else{
+      
       return @[
        @(count), //was: jointNames,
         poses,
@@ -328,19 +482,21 @@ NSString* getLabel(MLMultiArray *pred){
          @[@(RightHipAngle), @(LeftHipAngle)],
          @[@(RightKneeAngle), @(LeftKneeAngle)]
        ],
-       @-1, //no predicitons available yet,
-       @-1
+       @"Wait for break to be over", //no predicitons available yet,
+       @0, //max confiddence Index  | returns 0 when unavailable
+       @(moveWindowIsOpen)
       ];
     }
     
-  };
-  
+  }
+
     return @[
       @(count),
       poses,
     @[],
       @"Get into camera view",// predictions
-      @-1
+      @0, //max confidence index  | returns 0 when unavailable
+      @(moveWindowIsOpen)
     ];
   
 

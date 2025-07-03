@@ -6,11 +6,15 @@ import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 import TestImg from "../assets/workoutCat.jpg";
 import { styles } from './aiCam';
-
+import * as Speech from "expo-speech"; 
+import { PermissionStatus } from 'expo-permissions';
+import * as Permissions from "expo-permissions"; 
+import { Audio } from 'expo-av';
 
 export default function Lessons(){
-const nav = useNavigation(); 
 
+ 
+const nav = useNavigation(); 
 const LessonTemplate = ({title, imgSrc})  =>{
     return(
         <ImageBackground style = {{alignSelf:"center", height: 200, backgroundColor:"blue", width: 125, borderRadius: 10,overflow: 'hidden'}} source={imgSrc}>
@@ -20,35 +24,42 @@ const LessonTemplate = ({title, imgSrc})  =>{
         </ImageBackground>
     )
 };
-
 const lessons = [
     {
-        title: "Punches", 
-    funddamental: {
-        title: "Fundamental Punches" , 
-        data: [ //visually linear punches (ie linear eye level targets)
+        title:"Punches", 
+        funddamentals:{
+            title: "Fundamentals",
+            data: [ //visually linear punches (ie linear eye level targets)
             {
         title: "Jab", 
         imgSrc: TestImg
-    },    {
+            },  
+            {
         title: "Straight-Right", 
         imgSrc: TestImg 
-    },    {
+            },   
+            {
         title: "Right Upper-Cut", 
         imgSrc: TestImg
-    },    {
+            },   
+            {
         title: "Left Upper-Cut", 
         imgSrc: TestImg
-    },{
+            },
+            {
         title: "Right Hook", 
         imgSrc: TestImg
-    },     {
+            },     
+            {
         title: "Left Hook", 
         imgSrc: TestImg
-    },     
-]
-    },
-    intermediate:[ //visually linear punches (ie linear eye level targets)
+            },
+                ]
+            
+        },
+        intermediate:{
+            title:"Intermediate",
+            data: [ //visually linear punches (ie linear eye level targets)
     {
         title: "Low-Jab", 
         imgSrc: TestImg
@@ -71,23 +82,16 @@ const lessons = [
         title: "Right-Hook: Right Rib", //similar to Right-Hook(pancreas/shoulderplex) target but less of resemblence to an uppere cut than Right-Hook(pancreas/shoulderplex) target
         imgSrc: TestImg
     },  
+        ]
+        }
+    },
+
+    {
+
+
+    }
 ]
-},
 
-{
-    title: "Defense", 
-    lessons:[
-
-    ]
-},
-{
-    title: "Footwork", 
-    lessons:[
-
-    ]
-}
-
-];
 
 const Section = ({sectionTitle,sectionLssons}) =>{
     return (
@@ -129,12 +133,48 @@ const Section = ({sectionTitle,sectionLssons}) =>{
     )
 }
 
+const Punches = (
+    <>
+             <Section sectionTitle={lessons[0].funddamentals.title} sectionLssons={lessons[0].funddamentals.data}/>
+              <Section sectionTitle={lessons[0].intermediate.title} sectionLssons={lessons[0].intermediate.data}/>
+              <Section sectionTitle={lessons[0].funddamentals.title} sectionLssons={lessons[0].funddamentals.data}/>
+              <Section sectionTitle={lessons[0].funddamentals.title} sectionLssons={lessons[0].funddamentals.data}/>
+              </>
+);
+
+const LessonTypeConstruct = ({txt, img}) =>
+    (
+        <TouchableOpacity style = {{backgroundColor:"rgba(0,0,0,.5)", display:"contents"}}>
+            <ImageBackground source={img} 
+            style = {{
+                height: 340,
+                 width: 150,
+                  alignItems:"center",
+                   justifyContent:"center",
+                
+                   }}>
+            <Text style ={{color:"white", fontWeight:"500"}}>{txt}</Text>
+            </ImageBackground>
+            </TouchableOpacity>
+    ); 
+
+const LessonTypes = (
+    <>
+    <TouchableOpacity>
+        <LessonTypeConstruct txt = {"Punches"} img={TestImg} />
+        <LessonTypeConstruct txt = {"Punches"} img={TestImg} />
+        <LessonTypeConstruct txt = {"Punches"} img={TestImg} />
+        <LessonTypeConstruct txt = {"Punches"} img={TestImg} />
+    </TouchableOpacity>
+    </>
+)
 
 return(
          <View style = {{
                  flex: 1,
                  backgroundColor: "white",
                 }}>
+     
             <StatusBar barStyle="light-content" backgroundColor="#000" />
               <SideNav buttonColor={'black'} style = {{zIndex: 1, top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
            <View style = {[styles.column, {
@@ -144,15 +184,19 @@ return(
              height: Dimensions.get('screen').height,
              backgroundColor:"transparent", 
              alignItems:"center",
-              justifyContent:"center",}]}> 
+              justifyContent:"center",
+              display:"contents",
+
+              }]}> 
               <ScrollView horizontal = {false} style = {{marginBlock: 30, height: Dimensions.get("screen").height}}>
-    
-              <Section sectionTitle={lessons[0].funddamental.title} sectionLssons={lessons[0].funddamental.data}/>
-              <Section sectionTitle={lessons[0].funddamental.title} sectionLssons={lessons[0].funddamental.data}/>
-              <Section sectionTitle={lessons[0].funddamental.title} sectionLssons={lessons[0].funddamental.data}/>
-              <Section sectionTitle={lessons[0].funddamental.title} sectionLssons={lessons[0].funddamental.data}/>
+                {LessonTypes}
          </ScrollView>
         </View>
+
+        <View style = {{backgroundColor:"red", position:"absolute", bottom: 100}}>  
+        
+        </View>
+
         </View>
 )
 }

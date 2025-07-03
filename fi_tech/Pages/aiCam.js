@@ -1,25 +1,37 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules,  } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import {Animated, View, ActivityIndicator, StyleSheet, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, Easing,  } from 'react-native';
+import {Text, VStack} from "swiftui-react-native"; 
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
 import { VisionCameraProxy, Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor, runAsync, runAtTargetFps} from 'react-native-vision-camera';
-import Animated, { createWorkletRuntime, runOnJS, useDerivedValue } from 'react-native-reanimated';
+import { createWorkletRuntime, runOnJS, useAnimatedReaction, useDerivedValue } from 'react-native-reanimated';
 import { useSkiaFrameProcessor } from 'react-native-vision-camera';
-import {Skia} from '@shopify/react-native-skia';
+import {Skia, Path, rect} from '@shopify/react-native-skia';
 import storage from '../components/storage';
-import { useSharedValue, useWorklet, worklet, Worklets } from 'react-native-worklets-core';
+import { useSharedValue, useWorklet, worklet, Worklets, start } from 'react-native-worklets-core';
 //import { useSharedValue } from 'react-native-worklets-core';
 //import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 //import { RNMediapipe } from '@thinksys/react-native-mediapipe';
-import { loadTensorflowModel, useTensorflowModel } from 'react-native-fast-tflite';
+import { loadTensorflowModel, useTensorflowModel,} from 'react-native-fast-tflite';
 import * as tf from "react-native-fast-tflite"; 
 import {Icon} from "react-native-elements"; 
-import { ImageBackground } from 'expo-image';
-import { ScrollView } from 'react-native-gesture-handler';
 import TestImg from "../assets/workoutCat.jpg"; 
-import Tts from 'react-native-tts';
+import * as Speech from "expo-speech"; 
+
+import { GLView } from 'expo-gl';
+import { Renderer } from 'expo-three';
+import * as Permissions from "expo-permissions"; 
+import { Audio } from 'expo-av';
+
+//import user data zustand state handlers from zustand store: 
+import {useUserState} from "../components/zustandStore"; 
+import { ScreenHeight, ScreenWidth } from 'react-native-elements/dist/helpers';
+import { Pressable } from 'react-native-gesture-handler';
+import { jabAnimationFrames } from '../assets/skeletoAnimations';
+
+const {TTS} = NativeModules; 
 const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{}); 
- 
+
 /*angles utilized for custom GRU prediction: 
 
        rightElbow_angle,  --> 'right_forearm_joint' in VNHumanBodyPoseDetection
@@ -33,59 +45,130 @@ const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{});
         leftKnee_angle
 */
 
-  
+
 export default function AICam({theme}){
-//custom GRU2 model initialization 
+   // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
+   const strikes = useSharedValue(0);
+   const userGotStrikedOut = useSharedValue(false);
+   const userIncorrectMoves = useSharedValue(0);
+   const userCorrectMoves = useSharedValue(0);
 
-//const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect", {}); 
- 
-    /*
-    //expo-camera
-     const [permission, requestPermission] = useCameraPermissions();
-   const [facing, setFacing] = useState("front")
-
-    if(!permission){
-        return(
-            <>
-                <StatusBar barStyle="light-content" backgroundColor="#000" />
-                <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera permission loading.....</Text>
-            </>
-        )
-    }
-
-    if(!permission.granted){
-        requestPermission();
-        return(
-            <>
-                <StatusBar barStyle="light-content" backgroundColor="#000" />
-                <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera permission denied. Requesting.....</Text>
-            </>
-        )
-    }
-
-    /*
-      <CameraView
-                facing={facing}
-                active={true}
-                style = {{
-                    height: Dimensions.get("screen").height,
-                    width:Dimensions.get("screen").width,
-                    position:"absolute"
-
-                }}
-
-                />
+   /*
+    const [userState, steUserState] = useState({
+        userStrikes: useDerivedValue(() => strikes.value),
+        userStrikedOut: userGotStrikedOut.value
+    });
     */
-        /**/
+
+    const resetUserState = () =>{
+        strikes.value = 0; 
+        userGotStrikedOut.value = false; 
+        console.log('user stats resetted')
+    }
+
+    const incrimentUserStrikes_alt = () =>{ //also responsible for incirmenting the variable userIncorrectMoves
+
+       let val = strikes.value + 1; 
+        if (val >=3){
+          strikes.value = 0;
+          userGotStrikedOut.value = true; 
+          
+          if(textLabel!= 'None'){
+           TTS.speak(textLabel); 
+          }
+
+        }else{
+          strikes.value = val; 
+          userGotStrikedOut.value= false; 
+        }
+        userIncorrectMoves.value++; 
+        //console.log("incirmented to: ", strikes.value); 
+    };
+
+    const incrimentUserStrikes = Worklets.createRunOnJS(() =>{
+        'worklet';
+        let val = strikes.value + 1; 
+        if (val >=4){ //extra to 4, not 3 for padding space
+          strikes.value = 0;
+          userGotStrikedOut.value = true; 
+          
+
+          TTS.speak(textLabel); 
+  
+        }else{
+          strikes.value = val; 
+          userGotStrikedOut.value = false; 
+        }
+
+        //console.log("incirmented to: ", strikes.value); 
+    }); 
+
+//const {userStrikes, userStrikedOut} = userState; 
+
+ //const model = useTensorflowModel(require('../components/pose_landmark_lite.tflite')); model loads correctly + no recursive reloading 
+
+
+//custom GRU2 model initialization 
+//Speech.speak("Hello Universe"); 
+//const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect", {}); 
+
+/*
+//audio configurations + Permissions:
+  Permissions.getAsync("audioRecording");
+
+   //setting audio configurations
+   useEffect(() => {
+  Audio.setAudioModeAsync({
+    playsInSilentModeIOS: true,  // Required for iOS
+    staysActiveInBackground: false,
+    shouldDuckAndroid: false,
+    playThroughEarpieceAndroid: false,
+  });
+}, []);
+
+
+const Speak = async (txt) =>{
+    if(!Speech.isSpeakingAsync()){
+    Speech.speak(txt, {
+        pitch: 1,
+        language:"en", 
+        rate: 1, 
+        onError: (e) => console.log("Error on speech: ", e),
+        onDone: () => console.log("Done Speech")
+    })
+
+    }else{
+        //await Speech.stop(); //stop any previous speech sessions
+    }
+}
+*/
+
 const {hasPermission, requestPermission} = useCameraPermission();
 const [camFlip, setCamFlip] = useState(true); 
 const device = useCameraDevice(camFlip? "front" : "back", {}); 
+const [poses, setPoses] = useState([]); 
+const [textLabel, setTextLabel] = useState("None"); 
+const textLabelSharedValm=useSharedValue('None');
+const moveWindowIsOpen = useSharedValue(true);
+const [moveWindowIsOpen_state,set_moveWindowIsOpen] = useState(true);
+//
+const [lessonPaused, setLessonPaused] = useState(false); 
+//
+const latestPoseRef = useRef(null);
+/*
+useAnimatedReaction(() => userGotIncorrectedMovement.value, (curr, prev) =>{
+    if(curr != prev){
+        //incrimentUserStrikes(0 )
+    }
+   // console.log(curr); 
+}, [userState]);
+*/
 
 const customFormat = useCameraFormat(device, [{
-    fps: 30, 
+    fps: 'max', 
     videoStabilizationMode:'off', 
-    photoAspectRatio: 1/2,
-    videoAspectRatio: 1/2
+    //photoAspectRatio: 1/2,
+    //videoAspectRatio: 1/2,
 }]) //fps set to max
 
  
@@ -113,27 +196,52 @@ if(!device){
     )
 }
 //let predictionLaebl = useSharedValue("None"); 
-const [textLabel, setTextLabel] = useState("None"); 
-const updateUIText = Worklets.createRunOnJS((v) =>{
-    //predictionLaebl.value = v; 
-   setTextLabel(v);
-})
-const camRef = useRef(); 
-Tts.setDefaultLanguage('en-IE');
-Tts.setDefaultVoice('com.apple.ttsbundle.Moira-compact');
 
-//Tts.addEventListener('tts-start', (event) => console.log("start", event));
+//const [frameH, setFrameHeight] = useState(0);
+//const [frameW, setFrameWidth] = useState(0);
+//const p = useSharedValue([]); 
+useAnimatedReaction(()=>textLabelSharedValm.value, (curr, prev) =>{
+ if(prev){
+    setTextLabel(curr); 
+    
+  }
  
+});
+
+const updateExternals = Worklets.createRunOnJS((v, moveWindowIsOpenVal, fH, fW) =>{
+    if(v != textLabel){
+       //  Speak(v); 
+    }
+
+   setTextLabel(v);
+    
+   //speak the changed text: 
+//setFrameHeight(fH); 
+//setFrameWidth(fW);
+});
+
+
+useAnimatedReaction(() =>{'worklet'; return moveWindowIsOpen.value}, (curr, prev) =>{
+    'worklet'; 
+    if(curr != prev){
+        Worklets.createRunOnJS(() =>{
+             set_moveWindowIsOpen(curr); 
+        })
+    }
+}, [set_moveWindowIsOpen])
+//Tts.addEventListener('tts-start', (event) => console.log("start", event));
+
+//below is the SKiaFrameProcessor execution - no longerused 
+/*
 const frameProcessor_executableBody = (frame) =>{
     'worklet';
         try{ 
         if(frame.pixelFormat == "rgb"){
-        let buffer = frame.toArrayBuffer();
-        let rgbObj = new Uint8Array(buffer); 
+        
         //console.log("rgb: ", rgbObj.slice(0,1))
 
         
-        
+ 
         let res = detectPlugin.call(frame);
         //res = JSON.parse(res); 
        //console.log(res[1][0]['right_shoulder_1_joint']);
@@ -152,17 +260,17 @@ const frameProcessor_executableBody = (frame) =>{
             //console.log("Prediction array: ", res[4]);
    // }
   
-
+    //console.log(res[3]); 
 
     //console.log(res[0]);
     if(res[4] != -1){
     console.log('Hot encioding raw prediction arr:', res[4]); 
-    } 
+    
     //console.log(res[2]); 
-    if(res[0] == 0){
-    updateUIText(res[3]); 
+  
+    updateExternals(res[3], res[1]); 
     console.log(res[3]); 
-   Tts.speak("Hello Universe")
+    //speak(res[3]); 
     }
  
      
@@ -179,9 +287,7 @@ const frameProcessor_executableBody = (frame) =>{
 
       return res; 
       
-    /*
-    
- LOG  {"head_joint": {"conf": 0.611328125, "name": "head_joint", "x": 0.2837872803211212, 
+    let exampleLog =  {"head_joint": {"conf": 0.611328125, "name": "head_joint", "x": 0.2837872803211212, 
  "y": 0.13709235191345215}, "left_ear_joint": {"conf": 0.5009765625, "name": "left_ear_joint", 
  "x": 0.28298014402389526, "y": 0.1261497139930725}, "left_eye_joint": {"conf": 0.59765625, 
  "name": "left_eye_joint", "x": 0.27875617146492004, "y": 0.1259964108467102}, 
@@ -209,7 +315,7 @@ const frameProcessor_executableBody = (frame) =>{
   "x": 0.3042963147163391, "y": 0.1582716703414917}, "right_upLeg_joint": {"conf": 0.7568359375, 
   "name": "right_upLeg_joint", "x": 0.3664237856864929, "y": 0.14343637228012085}, 
   "root": {"conf": 0.748291015625, "name": "root", "x": 0.3675010949373245, "y": 0.12780821323394775}}
- */
+ 
  
     }else{
         //console.log("pixel form != rgb")
@@ -222,112 +328,118 @@ const frameProcessor_executableBody = (frame) =>{
 }
 
 
-const allJoints = ["right_upLeg_joint", "right_forearm_joint", "left_leg_joint", "left_hand_joint", "left_ear_joint", "left_forearm_joint", "right_leg_joint", "right_foot_joint", "right_shoulder_1_joint", "neck_1_joint", "left_upLeg_joint", "left_foot_joint", "root", "right_hand_joint", "left_eye_joint", "head_joint", "right_eye_joint", "right_ear_joint", "left_shoulder_1_joint"]
 
 const customFrameProcessor = useSkiaFrameProcessor((frame) =>{
    'worklet';
     //runAtTargetFps(10000000000000000000, () =>{
+   // frame.translate(-10, -100);
+    
      frame.render(); 
    // })
    
 
    let res = frameProcessor_executableBody(frame); 
-   const centerX = frame.width*.1
-  const centerY = frame.height/1.5;
+   let w = frame.width; 
+   let sizeW = 5;  
+   let sizeH = 5;  
   
   try{
     //if(res[0]['right_shoulder_1_joint']['x'] != null || res[0]['right_shoulder_1_joint']['y'] != null){
 
     // right_shoulder_1_joint:
+    let angles = res[2]; //arranged in grouped angles per type of angle [rightType_x_angle, leftType_x_angle]
   let paint = Skia.Paint()
   paint.setColor(Skia.Color('red'));
   let jointId;  
   let rect; 
+
   
    
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_upLeg_joint']['x'], frame.height*res[1][0]['right_upLeg_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['right_upLeg_joint']['x'], frame.height*res[1][0]['right_upLeg_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_forearm_joint']['x'], frame.height*res[1][0]['right_forearm_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['right_forearm_joint']['x'], frame.height*res[1][0]['right_forearm_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
 
    
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_leg_joint']['x'], frame.height*res[1][0]['left_leg_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['left_leg_joint']['x'], frame.height*res[1][0]['left_leg_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
 
  
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_hand_joint']['x'], frame.height*res[1][0]['left_hand_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['left_hand_joint']['x'], frame.height*res[1][0]['left_hand_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
 
 
- /*
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_ear_joint']['x'], frame.height*res[1][0]['left_ear_joint']['y'] , 10, 10)
+ 
+  rect = Skia.XYWHRect( w* res[1][0]['left_ear_joint']['x'], frame.height*res[1][0]['left_ear_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
-*/
+
 
 
  
 
 
-   rect = Skia.XYWHRect( frame.width* res[1][0]['left_forearm_joint']['x'], frame.height*res[1][0]['left_forearm_joint']['y'] , 10, 10)
+   rect = Skia.XYWHRect( w* res[1][0]['left_forearm_joint']['x'], frame.height*res[1][0]['left_forearm_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
    
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_leg_joint']['x'], frame.height*res[1][0]['right_leg_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['right_leg_joint']['x'], frame.height*res[1][0]['right_leg_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
     
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_foot_joint']['x'], frame.height*res[1][0]['right_foot_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['right_foot_joint']['x'], frame.height*res[1][0]['right_foot_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
     
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_shoulder_1_joint']['x'], frame.height*res[1][0]['right_shoulder_1_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['right_shoulder_1_joint']['x'], frame.height*res[1][0]['right_shoulder_1_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint); jointId = 0; 
 
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_upLeg_joint']['x'], frame.height*res[1][0]['left_upLeg_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['left_upLeg_joint']['x'], frame.height*res[1][0]['left_upLeg_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
    
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_foot_joint']['x'], frame.height*res[1][0]['left_foot_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['left_foot_joint']['x'], frame.height*res[1][0]['left_foot_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
-
-   /*
-  rect = Skia.XYWHRect( frame.width* res[1][0]['root']['x'], frame.height*res[1][0]['root']['y'] , 10, 10)
-  frame.drawRect(rect, paint);
-*/
 
    
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_hand_joint']['x'], frame.height*res[1][0]['right_hand_joint']['y'] , 10, 10)
+  rect = Skia.XYWHRect( w* res[1][0]['root']['x'], frame.height*res[1][0]['root']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
 
-  /* 
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_eye_joint']['x'], frame.height*res[1][0]['left_eye_joint']['y'] , 10, 10)
-  frame.drawRect(rect, paint);
-       */
 
- 
-  rect = Skia.XYWHRect( frame.width* res[1][0]['head_joint']['x'], frame.height*res[1][0]['head_joint']['y'] , 10, 10)
+   
+  rect = Skia.XYWHRect( w* res[1][0]['right_hand_joint']['x'], frame.height*res[1][0]['right_hand_joint']['y'] , sizeW, sizeH)
   frame.drawRect(rect, paint);
-
-   /*
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_eye_joint']['x'], frame.height*res[1][0]['right_eye_joint']['y'] , 10, 10)
-  frame.drawRect(rect, paint);
-
-  rect = Skia.XYWHRect( frame.width* res[1][0]['right_ear_joint']['x'], frame.height*res[1][0]['right_ear_joint']['y'] , 10, 10)
-  frame.drawRect(rect, paint);
-*/
-
-   jointId = 16; 
-  rect = Skia.XYWHRect( frame.width* res[1][0]['left_shoulder_1_joint']['x'], frame.height*res[1][0]['left_shoulder_1_joint']['y'] , 10, 10)
-  frame.drawRect(rect, paint);
- 
 
   
+  rect = Skia.XYWHRect( w* res[1][0]['left_eye_joint']['x'], frame.height*res[1][0]['left_eye_joint']['y'] , sizeW, sizeH)
+  frame.drawRect(rect, paint);
+       
+
+ 
+  rect = Skia.XYWHRect( w* res[1][0]['head_joint']['x'], frame.height*res[1][0]['head_joint']['y'], sizeW, sizeH)
+  frame.drawRect(rect, paint);
+
    
-  /**/
+  rect = Skia.XYWHRect( w* res[1][0]['right_eye_joint']['x'], frame.height*res[1][0]['right_eye_joint']['y'] , sizeW, sizeH)
+  frame.drawRect(rect, paint);
+
+  rect = Skia.XYWHRect( w* res[1][0]['right_ear_joint']['x'], frame.height*res[1][0]['right_ear_joint']['y'] , sizeW, sizeH)
+  frame.drawRect(rect, paint);
+
+
+   jointId = 16; 
+  rect = Skia.XYWHRect( w* res[1][0]['left_shoulder_1_joint']['x'], frame.height*res[1][0]['left_shoulder_1_joint']['y'] , sizeW, sizeH)
+  frame.drawRect(rect, paint);
+ 
+
+  //draw angles: 
+  frame.drawTextBlob(angles[0][0],res[1][0]['left_forearm_joint']['x'], res[1][0]['left_forearm_joint']['y'],paint); 
+ 
+   
+
 
    // }
   }catch{
@@ -338,6 +450,79 @@ const customFrameProcessor = useSkiaFrameProcessor((frame) =>{
 
   
 }, [textLabel, detectPlugin]);
+/* */
+
+const updatePoses = Worklets.createRunOnJS((p) =>{
+    setPoses(p); 
+});
+
+const speakFeedback = Worklets.createRunOnJS((v, moveWIndowOpen_) =>{
+   if(!moveWIndowOpen_){
+          TTS.speak(v); //speak the feedback
+    }
+});
+
+//FLoat32 array buffer test:  START 
+/*
+const JOINT_NAMES = [
+  "root", "left_upLeg_joint", "left_leg_joint", "left_foot_joint",
+  "right_upLeg_joint", "right_leg_joint", "right_foot_joint",
+  "neck_1_joint", "head_joint",
+  "left_shoulder_1_joint", "left_forearm_joint", "left_hand_joint",
+  "right_shoulder_1_joint", "right_forearm_joint", "right_hand_joint",
+  "left_eye_joint", "right_eye_joint",
+  "left_ear_joint", "right_ear_joint"
+];
+var poseBuffer = new Float32Array(JOINT_NAMES*2);
+const updatePoseBuffer = (p) =>{
+}
+  */
+//FLoat32 array buffer test:  END
+ 
+const default_useFramePorcessor = useFrameProcessor((frame) =>{
+    'worklet'; 
+    let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value});
+    //console.log(res[0]); 
+    //console.log(res[3]); xx
+  
+    updatePoses(res[1]); 
+    //console.log(res[1]);
+    //console.log("GRU prediciton: ", res[3]); 
+   // console.log("MoveWIndowIsOpen: ", moveWindowIsOpen.value)
+   // console.log("UseGotStrikedOut: ", userGotStrikedOut.value)
+   //console.log("Angles: ", res[2]); 
+  // updateLatestPoseRef(res[1][0])
+    //latestPoseRef.current = res[1][0]; 
+    
+    if((res[4])>0 && res[4] %2 != 0){ //since all incorrect representing labels are at uneven indecies in the labelArray hot-encoding prediction output array
+       //  incrimentUserStrikes(); 
+       incrimentUserStrikes();
+       //console.log("ConfIdx: ", res[4]%2)
+
+      // console.log(strikes.value)
+       
+    }else{
+      userCorrectMoves.value++; 
+    };
+
+    //speakFeedback(res[3], res[5]); 
+
+    
+    if(!userGotStrikedOut.value){
+        if(moveWindowIsOpen.value && res[4] ){ //was if res[3] == 0
+       // updateExternals(res[3], res[5], frame.height, frame.width); 
+     
+          textLabelSharedValm = res[3]; 
+
+        //console.log(res[1]); 
+        }
+        //if res[5] == true:
+        moveWindowIsOpen.value = res[5]; 
+     
+    }
+     
+
+}, [userGotStrikedOut.value]);
 
 const flipIcon = (           
     <TouchableOpacity style = {{position:"absolute", top: 125, left: 22}} onPress={() => setCamFlip(!camFlip)}>
@@ -345,16 +530,400 @@ const flipIcon = (
     </TouchableOpacity>     
 );
 
+
+
+//const glRef = useRef(); 
+
+
+const allJoints = ["right_upLeg_joint", "right_forearm_joint", "left_leg_joint", "left_hand_joint", "left_forearm_joint", "right_leg_joint", "right_foot_joint", "right_shoulder_1_joint", "left_upLeg_joint", "left_foot_joint", "right_hand_joint", "head_joint", "left_shoulder_1_joint"];
+const SKELETON_CONNECTIONS = [
+  ["root", "left_upLeg_joint"],
+  ["root", "right_upLeg_joint"],
+  ["left_upLeg_joint", "left_leg_joint"],
+  ["left_leg_joint", "left_foot_joint"],
+  ["right_upLeg_joint", "right_leg_joint"],
+  ["right_leg_joint", "right_foot_joint"],
+  ["root", "neck_1_joint"],
+  ["neck_1_joint", "head_joint"],
+  ["neck_1_joint", "left_shoulder_1_joint"],
+  ["left_shoulder_1_joint", "left_forearm_joint"],
+  ["left_forearm_joint", "left_hand_joint"],
+  ["neck_1_joint", "right_shoulder_1_joint"],
+  ["right_shoulder_1_joint", "right_forearm_joint"],
+  ["right_forearm_joint", "right_hand_joint"],
+  ["head_joint", "left_eye_joint"],
+  ["head_joint", "right_eye_joint"],
+  ["left_eye_joint", "left_ear_joint"],
+  ["right_eye_joint", "right_ear_joint"]
+];
+const normalizeGLCoords = (x, y) => [
+      1 - y * 2.005  ,
+  1-x * 2    // Convert to [-1, 1] range
+     // Flip vertically (WebGL Y-down to screen Y-up)
+];
+function createShaderProgram(gl, vertexSrc, fragmentSrc) {
+  const vs = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vs, vertexSrc);
+  gl.compileShader(vs);
+
+  const fs = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fs, fragmentSrc);
+  gl.compileShader(fs);
+
+  const program = gl.createProgram();
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+  gl.useProgram(program);
+
+  return program;
+}
+const vertexShaderSource = `
+        attribute vec2 position;
+        void main() {
+          gl_Position = vec4(position, 0.0, 1.0);
+          gl_PointSize = 20.0;
+        }
+        `;
+const fragmentShaderSource = `
+        precision mediump float;
+        void main() {
+          gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0); // green points
+        }`;
+const drawSkeleton = useCallback((gl, joints, shaderProgram) => {//drawSkeleton : START
+  SKELETON_CONNECTIONS.forEach(([start, end]) => {
+    const j1 = joints[start];
+    const j2 = joints[end];
+
+    if (!j1 || !j2 || j1.conf < 0.2 || j2.conf < 0.2) return;
+
+    const [x1, y1] = normalizeGLCoords(j1.x, j1.y);
+    const [x2, y2] = normalizeGLCoords(j2.x, j2.y);
+        gl.lineWidth(10);
+        gl.LINE_LOOP; 
+/*
+    let _x1 = !camFlip? -x1 : x1; 
+    let _x2 = !camFlip? -x2 : x2; 
+    
+    let _y1 = !camFlip? -y1 : y1;
+    let _y2 = !camFlip? -y2 : y2; 
+    */
+   
+    const vertices = new Float32Array([x1, y1, x2, y2]);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    const posLoc = gl.getAttribLocation(shaderProgram, "position");
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.LINES, 0, 2);
+
+    gl.deleteBuffer(buffer);
+ 
+  });
+} 
+)//drawSkeleton : END
+
+//console.log("Jab frames lngth:", jabFrames.length)
+const shaderProgramRef = useRef(null);
+const jabFrameIdx = useSharedValue(0); 
+
+const onContextCreate2 = async (gl) => {
+  // gl?.cancelFeedbackLoop?.();
+   
+if (!shaderProgramRef.current) {
+    shaderProgramRef.current = createShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
+  }
+
+  const renderLoop = () => {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+    if (latestPoseRef.current) {
+             
+      if(userGotStrikedOut.value){
+
+      drawSkeleton(gl, jabAnimationFrames[jabFrameIdx.value], shaderProgramRef.current);
+      jabFrameIdx.value++;
+
+     if(jabFrameIdx.value > jabAnimationFrames.length-1){
+      jabFrameIdx.value = 0; 
+     }
+         // console.log(jabFrameIdx.value)
+    }else{
+    
+
+   drawSkeleton(gl, latestPoseRef.current, shaderProgramRef.current);
+    }
+    
+    }
+
+  
+    gl.endFrameEXP();
+    requestAnimationFrame(renderLoop);
+
+  };
+
+  renderLoop();
+};
+
+
+const onContextCreate_feedbackScreen = async (gl) => {
+
+   if (!jabFrames || jabFrames.length === 0) {
+    console.warn("jabFrames not loaded yet.");
+    return;
+  }
+
+if (!shaderProgramRef.current) {
+    shaderProgramRef.current = createShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
+  }
+ const program = shaderProgramRef.current;
+  let animationFrame_id;
+
+  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+  gl.clearColor(0, 0, 0, 0); // optional if you want transparent background
+
+
+  const renderLoop = () => {
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  drawSkeleton(gl, jabAnimationFrames[jabFrameIdx.value], program);
+      jabFrameIdx.value =(jabFrameIdx.value + 1) % jabAnimationFrames.length;
+    gl.endFrameEXP();
+    animationFrame_id = requestAnimationFrame(renderLoop);
+  };
+
+  renderLoop();
+  gl.cancelAnimationLoop = () => cancelAnimationFrame(animationFrame_id) 
+};
+
+
+
+useEffect(() => {
+  if (poses?.[0]){ 
+      latestPoseRef.current = poses[0];
+  }
+
+}, [poses]);
+
+
+
+//below is the old pose detection overlay joint points drawing
+  /*
+
+const draw = async (gl) => {
+    const renderJoints = (points) => {//renderJoints: START
+      const program = gl.createProgram();
+      const compileShader = (type, source) => {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        return shader;
+      };
+
+      const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
+      const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.useProgram(program);
+
+
+      const positionAttrib = gl.getAttribLocation(program, 'position');
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.DYNAMIC_DRAW); //was gl.STATIC_DRAW
+      gl.enableVertexAttribArray(positionAttrib);
+      gl.vertexAttribPointer(positionAttrib, 2, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.POINTS, 0, points.length /2);
+
+    };//renderJoints: END
+
+    gl.clearColor(0, 0, 0, 0); // transparent
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    if (poses.length > 0) {
+      const joints = poses[0]; // just the first person detected
+      const points = Object.keys(joints).map((key) => {
+
+        try{
+            //filter pose joints/cordinates of interest
+        const y= (
+            camFlip? 1-joints[key].x
+            :
+            1-joints[key].x
+        ) * 2.005 - 1; // normalize from [0,1] to [-1,1]
+
+        const x = (
+            camFlip? 1-joints[key].y
+            :
+            joints[key].y
+        ) * 2.5 - 1; // invert + normalize
+        
+        return [x-0.27, y+.01];  //normalizing findal data output
+
+        }catch{
+
+        }
+
+      }).flat(1);
+
+      renderJoints(points);
+      
+    }
+    gl.endFrameEXP();
+  };
+
+const onContextCreate = async (gl) => {
+    glRef.current = gl;
+    
+    draw(gl);
+  };
+  useEffect(() => {
+    if (glRef.current) draw(glRef.current);
+    //if (glRef.current) drawSkeleton(glRef.current);
+
+  }, [poses]);
+  */
+
+
+//clock ufnctionality :
+
+const countDown = useSharedValue(180);  // initial count, in seconds
+  const [minutes, setMinutes] = useState(3);
+  const [seconds, setSeconds] = useState(60);
+
+  useEffect(() => {
+    // Start the countdown timer
+    const interval = setInterval(() => {
+      if (!lessonPaused && !userGotStrikedOut.value && countDown.value > 0) {
+        countDown.value -= 1;
+        let minutes = Math.floor(countDown.value  / 60); 
+        setMinutes(minutes);
+
+        let _seconds = countDown.value % 60; 
+        setSeconds(_seconds); 
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lessonPaused]);
+
+
+
+  // Synchronize shared value with React state for display
+
+////////////////////////////////////////////styling + componentilizing ////////////////////////////////////////////////////////////////////
+  const NextButton = ({onPress}) =>{
+    return(
+        <TouchableOpacity style = {{position:"absolute", right: ScreenWidth/2.62, bottom: 100, borderRadius: 100, }}>
+            <Icon onTouchStart={onPress} style={{flex: 1}} fill = "black" size = {90} name = "play-circle" color={"black"} backgroundColor={"transparent"}/>
+        </TouchableOpacity>
+    )
+  }
+
+  const skipFeedback_opacity = useRef(new Animated.Value(0)).current;
+
+const FeedbackInteruptionScreen = (
+    
+        <View onTouchStart={resetUserState} style = {{flex: 1, position:"absolute", height: ScreenHeight, width:ScreenWidth, backgroundColor:"transparent"}}>
+
+            <View>{/*animation skeleton for correction*/}</View>
+         
+            <Animated.Text style = {{position:"absolute", bottom: 50, color:"black", left: ScreenWidth/5.25, opacity: skipFeedback_opacity}}>Tap anywhere on screen to skip</Animated.Text>
+
+        </View>
+    );
+
+
+const [see, setSee] = useState(false);
+  const go_opacity = useRef(new Animated.Value(0)).current;
+ useEffect(() => {
+    if (moveWindowIsOpen.value && !userGotStrikedOut.value) {
+      setSee(true);
+    }
+    
+      go_opacity.setValue(1); //1 = full opacity (visible)
+
+      Animated.timing(go_opacity, {
+        toValue: 0,
+        duration: 2000, //fade out over 1 second
+        useNativeDriver: true, 
+      }).start(() => {
+        setSee(false); //hide 
+      });
+    
+  }, [moveWindowIsOpen.value]);
+
+
+const loopAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(skipFeedback_opacity, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(skipFeedback_opacity, {
+          toValue: 0,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+  useEffect(() =>{
+  if(userGotStrikedOut.value){
+    skipFeedback_opacity.setValue(0); 
+    loopAnimation.start();
+
+    //TTS.speak(textLabel); 
+  }else{
+    loopAnimation.stop();
+    skipFeedback_opacity.setValue(0);
+  }
+
+
+
+ 
+  },[userGotStrikedOut.value])
+
+
+
+  const Rest1 = (
+<>
+
+  <View style ={[styles.row, {columnGap: 10, position:"absolute", top: 150, backgroundColor:"transparent", alignItems:"center", justifyContent:"center", width:ScreenWidth, }]}>
+      <Animated.Text style = {{ color: userGotStrikedOut.value? 'black' : 'white',  fontSize: 50}}>{minutes}</Animated.Text>
+      <Animated.Text style ={{color:"red", fontSize: 50, top: -7}}>:</Animated.Text>
+      {
+        seconds < 10?
+      <Animated.Text style ={{ color: userGotStrikedOut.value? 'black' : 'white', fontSize: 50}}>0</Animated.Text>
+      :
+      null
+      }
+      <Animated.Text style = {{ color: userGotStrikedOut.value? 'black' : 'white', fontSize: 50}}>{seconds}</Animated.Text>
+  </View>
+         
+
+<View>{/* below aare the ui buttons for pause or resume lesson functionality*/}</View>
+</>
+  );
+
+
     return(
            <View style = {{
             flex: 1,
             backgroundColor: "white",
-           }}>
+           }} >
             <StatusBar barStyle="light-content" backgroundColor="#000" />
-
-         <>
-    <Camera
+               <Camera
            
+           isMirrored = {true}
            shouldRasterizeIOS = {false}
             enableBufferCompression = {true}
          enableFpsGraph = {false}
@@ -363,7 +932,7 @@ const flipIcon = (
          device={device}
          format={customFormat}
          pixelFormat={"rgb"}
-         frameProcessor={customFrameProcessor}
+         frameProcessor={default_useFramePorcessor}
         videoBitRate={"extra-low"}
          style = {{
             height: Dimensions.get("screen").height,
@@ -371,24 +940,71 @@ const flipIcon = (
             position:"absolute"
          }}
          />
-        {flipIcon}
+       <View style={[StyleSheet.absoluteFill, {backgroundColor: userGotStrikedOut.value? "white" : "transparent"}]}>
+      <GLView
+        style={StyleSheet.absoluteFill}
+        onContextCreate={onContextCreate2}
 
-         <View style = {{ alignSelf:"center", bottom: 340, backgroundColor:"white", 
+      />
+    </View>
+{//UI elements overlay
+userGotStrikedOut.value? 
+FeedbackInteruptionScreen
+:
+
+    <View style = {{flex: 1, zIndex: 1}}>
+    {flipIcon}
+    <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+           <View style = {{ alignSelf:"center", top: 50, right: 34, backgroundColor:"white", 
                 height: Dimensions.get("screen").height*.07,
-                width:Dimensions.get("screen").width*.75,
+                width:Dimensions.get("screen").width*.7,
                 position:"absolute",
                 borderTopEndRadius: 25,
                 borderTopLeftRadius: 25,
                 borderRadius: 25, 
                 alignItems:"center",
                 justifyContent:"center",
-            
            
+                pointerEvents:"auto"
             }}>
+
+      <TouchableOpacity onPress={incrimentUserStrikes_alt}>
+
             <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabel}</Animated.Text>
+            </TouchableOpacity>
+
             </View>
-            <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-            </>
+
+            {
+            !lessonPaused?
+            <Animated.View style = {{position:"absolute", left: ScreenWidth/9, bottom: 100}}>
+           <TouchableOpacity style = {{ borderRadius: 100, backgroundColor:"transparent"}} onPress={() => setLessonPaused(true)}  >
+            <Icon containerStyle = {{backgroundColor:"white", borderRadius: 100, overflow: 'visible', boxSizing:"content-box", padding: 0}} iconStyle={{position:"relative", margin: -10}} type='ionicon' style={{flex: 1}} fill = "white" size = {90} name = "pause-circle" color={"black"} />
+           </TouchableOpacity>
+            </Animated.View>
+        :
+        <TouchableOpacity style = {{position:"absolute", right: ScreenWidth/9, bottom: 100, borderRadius: 100, backgroundColor:"transparent"}} onPress={() => setLessonPaused(false)}>
+            <Icon containerStyle = {{backgroundColor:"white", borderRadius: 100, overflow: 'visible', boxSizing:"content-box", padding: 0}} iconStyle={{position:"relative", margin: -10}} type='ionicon'  style={{flex: 1}} fill = "white" size = {90} name = "play-circle" color={"black"} />
+        </TouchableOpacity>
+
+          }
+    </View>
+  
+}
+
+  {
+    (see)?
+    <Animated.Text style = {{display: userGotStrikedOut? 'flex' : 'none', position:"absolute", color: "white", fontWeight: "bold", bottom: ScreenHeight/2.3, right: ScreenWidth/4.7, fontSize: 90, opacity: go_opacity}}>GO!</Animated.Text>
+    :
+    <Animated.Text style = {{display: userGotStrikedOut? 'flex' : 'none', position:"absolute", color: "white", fontWeight: "bold", bottom: ScreenHeight/2.3, right: ScreenWidth/5, fontSize: 90, opacity: go_opacity}}>PAUSE!</Animated.Text>
+
+  }
+
+   {Rest1}
+
+
+
+
           </View>
     )
          

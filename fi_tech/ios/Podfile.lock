@@ -1,12 +1,17 @@
 PODS:
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
+  - EXAV (15.1.6):
+    - ExpoModulesCore
+    - ReactCommon/turbomodule/core
   - EXConstants (17.1.6):
     - ExpoModulesCore
   - EXJSONUtils (0.15.0)
   - EXManifests (0.16.5):
     - ExpoModulesCore
-  - Expo (53.0.12):
+  - EXPermissions (14.4.0):
+    - ExpoModulesCore
+  - Expo (53.0.13):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -33,16 +38,16 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-client (5.2.1):
+  - expo-dev-client (5.2.2):
     - EXManifests
     - expo-dev-launcher
     - expo-dev-menu
     - expo-dev-menu-interface
     - EXUpdatesInterface
-  - expo-dev-launcher (5.1.13):
+  - expo-dev-launcher (5.1.14):
     - DoubleConversion
     - EXManifests
-    - expo-dev-launcher/Main (= 5.1.13)
+    - expo-dev-launcher/Main (= 5.1.14)
     - expo-dev-menu
     - expo-dev-menu-interface
     - ExpoModulesCore
@@ -72,7 +77,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-launcher/Main (5.1.13):
+  - expo-dev-launcher/Main (5.1.14):
     - DoubleConversion
     - EXManifests
     - expo-dev-launcher/Unsafe
@@ -105,7 +110,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-launcher/Unsafe (5.1.13):
+  - expo-dev-launcher/Unsafe (5.1.14):
     - DoubleConversion
     - EXManifests
     - expo-dev-menu
@@ -270,19 +275,21 @@ PODS:
     - Yoga
   - ExpoAsset (11.1.5):
     - ExpoModulesCore
-  - ExpoCamera (16.1.8):
+  - ExpoCamera (16.1.9):
     - ExpoModulesCore
     - ZXingObjC/OneD
     - ZXingObjC/PDF417
   - ExpoDevice (7.1.4):
     - ExpoModulesCore
-  - ExpoFileSystem (18.1.10):
+  - ExpoFileSystem (18.1.11):
     - ExpoModulesCore
   - ExpoFont (13.3.1):
     - ExpoModulesCore
   - ExpoGL (15.1.6):
     - ExpoModulesCore
     - ReactCommon/turbomodule/core
+  - ExpoHaptics (14.1.4):
+    - ExpoModulesCore
   - ExpoImage (2.3.0):
     - ExpoModulesCore
     - libavif/libdav1d
@@ -317,6 +324,10 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - ExpoSpeech (13.1.7):
+    - ExpoModulesCore
+  - ExpoUI (0.1.1-alpha.9):
+    - ExpoModulesCore
   - EXUpdatesInterface (1.1.0):
     - ExpoModulesCore
   - fast_float (6.1.4)
@@ -1667,6 +1678,8 @@ PODS:
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
+  - react-native-background-timer (2.4.1):
+    - React-Core
   - react-native-fast-tflite (1.6.1):
     - DoubleConversion
     - glog
@@ -2187,6 +2200,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNFS (2.20.0):
+    - React-Core
   - RNGestureHandler (2.24.0):
     - DoubleConversion
     - glog
@@ -2447,11 +2462,11 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1)
+  - SwiftUIReactNative (5.0.0):
+    - ExpoModulesCore
   - TensorFlowLiteC (2.17.0):
     - TensorFlowLiteC/Core (= 2.17.0)
   - TensorFlowLiteC/Core (2.17.0)
-  - TextToSpeech (4.1.1):
-    - React-Core
   - VisionCamera (4.7.0):
     - VisionCamera/Core (= 4.7.0)
     - VisionCamera/FrameProcessors (= 4.7.0)
@@ -2474,9 +2489,11 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - EXAV (from `../node_modules/expo-av/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
   - EXManifests (from `../node_modules/expo-manifests/ios`)
+  - EXPermissions (from `../node_modules/expo-permissions/ios`)
   - Expo (from `../node_modules/expo`)
   - expo-dev-client (from `../node_modules/expo-dev-client/ios`)
   - expo-dev-launcher (from `../node_modules/expo-dev-launcher`)
@@ -2488,9 +2505,12 @@ DEPENDENCIES:
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoGL (from `../node_modules/expo-gl`)
+  - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoSpeech (from `../node_modules/expo-speech/ios`)
+  - "ExpoUI (from `../node_modules/@expo/ui/ios`)"
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -2530,6 +2550,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-background-timer (from `../node_modules/react-native-background-timer`)
   - react-native-fast-tflite (from `../node_modules/react-native-fast-tflite`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
@@ -2567,11 +2588,12 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
+  - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - TextToSpeech (from `../node_modules/react-native-tts`)
+  - SwiftUIReactNative (from `../node_modules/swiftui-react-native/ios`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2593,12 +2615,16 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  EXAV:
+    :path: "../node_modules/expo-av/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   EXJSONUtils:
     :path: "../node_modules/expo-json-utils/ios"
   EXManifests:
     :path: "../node_modules/expo-manifests/ios"
+  EXPermissions:
+    :path: "../node_modules/expo-permissions/ios"
   Expo:
     :path: "../node_modules/expo"
   expo-dev-client:
@@ -2621,12 +2647,18 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-font/ios"
   ExpoGL:
     :path: "../node_modules/expo-gl"
+  ExpoHaptics:
+    :path: "../node_modules/expo-haptics/ios"
   ExpoImage:
     :path: "../node_modules/expo-image/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
+  ExpoSpeech:
+    :path: "../node_modules/expo-speech/ios"
+  ExpoUI:
+    :path: "../node_modules/@expo/ui/ios"
   EXUpdatesInterface:
     :path: "../node_modules/expo-updates-interface/ios"
   fast_float:
@@ -2702,6 +2734,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-background-timer:
+    :path: "../node_modules/react-native-background-timer"
   react-native-fast-tflite:
     :path: "../node_modules/react-native-fast-tflite"
   react-native-safe-area-context:
@@ -2776,6 +2810,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
+  RNFS:
+    :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -2784,8 +2820,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  TextToSpeech:
-    :path: "../node_modules/react-native-tts"
+  SwiftUIReactNative:
+    :path: "../node_modules/swiftui-react-native/ios"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -2794,23 +2830,28 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
+  EXAV: 3fff236999a5a5c0f9b251d1a902908e4c844199
   EXConstants: 9f310f44bfedba09087042756802040e464323c0
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: 951161dd9a63523c4eef0fa2a7476639a7ba230d
-  Expo: 96f7935e5af791080d758fbfda1f7c10e827e588
-  expo-dev-client: bf14fdb681b2dc761f5df9ad4edca8bb55d640f4
-  expo-dev-launcher: 6ebab8448f23b80545c8b21eb026b6bfefad1f98
+  EXPermissions: 490e55ef5b334c5b2072e1ebd40e2bc1950cea73
+  Expo: d8192e2b8d8df04a44affce7e908137a892933d1
+  expo-dev-client: 2a5a4d2257b917b00d4d9d2ececd41d59278e672
+  expo-dev-launcher: 7787515f4790aeeecffdea8ec05ff95117cc439a
   expo-dev-menu: c8b438f2db8e6a6ca6714a01d9425b8a9690fa06
   expo-dev-menu-interface: 609c35ae8b97479cdd4c9e23c8cf6adc44beea0e
   ExpoAsset: 3bc9adb7dbbf27ae82c18ca97eb988a3ae7e73b1
-  ExpoCamera: 1667b34b8ba4b8015561808e38dd0a281a29da1b
+  ExpoCamera: 308cf0a75d73b6d1f3f8dda4212ba8e2752a6b03
   ExpoDevice: 7082f03af1c588333ef1417d5aa8287081d94b24
-  ExpoFileSystem: c36eb8155eb2381c83dda7dc210e3eec332368b6
+  ExpoFileSystem: 7f92f7be2f5c5ed40a7c9efc8fa30821181d9d63
   ExpoFont: abbb91a911eb961652c2b0a22eef801860425ed6
   ExpoGL: 024e340f6b810a62624be380f3902ec6e491b78b
+  ExpoHaptics: 0ff6e0d83cd891178a306e548da1450249d54500
   ExpoImage: 6aa234344f378d78c0d50dc6c4d946546b8742bf
   ExpoKeepAwake: bf0811570c8da182bfb879169437d4de298376e7
   ExpoModulesCore: d431ffe83c8673d02cb38425594a5f5480fd3061
+  ExpoSpeech: 9b3bdf552e69c8015c246dc52b5ad5fcdbec878e
+  ExpoUI: ed1120211f8bccd1c167020c621de0ff54cdddf1
   EXUpdatesInterface: 7ff005b7af94ee63fa452ea7bb95d7a8ff40277a
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 15c28682af535aa55b9b31e64deff54b7ed7d453
@@ -2851,6 +2892,7 @@ SPEC CHECKSUMS:
   React-logger: 694787b12186eeeadccdfdc6769890e9080c1f11
   React-Mapbuffer: a0ee08ac29b8a2c08692aa0d51cefa1c88860e17
   React-microtasksnativemodule: ef2292ca147fa8793305e4693586ad0caf3afad3
+  react-native-background-timer: 4638ae3bee00320753647900b21260b10587b6f7
   react-native-fast-tflite: 98dadc806e07b767f32ab7c6915df221c58b0ebd
   react-native-safe-area-context: 562163222d999b79a51577eda2ea8ad2c32b4d06
   react-native-skia: 5c086469906cf854e26126b5b88dcbb6c93eb90f
@@ -2888,6 +2930,7 @@ SPEC CHECKSUMS:
   ReactCommon: c7d636ec1b9801ff4ee83cce8e0bf74a1610fc3f
   RNCAsyncStorage: 39c42c1e478e1f5166d1db52b5055e090e85ad66
   RNCMaskedView: ae521efb1c6c2b183ae0f8479487db03c826184c
+  RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: 7d0931a61d7ba0259f32db0ba7d0963c3ed15d2b
   RNReanimated: 2313402fe27fecb7237619e9c6fcee3177f08a65
   RNScreens: 482e9707f9826230810c92e765751af53826d509
@@ -2897,8 +2940,8 @@ SPEC CHECKSUMS:
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  SwiftUIReactNative: 6af1ddbecf2c93011a8047f9897907b741c3f0df
   TensorFlowLiteC: eac6d689a8d391d1b202dc59e3d9165ba64aaf73
-  TextToSpeech: 89b239221ec378d213af422d14789a729705360b
   VisionCamera: 1470a7fa013e22de7481640a4d9c597ad6f13919
   Yoga: a6cb833e04fb8c59a012b49fb1d040fcb0cbb633
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
