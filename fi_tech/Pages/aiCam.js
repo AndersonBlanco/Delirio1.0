@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import {Animated, View, ActivityIndicator, StyleSheet, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, Easing,  } from 'react-native';
+import {Animated, View, ActivityIndicator, StyleSheet, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, Easing, Touchable,  } from 'react-native';
 import {Text, VStack} from "swiftui-react-native"; 
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
@@ -27,11 +27,16 @@ import { Audio } from 'expo-av';
 import {useUserState} from "../components/zustandStore"; 
 import { ScreenHeight, ScreenWidth } from 'react-native-elements/dist/helpers';
 import { Pressable } from 'react-native-gesture-handler';
-import { jabAnimationFrames } from '../assets/skeletoAnimations';
+import Animation1 from "../assets/animation1.json";
+import Animation2 from "../assets/animation2.json";
+import JabAnimation2 from "../assets/jabAnimation2.json";
+import OneTwoAnimation from "../assets/OneTwoAnimation.json"; 
+import StraightRightAnimation from "../assets/straightRightAnimation1.json"; 
+import JabAnimation3 from "../assets/jabAnimation3.json";
+import { useNavigation } from "@react-navigation/native";
 
 const {TTS} = NativeModules; 
 const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{}); 
-
 /*angles utilized for custom GRU prediction: 
 
        rightElbow_angle,  --> 'right_forearm_joint' in VNHumanBodyPoseDetection
@@ -47,6 +52,7 @@ const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{});
 
 
 export default function AICam({theme}){
+  const nav = useNavigation(); 
    // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
    const strikes = useSharedValue(0);
    const userGotStrikedOut = useSharedValue(false);
@@ -73,8 +79,8 @@ export default function AICam({theme}){
           strikes.value = 0;
           userGotStrikedOut.value = true; 
           
-          if(textLabel!= 'None'){
-           TTS.speak(textLabel); 
+          if(textLabelSharedValm.value!= '-'){  //was textLabel != '-'
+         //  TTS.speak(textLabel); 
           }
 
         }else{
@@ -92,8 +98,11 @@ export default function AICam({theme}){
           strikes.value = 0;
           userGotStrikedOut.value = true; 
           
+            if(textLabelSharedValm.value!= '-'){ //was textLabel != '-'
+           //TTS.speak(textLabel); 
+          }
 
-          TTS.speak(textLabel); 
+      
   
         }else{
           strikes.value = val; 
@@ -147,8 +156,8 @@ const {hasPermission, requestPermission} = useCameraPermission();
 const [camFlip, setCamFlip] = useState(true); 
 const device = useCameraDevice(camFlip? "front" : "back", {}); 
 const [poses, setPoses] = useState([]); 
-const [textLabel, setTextLabel] = useState("None"); 
-const textLabelSharedValm=useSharedValue('None');
+//const [textLabel, setTextLabel] = useState("-"); 
+const textLabelSharedValm=useSharedValue('-');
 const moveWindowIsOpen = useSharedValue(true);
 const [moveWindowIsOpen_state,set_moveWindowIsOpen] = useState(true);
 //
@@ -202,18 +211,18 @@ if(!device){
 //const p = useSharedValue([]); 
 useAnimatedReaction(()=>textLabelSharedValm.value, (curr, prev) =>{
  if(prev){
-    setTextLabel(curr); 
+    //setTextLabel(prev); 
     
   }
  
 });
 
 const updateExternals = Worklets.createRunOnJS((v, moveWindowIsOpenVal, fH, fW) =>{
-    if(v != textLabel){
+    if(v != textLabelSharedValm.value){ //was textLabel
        //  Speak(v); 
     }
 
-   setTextLabel(v);
+  // setTextLabel(v);
     
    //speak the changed text: 
 //setFrameHeight(fH); 
@@ -458,7 +467,7 @@ const updatePoses = Worklets.createRunOnJS((p) =>{
 
 const speakFeedback = Worklets.createRunOnJS((v, moveWIndowOpen_) =>{
    if(!moveWIndowOpen_){
-          TTS.speak(v); //speak the feedback
+        //  TTS.speak(v); //speak the feedback
     }
 });
 
@@ -506,13 +515,16 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{
     };
 
     //speakFeedback(res[3], res[5]); 
-
+   if(!res[5] && res[4] > 0){
+    console.log(`Count ${res[0]}: ${res[3]}`)
+   }
     
     if(!userGotStrikedOut.value){
         if(moveWindowIsOpen.value && res[4] ){ //was if res[3] == 0
        // updateExternals(res[3], res[5], frame.height, frame.width); 
      
-          textLabelSharedValm = res[3]; 
+          textLabelSharedValm.value = res[3]; 
+          //console.log(res[3]); 
 
         //console.log(res[1]); 
         }
@@ -638,6 +650,7 @@ if (!shaderProgramRef.current) {
     shaderProgramRef.current = createShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
   }
 
+  let target_animation = StraightRightAnimation; 
   const renderLoop = () => {
       gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -645,16 +658,14 @@ if (!shaderProgramRef.current) {
              
       if(userGotStrikedOut.value){
 
-      drawSkeleton(gl, jabAnimationFrames[jabFrameIdx.value], shaderProgramRef.current);
+      drawSkeleton(gl, target_animation[jabFrameIdx.value], shaderProgramRef.current);
       jabFrameIdx.value++;
 
-     if(jabFrameIdx.value > jabAnimationFrames.length-1){
+     if(jabFrameIdx.value > target_animation.length-1){
       jabFrameIdx.value = 0; 
      }
          // console.log(jabFrameIdx.value)
     }else{
-    
-
    drawSkeleton(gl, latestPoseRef.current, shaderProgramRef.current);
     }
     
@@ -795,7 +806,7 @@ const onContextCreate = async (gl) => {
 
 const countDown = useSharedValue(180);  // initial count, in seconds
   const [minutes, setMinutes] = useState(3);
-  const [seconds, setSeconds] = useState(60);
+  const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
     // Start the countdown timer
@@ -915,10 +926,13 @@ const loopAnimation = Animated.loop(
   );
 
 
+//const RestartLeson = () => nav.navigate("AI_Cam");
+
+
     return(
            <View style = {{
             flex: 1,
-            backgroundColor: "white",
+            backgroundColor: "transparent",
            }} >
             <StatusBar barStyle="light-content" backgroundColor="#000" />
                <Camera
@@ -948,11 +962,13 @@ const loopAnimation = Animated.loop(
       />
     </View>
 {//UI elements overlay
+
+
+(
 userGotStrikedOut.value? 
 FeedbackInteruptionScreen
 :
-
-    <View style = {{flex: 1, zIndex: 1}}>
+<View style = {{flex: 1, zIndex: 1}}>
     {flipIcon}
     <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
            <View style = {{ alignSelf:"center", top: 50, right: 34, backgroundColor:"white", 
@@ -969,13 +985,20 @@ FeedbackInteruptionScreen
             }}>
 
       <TouchableOpacity onPress={incrimentUserStrikes_alt}>
-
-            <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabel}</Animated.Text>
+            <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabelSharedValm.value}</Animated.Text>
             </TouchableOpacity>
 
             </View>
 
             {
+                countDown.value <= 0?
+           <>
+          <TouchableOpacity onPress={() => nav.replace("AI_Cam")} style = {{paddingHorizontal: 25, paddingVertical: 5,  alignItems:"center", justifyContent:"center", position:"absolute", bottom: 150, right: ScreenWidth/4.15, backgroundColor:"white", borderRadius: 100, width: ScreenWidth/2}}>
+          <Animated.Text style = {{color:"black", fontSize: 25}}>Restart?</Animated.Text>
+          </TouchableOpacity>
+          </> 
+                :
+              (
             !lessonPaused?
             <Animated.View style = {{position:"absolute", left: ScreenWidth/9, bottom: 100}}>
            <TouchableOpacity style = {{ borderRadius: 100, backgroundColor:"transparent"}} onPress={() => setLessonPaused(true)}  >
@@ -983,12 +1006,22 @@ FeedbackInteruptionScreen
            </TouchableOpacity>
             </Animated.View>
         :
+
         <TouchableOpacity style = {{position:"absolute", right: ScreenWidth/9, bottom: 100, borderRadius: 100, backgroundColor:"transparent"}} onPress={() => setLessonPaused(false)}>
             <Icon containerStyle = {{backgroundColor:"white", borderRadius: 100, overflow: 'visible', boxSizing:"content-box", padding: 0}} iconStyle={{position:"relative", margin: -10}} type='ionicon'  style={{flex: 1}} fill = "white" size = {90} name = "play-circle" color={"black"} />
         </TouchableOpacity>
+        )
 
           }
+
+
+        
+
+
+
+
     </View>
+)
   
 }
 

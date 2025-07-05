@@ -27,11 +27,11 @@ import { Audio } from 'expo-av';
 import {useUserState} from "../components/zustandStore"; 
 import { ScreenHeight, ScreenWidth } from 'react-native-elements/dist/helpers';
 import { Pressable } from 'react-native-gesture-handler';
-import { jabAnimationFrames, randomAnimation1 } from '../assets/skeletoAnimations';
+
 import {File, Paths, Directory } from "expo-file-system/next"; 
 import { documentDirectory } from 'expo-file-system';
 import * as RNFS from "react-native-fs"; 
-
+ 
 const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{}); 
  
 export default function GenCam({theme}){
@@ -53,8 +53,6 @@ const frameRecordedCount = useRef(0);
 const recording = useSharedValue(false); 
 
 const latestPoseRef = useRef(null);
-
-const A = randomAnimation1(); 
 
 
 const customFormat = useCameraFormat(device, [{
@@ -90,7 +88,8 @@ if(!device){
 } 
 
 const updatePoses = Worklets.createRunOnJS((p) =>{
-    if(p.length > 0){
+    if(p.length > 0 && moveWindowIsOpen.value){
+        //let p_restrucrured = RestructureData(p); 
         console.log(p);
     } 
     setPoses(p); 
@@ -319,7 +318,7 @@ useEffect(() => {
        <View style={[StyleSheet.absoluteFill, {backgroundColor:"transparent"}]}>
       <GLView
         style={[StyleSheet.absoluteFill, {}]}
-        onContextCreate={onContextCreate_playAnimation}
+        onContextCreate={onContextCreate2}
 
       />
           </View>

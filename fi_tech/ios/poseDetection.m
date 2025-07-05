@@ -483,7 +483,7 @@ int getLabel(MLMultiArray *pred){
          @[@(RightKneeAngle), @(LeftKneeAngle)]
        ],
        @"Wait for break to be over", //no predicitons available yet,
-       @0, //max confiddence Index  | returns 0 when unavailable
+       @-1, //max confiddence Index  | returns 0 when unavailable
        @(moveWindowIsOpen)
       ];
     }
@@ -495,7 +495,7 @@ int getLabel(MLMultiArray *pred){
       poses,
     @[],
       @"Get into camera view",// predictions
-      @0, //max confidence index  | returns 0 when unavailable
+      @-1, //max confidence index  | returns 0 when unavailable
       @(moveWindowIsOpen)
     ];
   
