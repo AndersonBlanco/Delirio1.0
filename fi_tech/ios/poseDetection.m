@@ -10,7 +10,7 @@
 #import <CoreML/CoreML.h>
 #import <Foundation/Foundation.h>
 #import <dispatch/dispatch.h>
-
+#import "punchClassification_coreml.h"
 #import "GRUsmd.h"
 #import <math.h>
 #import "TTS.h"
@@ -80,18 +80,31 @@ int getLabel(MLMultiArray *pred){
   return maxConfidenceIndex_in_pred;
 }
 
+int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
+  int max_conf_idx = 0;
+  for(int i = 0; i < 4; i++){
+    if([prediction[max_conf_idx] doubleValue] < [prediction[max_conf_idx] doubleValue]){
+      max_conf_idx = i;
+    }
+  };
+  return max_conf_idx;
+}
+
 @interface poseDetectionPlugin : FrameProcessorPlugin{
   int count;
   bool reached40;
   BOOL nilValuefound;
   MLMultiArray *angles_40frame;
-  GRUsmd *model;
+  //GRUsmd *model;
+  punchClassification_coreml *punchClassificationModel;
   NSArray *labelArray;
+  NSArray *punchClassArray;
   BOOL moveWindowIsOpen;
   NSTimeInterval lastSampleTimestamp;
   NSTimeInterval sampleInterval;
   TTS *tts;
   int maxConf_idx;
+  int punchClassify_max_conf_idx;
 }
 @end
 
@@ -107,12 +120,14 @@ int getLabel(MLMultiArray *pred){
      reached40 = false;
      nilValuefound = NO;
     angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
-    model = [[GRUsmd alloc] init];
+   // model = [[GRUsmd alloc] init];
+     punchClassificationModel = [[punchClassification_coreml alloc] init];
     self->moveWindowIsOpen = YES;
      self->lastSampleTimestamp = -1.0;
      self->sampleInterval = 5.0 / 40.0; // e.g. sample at 30 fps
      self->tts = [[TTS alloc] init];
      self->maxConf_idx = -1;
+     self->punchClassify_max_conf_idx = -1;
      labelArray = @[
        @"good jab",
        @"bad jab - knee level lack",
@@ -125,6 +140,13 @@ int getLabel(MLMultiArray *pred){
        
        @"good kick",
        @"bad kick, don't lounge leg out"];
+     punchClassArray = @[
+       @"jab",
+       @"straightRight",
+       @"upperCut",
+       @"hook",
+       @"rest"
+     ];
      
      //initiate audio session:
      AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -432,22 +454,24 @@ int getLabel(MLMultiArray *pred){
      //automatic start timer
       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
           self->moveWindowIsOpen = YES;
-          self->count = 0;
+          self->count = 0;  
         self->lastSampleTimestamp =-1.0;
       });
       
-      GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
-
+      //GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
+      
+      punchClassification_coremlOutput *punchClassificationOutput = [punchClassificationModel predictionFromInput_1:angles_40frame error:&error];
     
       NSMutableArray *temp = [[NSMutableArray alloc] init];
       //GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
    
       
-      for(int x = 0; x < model_output.Identity.count; x++){
-        [temp addObject:model_output.Identity[x]];
+      for(int x = 0; x < punchClassificationOutput.Identity.count; x++){
+        [temp addObject:punchClassificationOutput.Identity[x]];
       }
-      self->maxConf_idx = getLabel(model_output.Identity);
-     
+      
+      //self->maxConf_idx = getLabel(model_output.Identity);
+      self->punchClassify_max_conf_idx = getPunchTypeMaxConfIdx(punchClassificationOutput.Identity);
       /*
       NSMutableArray *confidenceValues = [NSMutableArray arrayWithCapacity:model_output.Identity.count];
       for (int i = 0; i < model_output.Identity.count; i++) {
@@ -467,9 +491,11 @@ int getLabel(MLMultiArray *pred){
           @[@(RightHipAngle), @(LeftHipAngle)],
           @[@(RightKneeAngle), @(LeftKneeAngle)]
         ],
-        labelArray[maxConf_idx], //predictions,
+        //labelArray[maxConf_idx], //predictions,
+        @0,
         @(maxConf_idx),
-        @(moveWindowIsOpen)
+        @(moveWindowIsOpen),
+        punchClassArray[punchClassify_max_conf_idx]
       ];
     }else{
       
@@ -484,7 +510,8 @@ int getLabel(MLMultiArray *pred){
        ],
        @"Wait for break to be over", //no predicitons available yet,
        @-1, //max confiddence Index  | returns 0 when unavailable
-       @(moveWindowIsOpen)
+       @(moveWindowIsOpen),
+       @"Wait for break to be over, punchClass" //no predictions for punch classififxation available yet
       ];
     }
     
@@ -496,7 +523,8 @@ int getLabel(MLMultiArray *pred){
     @[],
       @"Get into camera view",// predictions
       @-1, //max confidence index  | returns 0 when unavailable
-      @(moveWindowIsOpen)
+      @(moveWindowIsOpen),
+      @-1 //max confidence for punch classification model
     ];
   
 

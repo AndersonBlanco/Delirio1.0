@@ -25,6 +25,7 @@ const colorScheme = {
   ten: "rgba(252, 255,255, 1)"
 }
  
+ 
 function App() {
 
 
@@ -47,7 +48,7 @@ function App() {
         }}
         initialRouteName="AI_Cam"
       >
-        <Stack.Screen name="I_ntro" component={Intro}  />
+        <Stack.Screen name="I_ntro" component={Intro}   /> {/*Each {<Stack.Screen >} tag is a tag dedicated to each page of the app.*/}
         <Stack.Screen name="Auth" component={AuthScreen} />
         <Stack.Screen 
           name="H_ome" 

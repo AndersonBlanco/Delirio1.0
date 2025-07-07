@@ -25,7 +25,7 @@ import { Audio } from 'expo-av';
 
 //import user data zustand state handlers from zustand store: 
 import {useUserState} from "../components/zustandStore"; 
-import { ScreenHeight, ScreenWidth } from 'react-native-elements/dist/helpers';
+import { ScreenHeight, ScreenWidth } from 'react-native-elements/dist/helpers'; //screen dimensions global constahnhts. They are trustworthy
 import { Pressable } from 'react-native-gesture-handler';
 import Animation1 from "../assets/animation1.json";
 import Animation2 from "../assets/animation2.json";
@@ -33,10 +33,10 @@ import JabAnimation2 from "../assets/jabAnimation2.json";
 import OneTwoAnimation from "../assets/OneTwoAnimation.json"; 
 import StraightRightAnimation from "../assets/straightRightAnimation1.json"; 
 import JabAnimation3 from "../assets/jabAnimation3.json";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native"; //in react native, this is a hook. Anything that starts with a 'use....' is a hook an dmust be declared inside a function soley.s
 
 const {TTS} = NativeModules; 
-const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{}); 
+const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{});  //the custom native code plugin importioned from the nxcode native side | the string "detect" is the exact native side function name which must be matched here as seen in the string argument
 /*angles utilized for custom GRU prediction: 
 
        rightElbow_angle,  --> 'right_forearm_joint' in VNHumanBodyPoseDetection
@@ -51,7 +51,7 @@ const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{});
 */
 
 
-export default function AICam({theme}){
+export default function AICam({theme}){ //main function of the page 'AI_Cam' 
   const nav = useNavigation(); 
    // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
    const strikes = useSharedValue(0);
@@ -66,13 +66,13 @@ export default function AICam({theme}){
     });
     */
 
-    const resetUserState = () =>{
+    const resetUserState = () =>{ //resets the stats of the user (ie number of strikes, and sets the booolean of userGotStrikedOut to false)
         strikes.value = 0; 
         userGotStrikedOut.value = false; 
         console.log('user stats resetted')
     }
 
-    const incrimentUserStrikes_alt = () =>{ //also responsible for incirmenting the variable userIncorrectMoves
+    const incrimentUserStrikes_alt = () =>{ //also responsible for incirmenting the variable userIncorrectMoves | as seen at the end of the function name "alt", its an alternative to the first incrimentUserStrikes function as a replacement or alternative
 
        let val = strikes.value + 1; 
         if (val >=3){
@@ -91,7 +91,7 @@ export default function AICam({theme}){
         //console.log("incirmented to: ", strikes.value); 
     };
 
-    const incrimentUserStrikes = Worklets.createRunOnJS(() =>{
+    const incrimentUserStrikes = Worklets.createRunOnJS(() =>{ //incriments user's strikes by 1 
         'worklet';
         let val = strikes.value + 1; 
         if (val >=4){ //extra to 4, not 3 for padding space
@@ -152,18 +152,18 @@ const Speak = async (txt) =>{
 }
 */
 
-const {hasPermission, requestPermission} = useCameraPermission();
-const [camFlip, setCamFlip] = useState(true); 
-const device = useCameraDevice(camFlip? "front" : "back", {}); 
-const [poses, setPoses] = useState([]); 
+const {hasPermission, requestPermission} = useCameraPermission(); //requestPermission is the hook which requests camera permissions from user | hasPermission is just the variable housing the state of the camera permission 
+const [camFlip, setCamFlip] = useState(true); //determines front / back camera usage
+const device = useCameraDevice(camFlip? "front" : "back", {}); //the object used by the <Camera/> tag below in the main return statement. 
+const [poses, setPoses] = useState([]);  //state variable housing poses passed from the native side 
 //const [textLabel, setTextLabel] = useState("-"); 
-const textLabelSharedValm=useSharedValue('-');
-const moveWindowIsOpen = useSharedValue(true);
-const [moveWindowIsOpen_state,set_moveWindowIsOpen] = useState(true);
+const textLabelSharedValm=useSharedValue('-'); //text that is shown on screen during live lesson 
+const moveWindowIsOpen = useSharedValue(true); //moveWindowIsOpen is the variable keeping track of when the user is allowed to move with the gurantee that their movements are being recorded and processed for prediction. When false, the user's movements are technically meaningless and will not be processed for predictions 
+const [moveWindowIsOpen_state,set_moveWindowIsOpen] = useState(true);//another state variable keeping track of the moveWindowIsOpen behaviour | currently unused sexcept to change its value but can be deleted confidently 
 //
-const [lessonPaused, setLessonPaused] = useState(false); 
+const [lessonPaused, setLessonPaused] = useState(false);  //determines when lesson is paused as configured by the pause and plau UI buttons below in the main return statement 
 //
-const latestPoseRef = useRef(null);
+const latestPoseRef = useRef(null); //VERY IMPORTANT, this is what triggers the change in value of the state variable {poses} and is directly configured with custom values from the native side 
 /*
 useAnimatedReaction(() => userGotIncorrectedMovement.value, (curr, prev) =>{
     if(curr != prev){
@@ -173,7 +173,7 @@ useAnimatedReaction(() => userGotIncorrectedMovement.value, (curr, prev) =>{
 }, [userState]);
 */
 
-const customFormat = useCameraFormat(device, [{
+const customFormat = useCameraFormat(device, [{ //settings / formats for the <Camera/> tag found below in the main retiurn statement
     fps: 'max', 
     videoStabilizationMode:'off', 
     //photoAspectRatio: 1/2,
@@ -181,26 +181,26 @@ const customFormat = useCameraFormat(device, [{
 }]) //fps set to max
 
  
-useEffect(() =>{
+useEffect(() =>{ //useEffects allow code to execute without interfearing with the 'main thread' playing. This 'main thread' is better understood as the main program running and the code inide the useEffect runs in the background like a very sneaky ninja!
     if(!hasPermission){
         requestPermission();
     }
 }, [hasPermission]);
 
-if(!hasPermission){
+if(!hasPermission){ //if app does not have permissions from user, then this page will display
     return(
         <>
             <StatusBar barStyle="light-content" backgroundColor="#000" />
-            <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Go to settings and allow permission for this appplication</Text>
+            <SideNav buttonColor={'white'} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
+            <Text style = {{color: 'white', alignSelf:"center", bottom: -350}}>Go to settings and allow permission for this appplication</Text>
          </>
     )
 }
 
-if(!device){
+if(!device){ //if valid <Camera/> hardware device is not found, this content will be rendered instead.   
     return(
         <>
-            <Text style = {{color: theme?"black":"white", alignSelf:"center", bottom: -350}}>Camera Device not identitified</Text>
+            <Text style = {{color: 'white', alignSelf:"center", bottom: -350}}>Camera Device not identitified</Text>
         </>
     )
 }
@@ -209,7 +209,7 @@ if(!device){
 //const [frameH, setFrameHeight] = useState(0);
 //const [frameW, setFrameWidth] = useState(0);
 //const p = useSharedValue([]); 
-useAnimatedReaction(()=>textLabelSharedValm.value, (curr, prev) =>{
+useAnimatedReaction(()=>textLabelSharedValm.value, (curr, prev) =>{ //currently unused, can be deleted confidently, but is better if kept and ignored just in case for future errors or bugs, these can invoked as potential solutions instead 
  if(prev){
     //setTextLabel(prev); 
     
@@ -217,7 +217,7 @@ useAnimatedReaction(()=>textLabelSharedValm.value, (curr, prev) =>{
  
 });
 
-const updateExternals = Worklets.createRunOnJS((v, moveWindowIsOpenVal, fH, fW) =>{
+const updateExternals = Worklets.createRunOnJS((v, moveWindowIsOpenVal, fH, fW) =>{ //unused for now, may becoime useful in future to combat bugs 
     if(v != textLabelSharedValm.value){ //was textLabel
        //  Speak(v); 
     }
@@ -230,8 +230,8 @@ const updateExternals = Worklets.createRunOnJS((v, moveWindowIsOpenVal, fH, fW) 
 });
 
 
-useAnimatedReaction(() =>{'worklet'; return moveWindowIsOpen.value}, (curr, prev) =>{
-    'worklet'; 
+useAnimatedReaction(() =>{'worklet'; return moveWindowIsOpen.value}, (curr, prev) =>{ //useAnimatedReactiob 'reacts' or set sof a 'reaction' to a value change in a variable declared with the hook useSharedValue(...) hook and not useState(...) hook. | When value of bthe variable changes, a function is triggered 
+    'worklet'; //very important to include in functions if the function involves useSHaredValue(..) variables, setAnimatedReactiuons or if the function is called from inside the useFrameProcessor(...) hook 
     if(curr != prev){
         Worklets.createRunOnJS(() =>{
              set_moveWindowIsOpen(curr); 
@@ -461,11 +461,11 @@ const customFrameProcessor = useSkiaFrameProcessor((frame) =>{
 }, [textLabel, detectPlugin]);
 /* */
 
-const updatePoses = Worklets.createRunOnJS((p) =>{
+const updatePoses = Worklets.createRunOnJS((p) =>{ //updates pose, called from within useFrameProcessor() hook function
     setPoses(p); 
 });
 
-const speakFeedback = Worklets.createRunOnJS((v, moveWIndowOpen_) =>{
+const speakFeedback = Worklets.createRunOnJS((v, moveWIndowOpen_) =>{//invokes peaking mechanics
    if(!moveWIndowOpen_){
         //  TTS.speak(v); //speak the feedback
     }
@@ -488,15 +488,15 @@ const updatePoseBuffer = (p) =>{
   */
 //FLoat32 array buffer test:  END
  
-const default_useFramePorcessor = useFrameProcessor((frame) =>{
+const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important piece, it does exactly what it sname reflects: processes frames incoming from the <Camera/> tag and passes it onto the th enative side for evaluation and predictions 
     'worklet'; 
-    let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value});
+    let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
     //console.log(res[0]); 
     //console.log(res[3]); xx
-  
-    updatePoses(res[1]); 
+   
+    updatePoses(res[1]); //updates poses
     //console.log(res[1]);
-    //console.log("GRU prediciton: ", res[3]); 
+    
    // console.log("MoveWIndowIsOpen: ", moveWindowIsOpen.value)
    // console.log("UseGotStrikedOut: ", userGotStrikedOut.value)
    //console.log("Angles: ", res[2]); 
@@ -511,14 +511,15 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{
       // console.log(strikes.value)
        
     }else{
-      userCorrectMoves.value++; 
+      userCorrectMoves.value++; //incirment user correct moves isince the condition above was false
     };
 
     //speakFeedback(res[3], res[5]); 
-   if(!res[5] && res[4] > 0){
-    console.log(`Count ${res[0]}: ${res[3]}`)
+   if(!res[5] && res[4] > 0){ // {res[5]} represents moveWindowIsOpen from the native side | {res[4]} represents the greatets confidenc eindex of the ML model prediction array output passed from the native side 
+    console.log(`Count ${res[0]}: ${res[3]}`) 
    }
-    
+
+ 
     if(!userGotStrikedOut.value){
         if(moveWindowIsOpen.value && res[4] ){ //was if res[3] == 0
        // updateExternals(res[3], res[5], frame.height, frame.width); 
@@ -567,13 +568,13 @@ const SKELETON_CONNECTIONS = [
   ["head_joint", "right_eye_joint"],
   ["left_eye_joint", "left_ear_joint"],
   ["right_eye_joint", "right_ear_joint"]
-];
-const normalizeGLCoords = (x, y) => [
+]; //skeleton connections used for drawing connections between joints correctly to represent a human like drawing of the human body 
+const normalizeGLCoords = (x, y) => [ //nomralizes joint cordinates 
       1 - y * 2.005  ,
   1-x * 2    // Convert to [-1, 1] range
      // Flip vertically (WebGL Y-down to screen Y-up)
 ];
-function createShaderProgram(gl, vertexSrc, fragmentSrc) {
+function createShaderProgram(gl, vertexSrc, fragmentSrc) { //comonent required to initiate the OpenGLView setup which enables drawing onverlays on screen 
   const vs = gl.createShader(gl.VERTEX_SHADER);
   gl.shaderSource(vs, vertexSrc);
   gl.compileShader(vs);
@@ -590,18 +591,23 @@ function createShaderProgram(gl, vertexSrc, fragmentSrc) {
 
   return program;
 }
+
+//bellow is a openGL language (C++) string that sets the vector positions and size of points for the drawing done by the GLView component on screen
 const vertexShaderSource = `
         attribute vec2 position;
         void main() {
           gl_Position = vec4(position, 0.0, 1.0);
-          gl_PointSize = 20.0;
+          gl_PointSize = 20.0; 
         }
         `;
+
+  //below is a second code string in the openGL language (C++) which sets the color for the pooints
 const fragmentShaderSource = `
         precision mediump float;
         void main() {
           gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0); // green points
         }`;
+
 const drawSkeleton = useCallback((gl, joints, shaderProgram) => {//drawSkeleton : START
   SKELETON_CONNECTIONS.forEach(([start, end]) => {
     const j1 = joints[start];
@@ -641,9 +647,8 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram) => {//drawSkeleton 
 
 //console.log("Jab frames lngth:", jabFrames.length)
 const shaderProgramRef = useRef(null);
-const jabFrameIdx = useSharedValue(0); 
-
-const onContextCreate2 = async (gl) => {
+const jabFrameIdx = useSharedValue(0);  //although the name specififes jab, its used as a general index tracker for the animations to be displayed on the FeedbackScreen
+const onContextCreate2 = async (gl) => { // the function responsible of carrying out the steup and execution of openGL drawing on screen
   // gl?.cancelFeedbackLoop?.();
    
 if (!shaderProgramRef.current) {
@@ -681,7 +686,7 @@ if (!shaderProgramRef.current) {
 };
 
 
-const onContextCreate_feedbackScreen = async (gl) => {
+const onContextCreate_feedbackScreen = async (gl) => { //not neeeded anymore
 
    if (!jabFrames || jabFrames.length === 0) {
     console.warn("jabFrames not loaded yet.");
@@ -713,12 +718,12 @@ if (!shaderProgramRef.current) {
 
 
 
-useEffect(() => {
+useEffect(() => { //updates the latestPoseRef, very important
   if (poses?.[0]){ 
       latestPoseRef.current = poses[0];
   }
 
-}, [poses]);
+}, [poses]); //passing in this as last argument just specifies upon what should the function executed inside the useEffect hook shoul depend on / purpose based on some data(in this case, poses variable)
 
 
 
@@ -803,7 +808,6 @@ const onContextCreate = async (gl) => {
 
 
 //clock ufnctionality :
-
 const countDown = useSharedValue(180);  // initial count, in seconds
   const [minutes, setMinutes] = useState(3);
   const [seconds, setSeconds] = useState(0);
