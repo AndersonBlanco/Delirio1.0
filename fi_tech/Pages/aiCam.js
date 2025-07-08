@@ -114,7 +114,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
 
 //const {userStrikes, userStrikedOut} = userState; 
 
- //const model = useTensorflowModel(require('../components/pose_landmark_lite.tflite')); model loads correctly + no recursive reloading 
+ //const model = useTensorflowModel(require('../tf_models/punchClassification.tflite')); //model loads correctly + no recursive reloading 
 
 
 //custom GRU2 model initialization 
@@ -488,6 +488,14 @@ const updatePoseBuffer = (p) =>{
   */
 //FLoat32 array buffer test:  END
  
+
+/*
+
+Pose:  [{"head_joint": {"conf": 0.8154296875, "name": "head_joint", "x": 0.2755799889564514, "y": 0.8650012016296387}, "left_ear_joint": {"conf": 0.7626953125, "name": "left_ear_joint", "x": 0.27416253089904785, "y": 0.772429883480072}, "left_eye_joint": {"conf": 0.83935546875, "name": "left_eye_joint", "x": 0.25808513164520264, "y": 0.8358705043792725}, "left_foot_joint": {"conf": 0.2548828125, "name": "left_foot_joint", "x": 0.916772723197937, "y": 0.7006985545158386}, "left_forearm_joint": {"conf": 0.75927734375, "name": "left_forearm_joint", "x": 0.47521519660949707, "y": 0.6458866596221924}, "left_hand_joint": {"conf": 0.7451171875, "name": "left_hand_joint", "x": 0.585648238658905, "y": 0.7250705361366272}, "left_leg_joint": {"conf": 0.345458984375, "name": "left_leg_joint", "x": 0.7474462389945984, "y": 0.8088974356651306}, "left_shoulder_1_joint": {"conf": 0.740234375, "name": "left_shoulder_1_joint", "x": 0.3587661385536194, "y": 0.6952054500579834}, "left_upLeg_joint": {"conf": 0.3740234375, "name": "left_upLeg_joint", "x": 0.6154303550720215, "y": 0.7841629981994629}, "neck_1_joint": {"conf": 0.658203125, "name": "neck_1_joint", "x": 0.36932146549224854, "y": 0.8048836886882782}, "right_ear_joint": {"conf": 0.298583984375, "name": "right_ear_joint", "x": 0.27111393213272095, "y": 0.9224628806114197}, "right_eye_joint": {"conf": 0.751953125, "name": "right_eye_joint", "x": 0.2619226276874542, "y": 0.8966839909553528}, "right_foot_joint": {"conf": 0.177490234375, "name": "right_foot_joint", "x": 0.9470490217208862, "y": 0.9034504890441895}, "right_forearm_joint": {"conf": 0.196533203125, "name": "right_forearm_joint", "x": 0.4512541890144348, "y": 0.955840528011322}, "right_leg_joint": {"conf": 0.173828125, "name": "right_leg_joint", "x": 0.7485769987106323, "y": 0.8617675304412842}, "right_shoulder_1_joint": {"conf": 0.576171875, "name": "right_shoulder_1_joint", "x": 0.3798767924308777, "y": 0.914561927318573}, "right_upLeg_joint": {"conf": 0.35009765625, "name": "right_upLeg_joint", "x": 0.5963930487632751, "y": 0.9102357029914856}, "root": {"conf": 0.362060546875, "name": "root", "x": 0.6059117019176483, "y": 0.8471993505954742}}]
+
+
+
+*/
 const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important piece, it does exactly what it sname reflects: processes frames incoming from the <Camera/> tag and passes it onto the th enative side for evaluation and predictions 
     'worklet'; 
     let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
@@ -495,6 +503,23 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
     //console.log(res[3]); xx
    
     updatePoses(res[1]); //updates poses
+    //console.log('Training Angles angles', res[2]);
+    
+
+     if(res[2].length > 0){
+      console.log(res[2][0][0])
+     }
+
+
+    if(!res[5] && res[4]>0){
+      console.log(res[6])
+     console.log('40 Angles set: ', res[7])
+
+    }
+      
+
+
+
     //console.log(res[1]);
     
    // console.log("MoveWIndowIsOpen: ", moveWindowIsOpen.value)

@@ -37,34 +37,21 @@ double getAngle(NSArray *jointTrio, BOOL normalize){ // get angle method
     double x3 = fabs([p3[@"x"] doubleValue]);
     double y3 = fabs([p3[@"y"] doubleValue]);
     
-    // Calculate vectors from vertex to other points
-    double v1x = x1 - x2;
-    double v1y = y1 - y2;
-    double v2x = x3 - x2;
-    double v2y = y3 - y2;
-    
-    // Calculate magnitudes
-    double mag1 = sqrt(v1x * v1x + v1y * v1y);
-    double mag2 = sqrt(v2x * v2x + v2y * v2y);
-    
-    if (mag1 == 0 || mag2 == 0) {
-        return 0.0;
-    }
-    
-    // Calculate dot product and angle
-    double dotProduct = v1x * v2x + v1y * v2y;
-  double crossProduct = v1x*v2y - v1y*v2x;
-  
-    double cosAngle = dotProduct / (mag1 * mag2);
-    
-    // Clamp to avoid numerical errors
-    //cosAngle = fmax(-1.0, fmin(1.0, cosAngle));
-    
-  if(normalize){
-    return fabs(acos(cosAngle) * (180.0 / M_PI));
-  }else{
-    return fabs(acos(cosAngle) * (180.0 / M_PI));
-  }
+  double angle1 = atan2(y1 - y2, x1 - x2);
+     double angle2 = atan2(y3 - y2, x3 - x2);
+     
+     // Calculate the difference between the angles in radians.
+     double rads = angle2 - angle1;
+     
+     // Convert the radian difference to degrees.
+     double angle = fabs((rads) * (180/M_PI));
+     
+     // Adjust the angle if it's greater than 180 degrees.
+     if (angle > 180) {
+         return 360 - angle;
+     } else {
+         return angle;
+     }
 };
 
 int getLabel(MLMultiArray *pred){
@@ -124,7 +111,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      punchClassificationModel = [[punchClassification_coreml alloc] init];
     self->moveWindowIsOpen = YES;
      self->lastSampleTimestamp = -1.0;
-     self->sampleInterval = 5.0 / 40.0; // e.g. sample at 30 fps
+     self->sampleInterval = (40/30)/10; // e.g. sample at 30 fps
      self->tts = [[TTS alloc] init];
      self->maxConf_idx = -1;
      self->punchClassify_max_conf_idx = -1;
@@ -429,15 +416,19 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
     */
     //model prediction:
     
-    if (currentTimeSec - lastSampleTimestamp >= sampleInterval) {
+    if (currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
       lastSampleTimestamp = currentTimeSec;
+      double *angles_40frame_dataPointer = (double *)angles_40frame.dataPointer;
+      
       for (int i = 0; i < anglesOfInterest.count; i++) {
         double angleValue = [anglesOfInterest[i] doubleValue];
-        if (isnan(angleValue) || isinf(angleValue)) {
-          [angles_40frame setObject:@0.0 forKeyedSubscript:@[@0, @(count), @(i)]];
-        } else {
-          [angles_40frame setObject:anglesOfInterest[i] forKeyedSubscript:@[@0, @(count), @(i)]];
-        }
+        //was:
+        /*
+         
+         */
+        //NSLog((angleValue));
+        //below, flat index is used: batch * (maxFrames * maxAnglesWithinEachFrame) + currentFrames*maxAnglesWithinEachFrame + currentAngle
+        angles_40frame_dataPointer[count * 8 + i] = (isnan(angleValue) || isinf(angleValue)) ? 0.0 : angleValue;
       }
       
   
@@ -454,7 +445,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      //automatic start timer
       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
           self->moveWindowIsOpen = YES;
-          self->count = 0;  
+          self->count = 0;
         self->lastSampleTimestamp =-1.0;
       });
       
@@ -466,9 +457,26 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
       //GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
    
       
-      for(int x = 0; x < punchClassificationOutput.Identity.count; x++){
-        [temp addObject:punchClassificationOutput.Identity[x]];
+      for(int x = 0; x < angles_40frame.count; x++){
+        NSNumber *set = angles_40frame[x];
+       // for(int y = 0; y < 8; y++){
+          [temp addObject:set];
+      //  }
       }
+      
+      //generate valid array with valid data type to pass to JS thread
+      NSMutableArray *angleFramesArray = [NSMutableArray arrayWithCapacity:40];
+      double *ptr = (double *)angles_40frame.dataPointer;
+
+      for (int frame = 0; frame < 40; frame++) {
+        NSMutableArray *frameAngles = [NSMutableArray arrayWithCapacity:8];
+        for (int angle = 0; angle < 8; angle++) {
+          double value = ptr[frame * 8 + angle];
+          [frameAngles addObject:@(value)];
+        }
+        [angleFramesArray addObject:frameAngles];
+      }
+      
       
       //self->maxConf_idx = getLabel(model_output.Identity);
       self->punchClassify_max_conf_idx = getPunchTypeMaxConfIdx(punchClassificationOutput.Identity);
@@ -495,7 +503,8 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         @0,
         @(maxConf_idx),
         @(moveWindowIsOpen),
-        punchClassArray[punchClassify_max_conf_idx]
+        punchClassArray[punchClassify_max_conf_idx],
+        angleFramesArray
       ];
     }else{
       
