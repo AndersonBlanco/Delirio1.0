@@ -14,6 +14,7 @@
 #import "GRUsmd.h"
 #import <math.h>
 #import "TTS.h"
+//#import "MediaPipeTasksVision/MPPPoseLandmarker.h" // Import MediaPipe Header
 
 
 double getAngle(NSArray *jointTrio, BOOL normalize){ // get angle method
@@ -92,6 +93,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   TTS *tts;
   int maxConf_idx;
   int punchClassify_max_conf_idx;
+ 
 }
 @end
 
@@ -115,6 +117,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      self->tts = [[TTS alloc] init];
      self->maxConf_idx = -1;
      self->punchClassify_max_conf_idx = -1;
+    
      labelArray = @[
        @"good jab",
        @"bad jab - knee level lack",
@@ -201,6 +204,10 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   NSMutableArray *jointNames = [NSMutableArray array];
 
   CMSampleBufferRef buffer = frame.buffer;
+  
+
+  
+  
   //time component execution to handle consistent frame prediction and extract per desired time elapse
   CMTime timestamp = CMSampleBufferGetPresentationTimeStamp(buffer);
   NSTimeInterval currentTimeSec = CMTimeGetSeconds(timestamp);

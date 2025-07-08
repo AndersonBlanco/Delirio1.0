@@ -28,6 +28,9 @@ target 'fitech' do
       '--platform',
       'ios'
     ]
+
+  #install MediapipeTaskVision
+  #pod 'MediaPipeTasksVision'
   end
 
   config = use_native_modules!(config_command)
