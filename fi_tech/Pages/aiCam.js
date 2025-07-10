@@ -50,6 +50,7 @@ const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{});  /
         leftKnee_angle
 */
 
+//const mediapipePose_swiftPlugin = VisionCameraProxy.initFrameProcessorPlugin("medipaipePose_detect", {}); 
 
 export default function AICam({theme}){ //main function of the page 'AI_Cam' 
   const nav = useNavigation(); 
@@ -498,24 +499,30 @@ Pose:  [{"head_joint": {"conf": 0.8154296875, "name": "head_joint", "x": 0.27557
 */
 const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important piece, it does exactly what it sname reflects: processes frames incoming from the <Camera/> tag and passes it onto the th enative side for evaluation and predictions 
     'worklet'; 
+
+    //let res2 = mediapipePose_swiftPlugin.call(frame); 
+    //console.log(res2); 
+
+    if(detectPlugin == null){
+      console.log("A")
+    }else{
     let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
     //console.log(res[0]); 
     //console.log(res[3]); xx
-   
+  
     updatePoses(res[1]); //updates poses
     //console.log('Training Angles angles', res[2]);
     
 
-     if(res[2].length > 0){
-      console.log(res[2][0][0])
+     if(res[2].length > 0 && res[6] != "Wait for break to be over, punchClass"){
+      console.log(res[6])
+      //console.log(res[8])
+      textLabelSharedValm.value = res[6]; 
+
+     // console.log(res[2][0][0])
      }
 
-
-    if(!res[5] && res[4]>0){
-      console.log(res[6])
-     console.log('40 Angles set: ', res[7])
-
-    }
+ 
       
 
 
@@ -540,25 +547,28 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
     };
 
     //speakFeedback(res[3], res[5]); 
-   if(!res[5] && res[4] > 0){ // {res[5]} represents moveWindowIsOpen from the native side | {res[4]} represents the greatets confidenc eindex of the ML model prediction array output passed from the native side 
-    console.log(`Count ${res[0]}: ${res[3]}`) 
-   }
+   //if(!res[5] && res[4] > 0){ // {res[5]} represents moveWindowIsOpen from the native side | {res[4]} represents the greatets confidenc eindex of the ML model prediction array output passed from the native side 
+   // console.log(`Count ${res[0]}: ${res[3]}`) 
+   //}
 
  
     if(!userGotStrikedOut.value){
-        if(moveWindowIsOpen.value && res[4] ){ //was if res[3] == 0
+      if(res[5] && res[6] != textLabelSharedValm.value && res[6] != "Wait for break to be over, punchClass" && res[6] != -1){ //was if res[3] == 0
        // updateExternals(res[3], res[5], frame.height, frame.width); 
      
-          textLabelSharedValm.value = res[3]; 
-          //console.log(res[3]); 
+          //textLabelSharedValm.value = res[6]; 
+           console.log(res[3]); 
 
-        //console.log(res[1]); 
-        }
+         console.log(res[1]); 
+      }
         //if res[5] == true:
-        moveWindowIsOpen.value = res[5]; 
+       moveWindowIsOpen.value = res[5]; 
      
     }
      
+ 
+  }
+
 
 }, [userGotStrikedOut.value]);
 

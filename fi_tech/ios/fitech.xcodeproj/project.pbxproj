@@ -12,9 +12,10 @@
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		629CFED5E5E8AB3FB7786128 /* libPods-fitech.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */; };
 		9518585383384099B5EFFF3D /* poseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B112B2F31484420900D2335 /* poseDetection.m */; };
+		9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */; };
 		9C4B115D2E13775600C69C6D /* TTS.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C4B115C2E13775400C69C6D /* TTS.m */; };
 		9C4B11612E15890C00C69C6D /* GRUsmd.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C4B11602E15890C00C69C6D /* GRUsmd.mlpackage */; };
-		9C6BEC0F2E1D10C500FF8FE1 /* punchClassification_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C6BEC0E2E1D10C500FF8FE1 /* punchClassification_coreml.mlpackage */; };
+		9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */; };
 		AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72963B96E00B094C16768759 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
@@ -28,10 +29,11 @@
 		72963B96E00B094C16768759 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-fitech/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		87F39A93186C524275BD8B0A /* Pods-fitech.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fitech.release.xcconfig"; path = "Target Support Files/Pods-fitech/Pods-fitech.release.xcconfig"; sourceTree = "<group>"; };
 		9B112B2F31484420900D2335 /* poseDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = poseDetection.m; sourceTree = "<group>"; };
+		9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml4.mlpackage; sourceTree = "<group>"; };
 		9C4B115B2E13773F00C69C6D /* TTS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TTS.h; sourceTree = "<group>"; };
 		9C4B115C2E13775400C69C6D /* TTS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TTS.m; sourceTree = "<group>"; };
 		9C4B11602E15890C00C69C6D /* GRUsmd.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRUsmd.mlpackage; sourceTree = "<group>"; };
-		9C6BEC0E2E1D10C500FF8FE1 /* punchClassification_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml.mlpackage; sourceTree = "<group>"; };
+		9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml.mlpackage; sourceTree = "<group>"; };
 		A03F2ECE171E1E568FF4557F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = fitech/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-fitech.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = fitech/SplashScreen.storyboard; sourceTree = "<group>"; };
@@ -112,7 +114,8 @@
 				9C4B11602E15890C00C69C6D /* GRUsmd.mlpackage */,
 				9C4B115B2E13773F00C69C6D /* TTS.h */,
 				9C4B115C2E13775400C69C6D /* TTS.m */,
-				9C6BEC0E2E1D10C500FF8FE1 /* punchClassification_coreml.mlpackage */,
+				9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */,
+				9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -184,7 +187,8 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1130;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
@@ -352,10 +356,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */,
 				AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */,
-				9C6BEC0F2E1D10C500FF8FE1 /* punchClassification_coreml.mlpackage in Sources */,
 				9C4B115D2E13775600C69C6D /* TTS.m in Sources */,
 				9C4B11612E15890C00C69C6D /* GRUsmd.mlpackage in Sources */,
+				9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */,
 				9518585383384099B5EFFF3D /* poseDetection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -377,6 +382,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU54R9648P;
 				ENABLE_BITCODE = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
@@ -419,6 +425,7 @@
 				COREML_CODEGEN_SWIFT_GLOBAL_MODULE = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU54R9648P;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = fitech/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FiTech;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -447,6 +454,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -466,6 +474,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -473,8 +482,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = MU54R9648P;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -498,10 +509,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -513,6 +521,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -532,6 +541,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -539,8 +549,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = MU54R9648P;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -556,12 +568,10 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};

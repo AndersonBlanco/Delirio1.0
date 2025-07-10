@@ -10,11 +10,163 @@
 #import <CoreML/CoreML.h>
 #import <Foundation/Foundation.h>
 #import <dispatch/dispatch.h>
-#import "punchClassification_coreml.h"
+//#import "punchClassification_coreml.h"
+//#import "punchClassification_coreml3.h"
+#import "punchClassification_coreml4.h"
 #import "GRUsmd.h"
 #import <math.h>
 #import "TTS.h"
 //#import "MediaPipeTasksVision/MPPPoseLandmarker.h" // Import MediaPipe Header
+#import <CoreMedia/CoreMedia.h>
+#import <CoreVideo/CoreVideo.h>
+#import <Accelerate/Accelerate.h>
+
+/*
+//gray scale buffer concerter: START
+CMSampleBufferRef createGrayscaleCMSampleBuffer(CMSampleBufferRef sourceSampleBuffer) {
+    if (!sourceSampleBuffer) {
+        return NULL;
+    }
+
+    // 1. Extract CVPixelBufferRef from the source CMSampleBufferRef
+    CVImageBufferRef sourceImageBuffer = CMSampleBufferGetImageBuffer(sourceSampleBuffer);
+    if (!sourceImageBuffer) {
+        NSLog(@"Error: Could not get image buffer from source sample buffer.");
+        return NULL;
+    }
+
+    CVPixelBufferRef sourcePixelBuffer = (CVPixelBufferRef)sourceImageBuffer; // CVImageBufferRef is typedef for CVPixelBufferRef
+    
+    // Get image dimensions
+    size_t width = CVPixelBufferGetWidth(sourcePixelBuffer);
+    size_t height = CVPixelBufferGetHeight(sourcePixelBuffer);
+
+    // Lock the base address of the source pixel buffer
+    CVPixelBufferLockBaseAddress(sourcePixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+    // Get information about the source pixel buffer
+    void *sourceBaseAddress = CVPixelBufferGetBaseAddress(sourcePixelBuffer);
+    size_t sourceBytesPerRow = CVPixelBufferGetBytesPerRow(sourcePixelBuffer);
+    OSType sourcePixelFormat = CVPixelBufferGetPixelFormatType(sourcePixelBuffer);
+
+    // Ensure the source format is 32BGRA for this example.
+    // Handle other formats or convert first if your camera outputs different types.
+    if (sourcePixelFormat != kCVPixelFormatType_32BGRA) {
+        NSLog(@"Error: Unsupported pixel format. This function expects kCVPixelFormatType_32BGRA, but got %d.", (int)sourcePixelFormat);
+        CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, kCVPixelBufferLock_ReadOnly);
+        return NULL;
+    }
+
+    // Create a vImage_Buffer from the source CVPixelBuffer
+    vImage_Buffer sourceBuffer = {
+        .data = sourceBaseAddress,
+        .height = height,
+        .width = width,
+        .rowBytes = sourceBytesPerRow
+    };
+
+    // Create a new CVPixelBuffer for the grayscale output
+    CVPixelBufferRef grayPixelBuffer = nil;
+    CVReturn cvRet = CVPixelBufferCreate(kCFAllocatorDefault,
+                                        width,
+                                        height,
+                                         kCVPixelFormatType_8Indexed, // Grayscale format
+                                        nil, // Optional pixel buffer attributes
+                                        &grayPixelBuffer);
+
+    if (cvRet != kCVReturnSuccess) {
+        NSLog(@"Error creating grayscale pixel buffer: %d", cvRet);
+        CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, kCVPixelBufferLock_ReadOnly);
+        return NULL;
+    }
+
+    // Lock the base address of the grayscale pixel buffer
+    CVPixelBufferLockBaseAddress(grayPixelBuffer, 0);
+    void *grayBaseAddress = CVPixelBufferGetBaseAddress(grayPixelBuffer);
+    size_t grayBytesPerRow = CVPixelBufferGetBytesPerRow(grayPixelBuffer);
+
+    // Create a vImage_Buffer for the grayscale destination
+    vImage_Buffer destBuffer = {
+        .data = grayBaseAddress,
+        .height = height,
+        .width = width,
+        .rowBytes = grayBytesPerRow
+    };
+
+    // Grayscale conversion using vImageMatrixMultiply_ARGB8888
+    // Weights for luminance (standard NTSC values)
+    const int16_t matrix[] = {
+        (int16_t)(0.114 * 256), // Blue channel weight (BGRA -> B)
+        (int16_t)(0.587 * 256), // Green channel weight (BGRA -> G)
+        (int16_t)(0.299 * 256), // Red channel weight (BGRA -> R)
+        0                      // Alpha channel (ignored for grayscale)
+    };
+    int32_t divisor = 256; // To normalize the output values (sum of weights is 1)
+
+    vImage_Error vImageError = vImageMatrixMultiply_ARGB8888(&sourceBuffer,
+                                                              &destBuffer,
+                                                              matrix,
+                                                              divisor,
+                                                              NULL, // Background color (not needed for grayscale)
+                                                              NULL, // Flags (not used here)
+                                                              kvImageNoFlags);
+
+    if (vImageError != kvImageNoError) {
+        NSLog(@"vImage grayscale conversion error: %zd", vImageError);
+        CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, kCVPixelBufferLock_ReadOnly);
+        CVPixelBufferUnlockBaseAddress(grayPixelBuffer, 0);
+        CVPixelBufferRelease(grayPixelBuffer); // Release the partially created buffer
+        return NULL;
+    }
+
+    // Unlock the base addresses
+    CVPixelBufferUnlockBaseAddress(sourcePixelBuffer, kCVPixelBufferLock_ReadOnly);
+    CVPixelBufferUnlockBaseAddress(grayPixelBuffer, 0);
+
+    // --- Now, create a new CMSampleBufferRef from the grayscale CVPixelBufferRef ---
+    
+    // Get timing and format information from the source sample buffer
+    CMVideoFormatDescriptionRef sourceFormatDescription = CMSampleBufferGetFormatDescription(sourceSampleBuffer);
+    CMSampleTimingInfo sourceTimingInfo = kCMTimingInfoInvalid;
+    CMSampleBufferGetSampleTimingInfo(sourceSampleBuffer, 0, &sourceTimingInfo); // Get timing info
+
+    // Create a new format description for the grayscale pixel buffer
+    CMVideoFormatDescriptionRef grayFormatDescription = nil;
+    CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, grayPixelBuffer, &grayFormatDescription);
+    
+    if (!grayFormatDescription) {
+        NSLog(@"Error creating grayscale format description.");
+        CVPixelBufferRelease(grayPixelBuffer);
+        return NULL;
+    }
+
+    CMSampleBufferRef grayscaleSampleBuffer = nil;
+    OSStatus status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault,
+                                                               grayPixelBuffer,
+                                                               grayFormatDescription, // Use the new grayscale format description
+                                                               &sourceTimingInfo,     // Use timing info from source
+                                                               &grayscaleSampleBuffer);
+
+    // Release the format descriptions
+    CFRelease(grayFormatDescription);
+    
+    // Release the pixel buffer as the sample buffer now holds a reference to it
+    // IMPORTANT: It's crucial to release grayPixelBuffer here to prevent a memory leak
+    CVPixelBufferRelease(grayPixelBuffer);
+
+    if (status != noErr) {
+        NSLog(@"Error creating CMSampleBuffer: %d", (int)status);
+        if (grayscaleSampleBuffer) {
+            CFRelease(grayscaleSampleBuffer);
+        }
+        return NULL;
+    }
+
+    return grayscaleSampleBuffer;
+}
+
+//gray scale buffer converter: END .
+*/
 
 
 double getAngle(NSArray *jointTrio, BOOL normalize){ // get angle method
@@ -70,21 +222,24 @@ int getLabel(MLMultiArray *pred){
 
 int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   int max_conf_idx = 0;
-  for(int i = 0; i < 4; i++){
-    if([prediction[max_conf_idx] doubleValue] < [prediction[max_conf_idx] doubleValue]){
+  for(int i = 0; i < 3; i++){
+    if([prediction[max_conf_idx] doubleValue] < [prediction[i] doubleValue]){
       max_conf_idx = i;
     }
   };
   return max_conf_idx;
 }
 
+
+
+
 @interface poseDetectionPlugin : FrameProcessorPlugin{
   int count;
   bool reached40;
   BOOL nilValuefound;
   MLMultiArray *angles_40frame;
-  //GRUsmd *model;
-  punchClassification_coreml *punchClassificationModel;
+  GRUsmd *model;
+  punchClassification_coreml4 *punchClassificationModel;
   NSArray *labelArray;
   NSArray *punchClassArray;
   BOOL moveWindowIsOpen;
@@ -93,7 +248,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   TTS *tts;
   int maxConf_idx;
   int punchClassify_max_conf_idx;
- 
+  CIContext *contxt;
 }
 @end
 
@@ -109,11 +264,11 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      reached40 = false;
      nilValuefound = NO;
     angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
-   // model = [[GRUsmd alloc] init];
-     punchClassificationModel = [[punchClassification_coreml alloc] init];
+      model = [[GRUsmd alloc] init];
+     punchClassificationModel = [[punchClassification_coreml4 alloc] init];
     self->moveWindowIsOpen = YES;
      self->lastSampleTimestamp = -1.0;
-     self->sampleInterval = (40/30)/10; // e.g. sample at 30 fps
+     self->sampleInterval = ((40/30)/10); // e.g. sample at 30 fps
      self->tts = [[TTS alloc] init];
      self->maxConf_idx = -1;
      self->punchClassify_max_conf_idx = -1;
@@ -133,8 +288,6 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      punchClassArray = @[
        @"jab",
        @"straightRight",
-       @"upperCut",
-       @"hook",
        @"rest"
      ];
      
@@ -148,7 +301,8 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      BOOL success = [session setCategory:AVAudioSessionCategoryPlayback
                              withOptions:AVAudioSessionCategoryOptionMixWithOthers
                                    error:&audioSessionError];
-
+     self->contxt= [CIContext contextWithOptions:nil];
+     
      if (!success) {
        NSLog(@"Failed to set audio session category: %@", audioSessionError.localizedDescription);
      }
@@ -173,9 +327,9 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
 }
 
 
+
 - (id _Nullable)callback:(Frame* _Nonnull)frame
            withArguments:(NSDictionary* _Nullable)arguments {
-
   
   BOOL userStrikedOut = NO;
   if(arguments[@"userStrikedOut"] != nil){
@@ -202,12 +356,9 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   
   
   NSMutableArray *jointNames = [NSMutableArray array];
-
+  
   CMSampleBufferRef buffer = frame.buffer;
-  
 
-  
-  
   //time component execution to handle consistent frame prediction and extract per desired time elapse
   CMTime timestamp = CMSampleBufferGetPresentationTimeStamp(buffer);
   NSTimeInterval currentTimeSec = CMTimeGetSeconds(timestamp);
@@ -281,7 +432,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         [jointNames addObject: j];
         NSError *jError = nil;
         VNRecognizedPoint *recognPoint = [poseObserv recognizedPointForJointName:j error:&jError];
-        if(recognPoint != nil && recognPoint.confidence>0.0){
+        if(recognPoint != nil && recognPoint.confidence>0.25){ //set confidence threshold to convinience | currently is 0.0 - may be very low and cause poor performance????
         
           CGPoint normPoint = CGPointMake(recognPoint.location.x, 1.0 -  recognPoint.location.y); //was mirrored with 1.0 - recognPoint.location.y
           if(recognPoint == nil){
@@ -456,20 +607,21 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         self->lastSampleTimestamp =-1.0;
       });
       
-      //GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
+      GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
       
-      punchClassification_coremlOutput *punchClassificationOutput = [punchClassificationModel predictionFromInput_1:angles_40frame error:&error];
+      punchClassification_coreml4Output *punchClassificationOutput = [punchClassificationModel predictionFromInput_1:angles_40frame error:&error];
     
       NSMutableArray *temp = [[NSMutableArray alloc] init];
-      //GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
+     
    
-      
-      for(int x = 0; x < angles_40frame.count; x++){
-        NSNumber *set = angles_40frame[x];
+   /*
+      for(int x = 0; x < punchClassificationOutput.Identity.count; x++){
+        NSNumber *val = punchClassificationOutput.Identity[x];
        // for(int y = 0; y < 8; y++){
-          [temp addObject:set];
+          [temp addObject:val];
       //  }
       }
+      */
       
       //generate valid array with valid data type to pass to JS thread
       NSMutableArray *angleFramesArray = [NSMutableArray arrayWithCapacity:40];
@@ -508,7 +660,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         ],
         //labelArray[maxConf_idx], //predictions,
         @0,
-        @(maxConf_idx),
+        @(punchClassify_max_conf_idx), //was maxConf_idx
         @(moveWindowIsOpen),
         punchClassArray[punchClassify_max_conf_idx],
         angleFramesArray
