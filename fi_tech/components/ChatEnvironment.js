@@ -12,7 +12,7 @@ import { GiftedChatContext, GiftedAvatar, GiftedChat, InputToolbar, Avatar, util
 import Logo from "../assets/fiTech_logo.png";
 import { Icon } from "react-native-elements";
 import { useSharedValue } from "react-native-worklets-core";
-import { OpenAI } from "openai/client.js";
+//import { OpenAI } from "openai/client.js";
 
 //import SideNav from "../components/sideNav";
 //gluetsack-ui for dynamic alert chat prmopt pop ups offer after button click 
@@ -21,12 +21,12 @@ import { OpenAI } from "openai/client.js";
 //react native windUI
 //react native ui kitten - for Date Picker and for spinner loading icon maybe 
 let a; 
-
+/*
 const openAI = new OpenAI({
     apiKey: a,
     dangerouslyAllowBrowser: false
 });
-
+*/
 export default function ChatEnvironment({viewStyle, isKeyboardInternallyHandled}){
  const [msg, setMsg] = useState("");
 const create_gpt_resposne = async(txt) =>{
