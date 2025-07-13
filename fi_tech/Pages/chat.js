@@ -21,7 +21,7 @@ import SideNav from "../components/sideNav";
 //react native windUI
 //react native ui kitten - for Date Picker and for spinner loading icon maybe 
 
-//open-ai api-key: 
+
 
 export default function AI_Chat({theme}){
 

@@ -20,8 +20,8 @@ import { OpenAI } from "openai/client.js";
 //Tamagui 
 //react native windUI
 //react native ui kitten - for Date Picker and for spinner loading icon maybe 
+let a; 
 
-//open-ai api-key: 
 const openAI = new OpenAI({
     apiKey: a,
     dangerouslyAllowBrowser: true
