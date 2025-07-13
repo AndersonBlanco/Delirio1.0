@@ -22,7 +22,6 @@ import { OpenAI } from "openai/client.js";
 //react native ui kitten - for Date Picker and for spinner loading icon maybe 
 
 //open-ai api-key: 
-const open_ai_api_key = "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"; 
 const openAI = new OpenAI({
     apiKey: open_ai_api_key,
     dangerouslyAllowBrowser: true
