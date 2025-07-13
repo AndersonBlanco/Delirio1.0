@@ -22,7 +22,10 @@ import { OpenAI } from "openai/client.js";
 //react native ui kitten - for Date Picker and for spinner loading icon maybe 
 let a; 
 
-
+const openAI = new OpenAI({
+    apiKey: a,
+    dangerouslyAllowBrowser: false
+});
 
 export default function ChatEnvironment({viewStyle, isKeyboardInternallyHandled}){
  const [msg, setMsg] = useState("");
