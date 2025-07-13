@@ -23,7 +23,7 @@ import { OpenAI } from "openai/client.js";
 
 //open-ai api-key: 
 const openAI = new OpenAI({
-    apiKey: open_ai_api_key,
+    apiKey: a,
     dangerouslyAllowBrowser: true
 });
 
