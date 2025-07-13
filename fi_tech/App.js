@@ -18,6 +18,7 @@ import Advice from './Pages/advice.js';
 import AICam from './Pages/aiCam.js';
 import Lessons from './Pages/lessons.js';
 import GenCam from './DataGeneration/cam.js';
+import AI_Chat from './Pages/chat.js';
 const Stack = createNativeStackNavigator();
 const colorScheme = {
   sixty: "rgba(22, 22, 22, 1)",
@@ -46,7 +47,7 @@ function App() {
           },
           
         }}
-        initialRouteName="AI_Cam"
+        initialRouteName="AI_Chat"
       >
         <Stack.Screen name="I_ntro" component={Intro}  /> 
         <Stack.Screen name="Auth" component={AuthScreen} />
@@ -97,6 +98,15 @@ function App() {
           <Stack.Screen 
         name="AI_Cam" 
         component={AICam} 
+        options ={{
+          contentStyle:{
+            backgroundColor: colorScheme.sixty
+          }
+        }}/>
+
+     <Stack.Screen 
+        name="AI_Chat" 
+        component={AI_Chat} 
         options ={{
           contentStyle:{
             backgroundColor: colorScheme.sixty

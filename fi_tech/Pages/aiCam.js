@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import {Animated, View, ActivityIndicator, StyleSheet, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, Easing, Touchable,  } from 'react-native';
-import {Text, VStack} from "swiftui-react-native"; 
+import {Text, Animated, View, ActivityIndicator, StyleSheet, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, Easing, Touchable,  } from 'react-native';
+import { VStack} from "swiftui-react-native"; 
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
 import { VisionCameraProxy, Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor, runAsync, runAtTargetFps} from 'react-native-vision-camera';
@@ -34,6 +34,12 @@ import OneTwoAnimation from "../assets/OneTwoAnimation.json";
 import StraightRightAnimation from "../assets/straightRightAnimation1.json"; 
 import JabAnimation3 from "../assets/jabAnimation3.json";
 import { useNavigation } from "@react-navigation/native"; //in react native, this is a hook. Anything that starts with a 'use....' is a hook an dmust be declared inside a function soley.s
+import * as Reusable from "@react-native-reusables/cli";
+
+//import custom components: START
+import AI_Chat from './chat';
+import ChatEnvironment from '../components/ChatEnvironment';
+//import custom components: END
 
 const {TTS} = NativeModules; 
 const detectPlugin = VisionCameraProxy.initFrameProcessorPlugin("detect",{});  //the custom native code plugin importioned from the nxcode native side | the string "detect" is the exact native side function name which must be matched here as seen in the string argument
@@ -56,10 +62,9 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
   const nav = useNavigation(); 
    // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
    const strikes = useSharedValue(0);
-   const userGotStrikedOut = useSharedValue(false);
-   const userIncorrectMoves = useSharedValue(0);
+   const userGotStrikedOut = useSharedValue(true);
    const userCorrectMoves = useSharedValue(0);
-
+   const tempFrameCounter = useSharedValue(0); 
    /*
     const [userState, steUserState] = useState({
         userStrikes: useDerivedValue(() => strikes.value),
@@ -86,16 +91,16 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
 
         }else{
           strikes.value = val; 
-          userGotStrikedOut.value= false; 
+          userGotStrikedOut.value = false; 
         }
-        userIncorrectMoves.value++; 
+        //userIncorrectMoves.value++; 
         //console.log("incirmented to: ", strikes.value); 
     };
 
     const incrimentUserStrikes = Worklets.createRunOnJS(() =>{ //incriments user's strikes by 1 
         'worklet';
         let val = strikes.value + 1; 
-        if (val >=4){ //extra to 4, not 3 for padding space
+        if (val >=3){ //extra to 4, not 3 for padding space
           strikes.value = 0;
           userGotStrikedOut.value = true; 
           
@@ -504,22 +509,51 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
     //console.log(res2); 
 
     if(detectPlugin == null){
-      console.log("A")
+      console.log("null value for plugin ")
     }else{
+
+ 
     let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
     //console.log(res[0]); 
     //console.log(res[3]); xx
   
     updatePoses(res[1]); //updates poses
     //console.log('Training Angles angles', res[2]);
-    
+    if(res[2].length > 0){
+        //console.log(res[2])
+       
+    }
+     
+    /*
+    //console.log(tempFrameCounter.value)
+        if(tempFrameCounter.value >= 100){
+          if(res[7] != null){
+          //console.log(res[7])
+          }
+          //console.log("Data Gathering Session END");
+                tempFrameCounter.value = 0; 
+        }else{
+          tempFrameCounter.value++; 
+        }
+*/
 
      if(res[2].length > 0 && res[6] != "Wait for break to be over, punchClass"){
-      console.log(res[6])
-      //console.log(res[8])
+      //console.log(res[6])
+ 
+      //console.log(res[7].length)
+      
       textLabelSharedValm.value = res[6]; 
 
      // console.log(res[2][0][0])
+      
+     if(res[4] % 2 != 0){
+      incrimentUserStrikes()
+     }else{
+      userCorrectMoves.value++; 
+     };
+
+     console.log(strikes.value)
+
      }
 
  
@@ -534,17 +568,20 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
    //console.log("Angles: ", res[2]); 
   // updateLatestPoseRef(res[1][0])
     //latestPoseRef.current = res[1][0]; 
-    
-    if((res[4])>0 && res[4] %2 != 0){ //since all incorrect representing labels are at uneven indecies in the labelArray hot-encoding prediction output array
+
+
+      /*
+    if(!res[5] && res[4] % 2 == 0 && res[4] > -1){ //since all incorrect representing labels are at uneven indecies in the labelArray hot-encoding prediction output array
        //  incrimentUserStrikes(); 
        incrimentUserStrikes();
        //console.log("ConfIdx: ", res[4]%2)
 
-      // console.log(strikes.value)
+      console.log(strikes.value)
        
     }else{
       userCorrectMoves.value++; //incirment user correct moves isince the condition above was false
     };
+*/
 
     //speakFeedback(res[3], res[5]); 
    //if(!res[5] && res[4] > 0){ // {res[5]} represents moveWindowIsOpen from the native side | {res[4]} represents the greatets confidenc eindex of the ML model prediction array output passed from the native side 
@@ -878,15 +915,24 @@ const countDown = useSharedValue(180);  // initial count, in seconds
 
   const skipFeedback_opacity = useRef(new Animated.Value(0)).current;
 
+const midChat = (
+    <View style = {{ paddingBottom: 0, borderRadius: 10, right: 10.1, top: 43, zIndex: 100, backgroundColor: "rgb(42, 42, 42)", position:"absolute", height: Dimensions.get('screen').height * .25, width: Dimensions.get('screen').width * .95, }}>
+             <ChatEnvironment isKeyboardInternallyHandled = {false} viewStyle={{flex: 1, paddingVertical: 0, paddingHorizontal: 2, paddingTop: 1, paddingBottom: 25}}/>
+     
+        </View>
+)
 const FeedbackInteruptionScreen = (
-    
+    <>
         <View onTouchStart={resetUserState} style = {{flex: 1, position:"absolute", height: ScreenHeight, width:ScreenWidth, backgroundColor:"transparent"}}>
 
-            <View>{/*animation skeleton for correction*/}</View>
-         
+            <View>{/*animation skeleton for correction*/}</View>         
             <Animated.Text style = {{position:"absolute", bottom: 50, color:"black", left: ScreenWidth/5.25, opacity: skipFeedback_opacity}}>Tap anywhere on screen to skip</Animated.Text>
 
         </View>
+
+            <TouchableOpacity style = {{backgroundColor:"black", top: 59, width: 200, alignSelf:'center', borderRadius: 100, paddingVertical: 10, alignItems:"center", }}><Text textFieldStyle='roundedBorder' style ={{color:"white"}}>Discuss</Text></TouchableOpacity>
+
+        </>
     );
 
 

@@ -20,7 +20,7 @@
 #import <CoreMedia/CoreMedia.h>
 #import <CoreVideo/CoreVideo.h>
 #import <Accelerate/Accelerate.h>
-
+#import "CHAINED_MODEL_coreml.h"
 /*
 //gray scale buffer concerter: START
 CMSampleBufferRef createGrayscaleCMSampleBuffer(CMSampleBufferRef sourceSampleBuffer) {
@@ -168,44 +168,50 @@ CMSampleBufferRef createGrayscaleCMSampleBuffer(CMSampleBufferRef sourceSampleBu
 //gray scale buffer converter: END .
 */
 
+double getAngle(NSArray *jointTrio, BOOL random) {
+    if (jointTrio == nil || jointTrio.count != 3) {
+        return 0.0;
+    }
 
-double getAngle(NSArray *jointTrio, BOOL normalize){ // get angle method
-  
-  if (jointTrio == nil || jointTrio.count != 3) {
+    NSDictionary *a = jointTrio[0]; // Point A
+    NSDictionary *b = jointTrio[1]; // Vertex B
+    NSDictionary *c = jointTrio[2]; // Point C
+
+    if (!a || !b || !c) {
         return 0.0;
     }
-    
-    NSDictionary *p1 = jointTrio[0];
-    NSDictionary *p2 = jointTrio[1]; // vertex point
-    NSDictionary *p3 = jointTrio[2];
-    
-    if (!p1 || !p2 || !p3) {
-        return 0.0;
-    }
-    
-    double x1 = fabs([p1[@"x"] doubleValue]);
-    double y1 = fabs([p1[@"y"] doubleValue]);
-    double x2 = fabs([p2[@"x"] doubleValue]);
-    double y2 = fabs([p2[@"y"] doubleValue]);
-    double x3 = fabs([p3[@"x"] doubleValue]);
-    double y3 = fabs([p3[@"y"] doubleValue]);
-    
-  double angle1 = atan2(y1 - y2, x1 - x2);
-     double angle2 = atan2(y3 - y2, x3 - x2);
-     
-     // Calculate the difference between the angles in radians.
-     double rads = angle2 - angle1;
-     
-     // Convert the radian difference to degrees.
-     double angle = fabs((rads) * (180/M_PI));
-     
-     // Adjust the angle if it's greater than 180 degrees.
-     if (angle > 180) {
-         return 360 - angle;
-     } else {
-         return angle;
-     }
-};
+
+    double ax = [a[@"x"] doubleValue];
+    double ay = [a[@"y"] doubleValue];
+    double bx = [b[@"x"] doubleValue];
+    double by = [b[@"y"] doubleValue];
+    double cx = [c[@"x"] doubleValue];
+    double cy = [c[@"y"] doubleValue];
+
+    // Vectors AB and CB
+    double abx = bx - ax;
+    double aby = by - ay;
+    double cbx = bx - cx;
+    double cby = by - cy;
+
+    // Dot product
+    double dot = abx * cbx + aby * cby;
+
+    // Magnitudes
+    double abMag = sqrt(abx * abx + aby * aby);
+    double cbMag = sqrt(cbx * cbx + cby * cby);
+
+    // Avoid division by zero
+    double denominator = fmax(abMag * cbMag, 1e-5);
+    double cosTheta = dot / denominator;
+
+    // Clamp value to [-1, 1] to avoid NaN from acos
+    cosTheta = fmax(-1.0, fmin(1.0, cosTheta));
+
+    double angle = acos(cosTheta); // in radians
+    return angle / ( M_PI); // Normalize between 0 and 1
+}
+
 
 int getLabel(MLMultiArray *pred){
   int maxConfidenceIndex_in_pred = 0;
@@ -230,6 +236,16 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   return max_conf_idx;
 }
 
+int getCHAIEND_maxIdx(MLMultiArray *prediction){
+  int max_conf_idx = 0;
+  for(int i = 0; i < 6; i++){
+    if([prediction[max_conf_idx] doubleValue] < [prediction[i] doubleValue]){
+      max_conf_idx = i;
+    }
+  };
+  return max_conf_idx;
+}
+
 
 
 
@@ -239,16 +255,22 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   BOOL nilValuefound;
   MLMultiArray *angles_40frame;
   GRUsmd *model;
-  punchClassification_coreml4 *punchClassificationModel;
+  //punchClassification_coreml4 *punchClassificationModel;
+  //CHAINED_MODEL_coreml *chained_model;
   NSArray *labelArray;
   NSArray *punchClassArray;
+  NSArray *CHAINED_labelArray;
   BOOL moveWindowIsOpen;
   NSTimeInterval lastSampleTimestamp;
   NSTimeInterval sampleInterval;
   TTS *tts;
   int maxConf_idx;
   int punchClassify_max_conf_idx;
+  int chained_max_idx;
+  
+  NSMutableArray *set100_training;
   CIContext *contxt;
+  //MLMultiArray *test_input;
 }
 @end
 
@@ -265,14 +287,16 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      nilValuefound = NO;
     angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
       model = [[GRUsmd alloc] init];
-     punchClassificationModel = [[punchClassification_coreml4 alloc] init];
+     //punchClassificationModel = [[punchClassification_coreml4 alloc] init];
+    // self->chained_model = [[CHAINED_MODEL_coreml alloc] init];
     self->moveWindowIsOpen = YES;
      self->lastSampleTimestamp = -1.0;
-     self->sampleInterval = ((40/30)/10); // e.g. sample at 30 fps
+     self->sampleInterval = 0.15; //was (40/30)/10; // e.g. sample at 30 fps
      self->tts = [[TTS alloc] init];
      self->maxConf_idx = -1;
      self->punchClassify_max_conf_idx = -1;
-    
+     self->chained_max_idx = -1;
+     self->set100_training = [[NSMutableArray alloc] init];
      labelArray = @[
        @"good jab",
        @"bad jab - knee level lack",
@@ -283,13 +307,14 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
        @"good rest",
        @"bad rest, wrong stance",
        
-       @"good kick",
-       @"bad kick, don't lounge leg out"];
+        @"good rest",//@"bad jab, dont punch down",
+       @"bad rest, straigthnen your back and up your guard"]; //  was bad kick
      punchClassArray = @[
        @"jab",
        @"straightRight",
        @"rest"
      ];
+     CHAINED_labelArray = @[@"jab_lack_of_rotation", @"jab_correct", @"straight_right_lack_of_rotation", @"straight_right_correct", @"rest_bad_stance", @"rest_correct" ];
      
      //initiate audio session:
      AVAudioSession *session = [AVAudioSession sharedInstance];
@@ -301,8 +326,69 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
      BOOL success = [session setCategory:AVAudioSessionCategoryPlayback
                              withOptions:AVAudioSessionCategoryOptionMixWithOthers
                                    error:&audioSessionError];
-     self->contxt= [CIContext contextWithOptions:nil];
+     //self->contxt= [CIContext contextWithOptions:nil];
      
+     
+     
+     /*
+     double test_angles_set_good_rest[40][8] = {
+             {21,  4, 167, 158, 10,  8, 159, 177},
+             {24,  2, 169, 158,  8,  8, 160, 177},
+             {24,  2, 169, 158,  7,  8, 159, 177},
+             {24,  1, 169, 158,  7,  8, 159, 177},
+             {24,  2, 169, 158,  6,  8, 159, 177},
+             {22,  1, 169, 158,  7,  8, 159, 176},
+             {21,  2, 168, 158, 10,  8, 160, 176},
+             {20,  2, 168, 158, 11,  8, 160, 177},
+             {19,  1, 168, 158,  9,  9, 161, 177},
+             {20,  0, 168, 158,  8, 10, 161, 177},
+             {20,  0, 167, 158,  8, 11, 161, 176},
+             {20,  1, 167, 158,  8, 11, 162, 177},
+             {20,  0, 166, 158,  8, 11, 162, 176},
+             {19,  1, 165, 157,  9, 16, 162, 176},
+             {19,  1, 163, 155,  9, 17, 163, 176},
+             {19,  1, 162, 154,  8, 20, 163, 176},
+             {20,  1, 161, 152,  5, 20, 162, 176},
+             {21,  2, 162, 151,  4, 20, 161, 175},
+             {21,  2, 162, 150,  4, 19, 159, 173},
+             {22,  3, 161, 148,  4, 16, 158, 173},
+             {23,  4, 161, 148,  4, 13, 159, 173},
+             {24,  5, 161, 148,  5, 13, 159, 173},
+             {25,  5, 161, 148,  2, 15, 159, 173},
+             {25,  5, 162, 149,  2, 16, 158, 172},
+             {25,  5, 163, 150,  2, 16, 158, 172},
+             {25,  5, 163, 150,  2, 16, 158, 172},
+             {24,  5, 164, 153,  1, 17, 159, 171},
+             {23,  3, 163, 153,  1, 18, 160, 172},
+             {24,  3, 161, 152,  0, 18, 161, 172},
+             {25,  3, 159, 151,  1, 21, 159, 170},
+             {26,  4, 159, 151,  2, 22, 158, 170},
+             {25,  4, 160, 153,  2, 22, 157, 169},
+             {25,  5, 162, 154,  1, 21, 156, 169},
+             {25,  5, 163, 154,  1, 20, 155, 168},
+             {27,  6, 163, 156,  1, 16, 155, 167},
+             {27,  6, 164, 157,  1, 16, 154, 167},
+             {27,  6, 164, 157,  1, 17, 154, 167},
+             {27,  6, 165, 158,  1, 18, 154, 167},
+             {27,  6, 165, 158,  2, 18, 154, 167},
+             {27,  6, 165, 158,  3, 18, 154, 167}
+         };
+    self->test_input = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8]
+                                                                dataType:MLMultiArrayDataTypeDouble
+                                                            error:&_error];
+     double *test_input_dataPointer = (double *)test_input.dataPointer;
+        
+        // Populate the test_input using data pointer
+        for (int frame = 0; frame < 40; frame++) {
+            for (int angle = 0; angle < 8; angle++) {
+                NSInteger flatIndex = frame * 8 + angle;
+                double testValue = test_angles_set_good_rest[frame][angle];
+                test_input_dataPointer[flatIndex] = (isnan(testValue) || isinf(testValue)) ? 0.0 : testValue;
+            }
+        }
+     
+     
+     */
      if (!success) {
        NSLog(@"Failed to set audio session category: %@", audioSessionError.localizedDescription);
      }
@@ -402,9 +488,24 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
    // VNImageOptionOrientation: @(orientation)
   }];
 
-  
+  CGFloat paddingPercentage = 0.1;
+
+  // Calculate the new origin (x, y)
+  // The left padding is 10%, so the x-coordinate starts at 0.1
+  // The bottom padding is 10%, so the y-coordinate starts at 0.1
+  CGFloat originX = paddingPercentage; // 0.1
+  CGFloat originY = paddingPercentage; // 0.1
+
+  // Calculate the new width and height
+  // Each side has 10% padding, so the total width reduction is 20% (10% left + 10% right)
+  // The width and height of the ROI will be 100% - 20% = 80%
+  CGFloat width = 1.0 - (2 * paddingPercentage); // 1.0 - 0.2 = 0.8
+  CGFloat height = 1.0 - (2 * paddingPercentage); // 1.0 - 0.2 = 0.8
+
+  // Create the CGRect using normalized coordinates
+  CGRect regionOfInterest = CGRectMake(originX, originY, width, height);
   VNDetectHumanBodyPoseRequest *request = [[VNDetectHumanBodyPoseRequest alloc] init];
-  
+  //request.regionOfInterest =regionOfInterest;
 
   BOOL success = [requestHandler performRequests:@[request] error:&error];
 
@@ -432,9 +533,9 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         [jointNames addObject: j];
         NSError *jError = nil;
         VNRecognizedPoint *recognPoint = [poseObserv recognizedPointForJointName:j error:&jError];
-        if(recognPoint != nil && recognPoint.confidence>0.25){ //set confidence threshold to convinience | currently is 0.0 - may be very low and cause poor performance????
+        if(recognPoint != nil && recognPoint.confidence>0.5){ //set confidence threshold to convinience | currently is 0.0 - may be very low and cause poor performance????
         
-          CGPoint normPoint = CGPointMake(recognPoint.location.x, 1.0 -  recognPoint.location.y); //was mirrored with 1.0 - recognPoint.location.y
+          CGPoint normPoint = CGPointMake(recognPoint.location.x, 1-recognPoint.location.y); //is mirrored with 1.0 - recognPoint.location.y
           if(recognPoint == nil){
             nilValuefound = YES;
           }else{
@@ -508,13 +609,14 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
   
   if( latestJoints[@"left_shoulder_1_joint"] != nil && latestJoints[@"left_forearm_joint"] != nil && latestJoints[@"left_hand_joint"] != nil && latestJoints[@"left_upLeg_joint"] != nil && latestJoints[@"left_leg_joint"] != nil && latestJoints[@"left_foot_joint"] != nil && latestJoints[@"right_shoulder_1_joint"] != nil && latestJoints[@"right_forearm_joint"] != nil && latestJoints[@"right_hand_joint"] != nil && latestJoints[@"right_upLeg_joint"] != nil && latestJoints[@"right_leg_joint"] != nil && latestJoints[@"right_foot_joint"] != nil){
     
-    double RightElbowAngle = getAngle(@[latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_forearm_joint"], latestJoints[@"left_hand_joint"]], NO);
+    double RightElbowAngle = getAngle(@[ latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_forearm_joint"], latestJoints[@"left_hand_joint"],], NO);
     
-    double LeftElbowAngle = getAngle(@[latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_forearm_joint"], latestJoints[@"right_hand_joint"]], YES);
+    double LeftElbowAngle = getAngle(@[  latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_forearm_joint"], latestJoints[@"right_hand_joint"]], YES);
     
-    double RightShoulderAngle = getAngle(@[latestJoints[@"left_upLeg_joint"], latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_forearm_joint"]], NO);
     
-    double LeftShoulderAngle = getAngle(@[latestJoints[@"right_upLeg_joint"], latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_forearm_joint"]], YES);
+    double RightShoulderAngle = getAngle(@[ latestJoints[@"left_forearm_joint"], latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_upLeg_joint"]], NO);
+    
+    double LeftShoulderAngle = getAngle(@[latestJoints[@"right_forearm_joint"],  latestJoints[@"right_shoulder_1_joint"], latestJoints[@"right_upLeg_joint"]], YES);
     
     double RightHipAngle = getAngle(@[latestJoints[@"left_shoulder_1_joint"], latestJoints[@"left_upLeg_joint"], latestJoints[@"left_leg_joint"]], NO);
     
@@ -542,6 +644,7 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
       @(RightShoulderAngle),
       @(RightHipAngle),
       @(RightKneeAngle),
+      
       @(LeftElbowAngle),
       @(LeftShoulderAngle),
       @(LeftHipAngle),
@@ -594,40 +697,41 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
     }
     
 
-    if(count >= 40){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
+    if(count >= 39){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
     
       //set moveWindowIsOpen to false since now the frame cap ha sbeen reached, so the minor break for / to improve GRU model preformance must initiate
       self->moveWindowIsOpen = NO;
       //[tts speak:self->labelArray[self->maxConf_idx]];
       
      //automatic start timer
+      __weak typeof(self) weakSelf = self;
       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
           self->moveWindowIsOpen = YES;
           self->count = 0;
         self->lastSampleTimestamp =-1.0;
       });
       
-      GRUsmdOutput *model_output = [model predictionFromInput_3:angles_40frame error:&error];
+      GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
+      GRUsmdOutput *model_output = [model predictionFromFeatures:model_input error:&error];
       
-      punchClassification_coreml4Output *punchClassificationOutput = [punchClassificationModel predictionFromInput_1:angles_40frame error:&error];
+      
+      //punchClassification_coreml4Output *punchClassificationOutput = [punchClassificationModel predictionFromInput_1:angles_40frame error:&error];
+
+      //CHAINED_MODEL_coremlOutput *chainedModelOutput = [chained_model predictionFromInput_2:test_input error:&error];
     
       NSMutableArray *temp = [[NSMutableArray alloc] init];
-     
-   
-   /*
-      for(int x = 0; x < punchClassificationOutput.Identity.count; x++){
-        NSNumber *val = punchClassificationOutput.Identity[x];
+      for(int x = 0; x < model_output.Identity.count; x++){
+       // NSNumber *val = chainedModelOutput.Identity[x];
        // for(int y = 0; y < 8; y++){
-          [temp addObject:val];
+          [temp addObject:model_output.Identity[x]];
       //  }
       }
-      */
       
       //generate valid array with valid data type to pass to JS thread
       NSMutableArray *angleFramesArray = [NSMutableArray arrayWithCapacity:40];
       double *ptr = (double *)angles_40frame.dataPointer;
 
-      for (int frame = 0; frame < 40; frame++) {
+      for (int frame = 0; frame < 39; frame++) {
         NSMutableArray *frameAngles = [NSMutableArray arrayWithCapacity:8];
         for (int angle = 0; angle < 8; angle++) {
           double value = ptr[frame * 8 + angle];
@@ -636,9 +740,15 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         [angleFramesArray addObject:frameAngles];
       }
       
+      //add to set100_training:
+      [self->set100_training addObject:angleFramesArray];
       
-      //self->maxConf_idx = getLabel(model_output.Identity);
-      self->punchClassify_max_conf_idx = getPunchTypeMaxConfIdx(punchClassificationOutput.Identity);
+      
+      
+      
+      self->maxConf_idx = getLabel(model_output.Identity);
+      //self->punchClassify_max_conf_idx = getPunchTypeMaxConfIdx(punchClassificationOutput.Identity);
+     // self->chained_max_idx = getCHAIEND_maxIdx(chainedModelOutput.Identity);
       /*
       NSMutableArray *confidenceValues = [NSMutableArray arrayWithCapacity:model_output.Identity.count];
       for (int i = 0; i < model_output.Identity.count; i++) {
@@ -660,10 +770,10 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
         ],
         //labelArray[maxConf_idx], //predictions,
         @0,
-        @(punchClassify_max_conf_idx), //was maxConf_idx
+        @(maxConf_idx),//was @(chained_max_idx) //was @(punchClassify_max_conf_idx), //was maxConf_idx
         @(moveWindowIsOpen),
-        punchClassArray[punchClassify_max_conf_idx],
-        angleFramesArray
+        labelArray[maxConf_idx],//was: punchClassArray[punchClassify_max_conf_idx],
+        set100_training
       ];
     }else{
       
@@ -679,7 +789,8 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
        @"Wait for break to be over", //no predicitons available yet,
        @-1, //max confiddence Index  | returns 0 when unavailable
        @(moveWindowIsOpen),
-       @"Wait for break to be over, punchClass" //no predictions for punch classififxation available yet
+       @"Wait for break to be over, punchClass",
+       set100_training //no predictions for punch classififxation available yet
       ];
     }
     
@@ -692,7 +803,8 @@ int getPunchTypeMaxConfIdx(MLMultiArray *prediction){
       @"Get into camera view",// predictions
       @-1, //max confidence index  | returns 0 when unavailable
       @(moveWindowIsOpen),
-      @-1 //max confidence for punch classification model
+      @-1, //max confidence for punch classification model
+      set100_training
     ];
   
 

@@ -1,0 +1,648 @@
+#import <VisionCamera/FrameProcessorPlugin.h>
+#import <VisionCamera/FrameProcessorPluginRegistry.h>
+#import <VisionCamera/VisionCameraProxyHolder.h>
+#import <VisionCamera/Frame.h>
+#import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreML/CoreML.h>
+#import <Foundation/Foundation.h>
+#import <dispatch/dispatch.h>
+#import <CoreMedia/CoreMedia.h>
+#import <CoreVideo/CoreVideo.h>
+#import <Accelerate/Accelerate.h>
+#import <math.h>
+
+// MediaPipe Task API imports (much simpler than C++ API)
+#import <MediaPipeTasksVision/MediaPipeTasksVision.h>
+
+// Your existing imports
+#import "punchClassification_coreml4.h"
+#import "GRUsmd.h"
+#import "TTS.h"
+#import "CHAINED_MODEL_coreml.h"
+
+// MediaPipe pose landmark indices (33 landmarks total)
+typedef enum {
+    MP_POSE_NOSE = 0,
+    MP_POSE_LEFT_EYE_INNER = 1,
+    MP_POSE_LEFT_EYE = 2,
+    MP_POSE_LEFT_EYE_OUTER = 3,
+    MP_POSE_RIGHT_EYE_INNER = 4,
+    MP_POSE_RIGHT_EYE = 5,
+    MP_POSE_RIGHT_EYE_OUTER = 6,
+    MP_POSE_LEFT_EAR = 7,
+    MP_POSE_RIGHT_EAR = 8,
+    MP_POSE_MOUTH_LEFT = 9,
+    MP_POSE_MOUTH_RIGHT = 10,
+    MP_POSE_LEFT_SHOULDER = 11,
+    MP_POSE_RIGHT_SHOULDER = 12,
+    MP_POSE_LEFT_ELBOW = 13,
+    MP_POSE_RIGHT_ELBOW = 14,
+    MP_POSE_LEFT_WRIST = 15,
+    MP_POSE_RIGHT_WRIST = 16,
+    MP_POSE_LEFT_PINKY = 17,
+    MP_POSE_RIGHT_PINKY = 18,
+    MP_POSE_LEFT_INDEX = 19,
+    MP_POSE_RIGHT_INDEX = 20,
+    MP_POSE_LEFT_THUMB = 21,
+    MP_POSE_RIGHT_THUMB = 22,
+    MP_POSE_LEFT_HIP = 23,
+    MP_POSE_RIGHT_HIP = 24,
+    MP_POSE_LEFT_KNEE = 25,
+    MP_POSE_RIGHT_KNEE = 26,
+    MP_POSE_LEFT_ANKLE = 27,
+    MP_POSE_RIGHT_ANKLE = 28,
+    MP_POSE_LEFT_HEEL = 29,
+    MP_POSE_RIGHT_HEEL = 30,
+    MP_POSE_LEFT_FOOT_INDEX = 31,
+    MP_POSE_RIGHT_FOOT_INDEX = 32
+} MediaPipePoseLandmark;
+
+// Helper function to convert CMSampleBuffer to MPImage
+MPPImage* CMSampleBufferToMPImage(CMSampleBufferRef sampleBuffer) {
+    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    CVPixelBufferRef pixelBuffer = imageBuffer;
+    
+  MPPImage *mpImage = [[MPPImage alloc] initWithPixelBuffer:pixelBuffer error:nil];
+    return mpImage;
+}
+
+// Angle calculation function (same as before but with MediaPipe coordinate system)
+double getAngleMediaPipe(NSArray *jointTrio, BOOL normalize) {
+    if (jointTrio == nil || jointTrio.count != 3) {
+        return 0.0;
+    }
+    
+    NSDictionary *p1 = jointTrio[0];
+    NSDictionary *p2 = jointTrio[1]; // vertex point
+    NSDictionary *p3 = jointTrio[2];
+    
+    if (!p1 || !p2 || !p3) {
+        return 0.0;
+    }
+    
+    // MediaPipe uses normalized coordinates with origin at top-left
+    double x1 = [p1[@"x"] doubleValue];
+    double y1 = [p1[@"y"] doubleValue];
+    double x2 = [p2[@"x"] doubleValue];
+    double y2 = [p2[@"y"] doubleValue];
+    double x3 = [p3[@"x"] doubleValue];
+    double y3 = [p3[@"y"] doubleValue];
+    
+    // Calculate vectors from vertex to other points
+    double v1x = x1 - x2;
+    double v1y = y1 - y2;
+    double v2x = x3 - x2;
+    double v2y = y3 - y2;
+    
+    // Calculate dot product and magnitudes
+    double dot = v1x * v2x + v1y * v2y;
+    double mag1 = sqrt(v1x * v1x + v1y * v1y);
+    double mag2 = sqrt(v2x * v2x + v2y * v2y);
+    
+    if (mag1 < 1e-10 || mag2 < 1e-10) {
+        return 0.0;
+    }
+    
+    // Calculate cosine of angle
+    double cosAngle = dot / (mag1 * mag2);
+    
+    // Clamp to valid range for acos
+    cosAngle = fmax(-1.0, fmin(1.0, cosAngle));
+    
+    // Calculate angle in degrees
+    double angle = acos(cosAngle) * (180.0 / M_PI);
+    
+    return angle;
+}
+
+// Utility functions (same as original)
+int getLabel(MLMultiArray *pred) {
+    int maxConfidenceIndex_in_pred = 0;
+    
+    for(int i = 0; i < 8; i++) {
+        if([pred[maxConfidenceIndex_in_pred] doubleValue] < [pred[i] doubleValue]) {
+            maxConfidenceIndex_in_pred = i;
+        }
+    }
+    
+    return maxConfidenceIndex_in_pred;
+}
+
+int getPunchTypeMaxConfIdx(MLMultiArray *prediction) {
+    int max_conf_idx = 0;
+    for(int i = 0; i < 3; i++) {
+        if([prediction[max_conf_idx] doubleValue] < [prediction[i] doubleValue]) {
+            max_conf_idx = i;
+        }
+    }
+    return max_conf_idx;
+}
+
+int getCHAIEND_maxIdx(MLMultiArray *prediction) {
+    int max_conf_idx = 0;
+    for(int i = 0; i < 6; i++) {
+        if([prediction[max_conf_idx] doubleValue] < [prediction[i] doubleValue]) {
+            max_conf_idx = i;
+        }
+    }
+    return max_conf_idx;
+}
+
+@interface MediaPipePoseDetectionPlugin : FrameProcessorPlugin {
+    int count;
+    bool reached40;
+    BOOL nilValuefound;
+    MLMultiArray *angles_40frame;
+    CHAINED_MODEL_coreml *chained_model;
+    NSArray *labelArray;
+    NSArray *punchClassArray;
+    NSArray *CHAINED_labelArray;
+    BOOL moveWindowIsOpen;
+    NSTimeInterval lastSampleTimestamp;
+    NSTimeInterval sampleInterval;
+    TTS *tts;
+    int maxConf_idx;
+    int punchClassify_max_conf_idx;
+    int chained_max_idx;
+    
+    // MediaPipe Task API
+    MPPPoseLandmarker *poseLandmarker;
+}
+@end
+
+@implementation MediaPipePoseDetectionPlugin
+
+- (instancetype _Nonnull)initWithProxy:(VisionCameraProxyHolder*)proxy
+                           withOptions:(NSDictionary* _Nullable)options {
+    self = [super initWithProxy:proxy withOptions:options];
+    NSError *_error;
+
+    if(self) {
+        count = 0;
+        reached40 = false;
+        nilValuefound = NO;
+        angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
+        
+        self->chained_model = [[CHAINED_MODEL_coreml alloc] init];
+        self->moveWindowIsOpen = YES;
+        self->lastSampleTimestamp = -1.0;
+        self->sampleInterval = 0.033; // ~30 FPS
+        self->tts = [[TTS alloc] init];
+        self->maxConf_idx = -1;
+        self->punchClassify_max_conf_idx = -1;
+        self->chained_max_idx = -1;
+        
+        labelArray = @[
+            @"good jab",
+            @"bad jab - knee level lack",
+            @"good straight",
+            @"bad straight, lack of rotation",
+            @"good rest",
+            @"bad rest, wrong stance",
+            @"good kick",
+            @"bad kick, don't lounge leg out"
+        ];
+        
+        punchClassArray = @[
+            @"jab",
+            @"straightRight",
+            @"rest"
+        ];
+        
+        CHAINED_labelArray = @[
+            @"jab_lack_of_rotation",
+            @"jab_correct",
+            @"straight_right_lack_of_rotation",
+            @"straight_right_correct",
+            @"rest_bad_stance",
+            @"rest_correct"
+        ];
+        
+        // Initialize MediaPipe PoseLandmarker
+        [self initializeMediaPipePoseLandmarker];
+        
+        // Initialize audio session
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        NSError *audioSessionError = nil;
+        
+        BOOL success = [session setCategory:AVAudioSessionCategoryPlayback
+                                withOptions:AVAudioSessionCategoryOptionMixWithOthers
+                                      error:&audioSessionError];
+        
+        if (!success) {
+            NSLog(@"Failed to set audio session category: %@", audioSessionError.localizedDescription);
+        }
+        
+        success = [session setActive:YES error:&audioSessionError];
+        if (!success) {
+            NSLog(@"Failed to activate audio session: %@", audioSessionError.localizedDescription);
+        }
+    }
+    
+    if (_error) {
+        NSLog(@"Error initializing MLMultiArray: %@", _error.localizedDescription);
+    } else {
+        // Initialize all values to 0
+        for (int frame = 0; frame < 40; frame++) {
+            for (int angle = 0; angle < 8; angle++) {
+                [angles_40frame setObject:@0.0 forKeyedSubscript:@[@0, @(frame), @(angle)]];
+            }
+        }
+    }
+    
+    return self;
+}
+
+- (void)initializeMediaPipePoseLandmarker {
+    NSError *error;
+
+    MPPPoseLandmarkerOptions *options = [[MPPPoseLandmarkerOptions alloc] init];
+    options.runningMode = MPPRunningModeImage;
+    options.numPoses = 1;
+    options.minPoseDetectionConfidence = 0.5;
+    options.minPosePresenceConfidence = 0.5;
+    options.minTrackingConfidence = 0.5;
+
+ 
+    options.baseOptions.modelAssetPath = [[NSBundle mainBundle] pathForResource:@"pose_landmarker_lite" ofType:@"task"];
+
+    self->poseLandmarker = [[MPPPoseLandmarker alloc] initWithOptions:options error:&error];
+
+    if (error) {
+        NSLog(@"Failed to initialize MediaPipe PoseLandmarker: %@", error.localizedDescription);
+        self->poseLandmarker = nil;
+    }
+}
+
+
+- (id _Nullable)callback:(Frame* _Nonnull)frame
+           withArguments:(NSDictionary* _Nullable)arguments {
+    
+    BOOL userStrikedOut = NO;
+    if(arguments[@"userStrikedOut"] != nil) {
+        userStrikedOut = [arguments[@"userStrikedOut"] boolValue];
+    }
+    
+    CMSampleBufferRef buffer = frame.buffer;
+    CMTime timestamp = CMSampleBufferGetPresentationTimeStamp(buffer);
+    NSTimeInterval currentTimeSec = CMTimeGetSeconds(timestamp);
+    
+    if (self->lastSampleTimestamp < 0) {
+        self->lastSampleTimestamp = currentTimeSec;
+    }
+    
+    if(!moveWindowIsOpen || userStrikedOut) {
+        return @[
+            @(count),
+            @[],
+            @[],
+            @"Wait for break to end",
+            @0,
+            @(moveWindowIsOpen)
+        ];
+    }
+    
+    // Check if poseLandmarker is initialized
+    if (!self->poseLandmarker) {
+        return @[
+            @(count),
+            @[],
+            @[],
+            @"MediaPipe not initialized",
+            @-1,
+            @(moveWindowIsOpen)
+        ];
+    }
+    
+    // Convert CMSampleBuffer to MPImage
+  MPPImage *mpImage = CMSampleBufferToMPImage(buffer);
+    if (!mpImage) {
+        return @[
+            @(count),
+            @[],
+            @[],
+            @"Failed to convert image",
+            @-1,
+            @(moveWindowIsOpen)
+        ];
+    }
+    
+    // Detect pose landmarks
+    NSError *error;
+    MPPPoseLandmarkerResult *result = [self->poseLandmarker detectImage:mpImage error:&error];
+    
+    if (error || !result || result.landmarks.count == 0) {
+        return @[
+            @(count),
+            @[],
+            @[],
+            @"No pose detected",
+            @-1,
+            @(moveWindowIsOpen)
+        ];
+    }
+    
+    // Convert MediaPipe landmarks to your format
+    NSMutableDictionary *joints = [NSMutableDictionary dictionary];
+    NSMutableArray *poses = [NSMutableArray array];
+    
+    // Get the first pose (we set numPoses = 1)
+    NSArray<MPPNormalizedLandmark *> *landmarks = result.landmarks[0];
+    
+    // Check if we have enough landmarks (MediaPipe pose has 33 landmarks)
+    if (landmarks.count >= 33) {
+        // Map MediaPipe landmarks to your joint names
+        MPPNormalizedLandmark *leftShoulder = landmarks[MP_POSE_LEFT_SHOULDER];
+        if (leftShoulder.visibility.floatValue > 0.5) {
+            joints[@"left_shoulder_1_joint"] = @{
+                @"name": @"left_shoulder_1_joint",
+                @"x": @(leftShoulder.x),
+                @"y": @(leftShoulder.y),
+                @"conf": @(leftShoulder.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *leftElbow = landmarks[MP_POSE_LEFT_ELBOW];
+        if (leftElbow.visibility.floatValue > 0.5) {
+            joints[@"left_forearm_joint"] = @{
+                @"name": @"left_forearm_joint",
+                @"x": @(leftElbow.x),
+                @"y": @(leftElbow.y),
+                @"conf": @(leftElbow.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *leftWrist = landmarks[MP_POSE_LEFT_WRIST];
+        if (leftWrist.visibility.floatValue > 0.5) {
+            joints[@"left_hand_joint"] = @{
+                @"name": @"left_hand_joint",
+                @"x": @(leftWrist.x),
+                @"y": @(leftWrist.y),
+                @"conf": @(leftWrist.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *rightShoulder = landmarks[MP_POSE_RIGHT_SHOULDER];
+        if (rightShoulder.visibility.floatValue > 0.5) {
+            joints[@"right_shoulder_1_joint"] = @{
+                @"name": @"right_shoulder_1_joint",
+                @"x": @(rightShoulder.x),
+                @"y": @(rightShoulder.y),
+                @"conf": @(rightShoulder.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *rightElbow = landmarks[MP_POSE_RIGHT_ELBOW];
+        if (rightElbow.visibility.floatValue > 0.5) {
+            joints[@"right_forearm_joint"] = @{
+                @"name": @"right_forearm_joint",
+                @"x": @(rightElbow.x),
+                @"y": @(rightElbow.y),
+                @"conf": @(rightElbow.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *rightWrist = landmarks[MP_POSE_RIGHT_WRIST];
+        if (rightWrist.visibility.floatValue > 0.5) {
+            joints[@"right_hand_joint"] = @{
+                @"name": @"right_hand_joint",
+                @"x": @(rightWrist.x),
+                @"y": @(rightWrist.y),
+                @"conf": @(rightWrist.visibility.floatValue)
+            };
+        }
+        
+        // Add hip joints
+        MPPNormalizedLandmark *leftHip = landmarks[MP_POSE_LEFT_HIP];
+        if (leftHip.visibility.floatValue > 0.5) {
+            joints[@"left_upLeg_joint"] = @{
+                @"name": @"left_upLeg_joint",
+                @"x": @(leftHip.x),
+                @"y": @(leftHip.y),
+                @"conf": @(leftHip.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *rightHip = landmarks[MP_POSE_RIGHT_HIP];
+        if (rightHip.visibility.floatValue > 0.5) {
+            joints[@"right_upLeg_joint"] = @{
+                @"name": @"right_upLeg_joint",
+                @"x": @(rightHip.x),
+                @"y": @(rightHip.y),
+                @"conf": @(rightHip.visibility.floatValue)
+            };
+        }
+        
+        // Add knee joints
+        MPPNormalizedLandmark *leftKnee = landmarks[MP_POSE_LEFT_KNEE];
+        if (leftKnee.visibility.floatValue > 0.5) {
+            joints[@"left_leg_joint"] = @{
+                @"name": @"left_leg_joint",
+                @"x": @(leftKnee.x),
+                @"y": @(leftKnee.y),
+                @"conf": @(leftKnee.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *rightKnee = landmarks[MP_POSE_RIGHT_KNEE];
+        if (rightKnee.visibility.floatValue > 0.5) {
+            joints[@"right_leg_joint"] = @{
+                @"name": @"right_leg_joint",
+                @"x": @(rightKnee.x),
+                @"y": @(rightKnee.y),
+                @"conf": @(rightKnee.visibility.floatValue)
+            };
+        }
+        
+        // Add ankle joints
+        MPPNormalizedLandmark *leftAnkle = landmarks[MP_POSE_LEFT_ANKLE];
+        if (leftAnkle.visibility.floatValue > 0.5) {
+            joints[@"left_foot_joint"] = @{
+                @"name": @"left_foot_joint",
+                @"x": @(leftAnkle.x),
+                @"y": @(leftAnkle.y),
+                @"conf": @(leftAnkle.visibility.floatValue)
+            };
+        }
+        
+        MPPNormalizedLandmark *rightAnkle = landmarks[MP_POSE_RIGHT_ANKLE];
+        if (rightAnkle.visibility.floatValue > 0.5) {
+            joints[@"right_foot_joint"] = @{
+                @"name": @"right_foot_joint",
+                @"x": @(rightAnkle.x),
+                @"y": @(rightAnkle.y),
+                @"conf": @(rightAnkle.visibility.floatValue)
+            };
+        }
+        
+        [poses addObject:[joints copy]];
+    }
+    
+    // Rest of the processing logic (same as original)
+    NSDictionary *latestJoints = [poses lastObject];
+    
+    if (latestJoints[@"left_shoulder_1_joint"] != nil &&
+        latestJoints[@"left_forearm_joint"] != nil &&
+        latestJoints[@"left_hand_joint"] != nil &&
+        latestJoints[@"left_upLeg_joint"] != nil &&
+        latestJoints[@"left_leg_joint"] != nil &&
+        latestJoints[@"left_foot_joint"] != nil &&
+        latestJoints[@"right_shoulder_1_joint"] != nil &&
+        latestJoints[@"right_forearm_joint"] != nil &&
+        latestJoints[@"right_hand_joint"] != nil &&
+        latestJoints[@"right_upLeg_joint"] != nil &&
+        latestJoints[@"right_leg_joint"] != nil &&
+        latestJoints[@"right_foot_joint"] != nil) {
+        
+        // Calculate angles using MediaPipe coordinate system
+        double RightElbowAngle = getAngleMediaPipe(@[
+            latestJoints[@"left_shoulder_1_joint"],
+            latestJoints[@"left_forearm_joint"],
+            latestJoints[@"left_hand_joint"]
+        ], NO);
+        
+        double LeftElbowAngle = getAngleMediaPipe(@[
+            latestJoints[@"right_shoulder_1_joint"],
+            latestJoints[@"right_forearm_joint"],
+            latestJoints[@"right_hand_joint"]
+        ], NO);
+        
+        double RightShoulderAngle = getAngleMediaPipe(@[
+            latestJoints[@"left_upLeg_joint"],
+            latestJoints[@"left_shoulder_1_joint"],
+            latestJoints[@"left_forearm_joint"]
+        ], NO);
+        
+        double LeftShoulderAngle = getAngleMediaPipe(@[
+            latestJoints[@"right_upLeg_joint"],
+            latestJoints[@"right_shoulder_1_joint"],
+            latestJoints[@"right_forearm_joint"]
+        ], NO);
+        
+        double RightHipAngle = getAngleMediaPipe(@[
+            latestJoints[@"left_shoulder_1_joint"],
+            latestJoints[@"left_upLeg_joint"],
+            latestJoints[@"left_leg_joint"]
+        ], NO);
+        
+        double LeftHipAngle = getAngleMediaPipe(@[
+            latestJoints[@"right_shoulder_1_joint"],
+            latestJoints[@"right_upLeg_joint"],
+            latestJoints[@"right_leg_joint"]
+        ], NO);
+        
+        double RightKneeAngle = getAngleMediaPipe(@[
+            latestJoints[@"left_upLeg_joint"],
+            latestJoints[@"left_leg_joint"],
+            latestJoints[@"left_foot_joint"]
+        ], NO);
+        
+        double LeftKneeAngle = getAngleMediaPipe(@[
+            latestJoints[@"right_upLeg_joint"],
+            latestJoints[@"right_leg_joint"],
+            latestJoints[@"right_foot_joint"]
+        ], NO);
+        
+        NSArray *anglesOfInterest = @[
+            @(RightElbowAngle),
+            @(RightShoulderAngle),
+            @(RightHipAngle),
+            @(RightKneeAngle),
+            @(LeftElbowAngle),
+            @(LeftShoulderAngle),
+            @(LeftHipAngle),
+            @(LeftKneeAngle),
+        ];
+        
+        // Frame timing and ML model processing (same as original)
+        if (currentTimeSec - lastSampleTimestamp >= sampleInterval) {
+            lastSampleTimestamp = currentTimeSec;
+            double *angles_40frame_dataPointer = (double *)angles_40frame.dataPointer;
+            
+            for (int i = 0; i < anglesOfInterest.count; i++) {
+                double angleValue = [anglesOfInterest[i] doubleValue];
+                angles_40frame_dataPointer[count * 8 + i] = (isnan(angleValue) || isinf(angleValue)) ? 0.0 : angleValue;
+            }
+            
+            count++;
+        }
+        
+        if(count >= 39) {
+            self->moveWindowIsOpen = NO;
+            
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                self->moveWindowIsOpen = YES;
+                self->count = 0;
+                self->lastSampleTimestamp = -1.0;
+            });
+            
+            NSError *error;
+            CHAINED_MODEL_coremlOutput *chainedModelOutput = [chained_model predictionFromInput_2:angles_40frame error:&error];
+            
+            NSMutableArray *temp = [[NSMutableArray alloc] init];
+            for(int x = 0; x < chainedModelOutput.Identity.count; x++) {
+                [temp addObject:@([chainedModelOutput.Identity[x] doubleValue] - 0.02)];
+            }
+            
+            NSMutableArray *angleFramesArray = [NSMutableArray arrayWithCapacity:40];
+            double *ptr = (double *)angles_40frame.dataPointer;
+            
+            for (int frame = 0; frame < 39; frame++) {
+                NSMutableArray *frameAngles = [NSMutableArray arrayWithCapacity:8];
+                for (int angle = 0; angle < 8; angle++) {
+                    double value = ptr[frame * 8 + angle];
+                    [frameAngles addObject:@(value)];
+                }
+                [angleFramesArray addObject:frameAngles];
+            }
+            
+            self->chained_max_idx = getCHAIEND_maxIdx(chainedModelOutput.Identity);
+            
+            return @[
+                @(count),
+                poses,
+                @[
+                    @[@(RightElbowAngle), @(LeftElbowAngle)],
+                    @[@(RightShoulderAngle), @(LeftShoulderAngle)],
+                    @[@(RightHipAngle), @(LeftHipAngle)],
+                    @[@(RightKneeAngle), @(LeftKneeAngle)]
+                ],
+                @0,
+                temp,
+                @(moveWindowIsOpen),
+                CHAINED_labelArray[chained_max_idx],
+                angleFramesArray
+            ];
+        } else {
+            return @[
+                @(count),
+                poses,
+                @[
+                    @[@(RightElbowAngle), @(LeftElbowAngle)],
+                    @[@(RightShoulderAngle), @(LeftShoulderAngle)],
+                    @[@(RightHipAngle), @(LeftHipAngle)],
+                    @[@(RightKneeAngle), @(LeftKneeAngle)]
+                ],
+                @"Wait for break to be over",
+                @-1,
+                @(moveWindowIsOpen),
+                @"Wait for break to be over, punchClass"
+            ];
+        }
+    }
+    
+    return @[
+        @(count),
+        poses,
+        @[],
+        @"Get into camera view",
+        @-1,
+        @(moveWindowIsOpen),
+        @-1
+    ];
+}
+
+VISION_EXPORT_FRAME_PROCESSOR(MediaPipePoseDetectionPlugin, detect)
+
+@end

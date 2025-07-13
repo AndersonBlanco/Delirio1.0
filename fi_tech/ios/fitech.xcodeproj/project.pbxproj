@@ -13,8 +13,10 @@
 		629CFED5E5E8AB3FB7786128 /* libPods-fitech.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */; };
 		9518585383384099B5EFFF3D /* poseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B112B2F31484420900D2335 /* poseDetection.m */; };
 		9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */; };
+		9C3FB97B2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */; };
+		9C3FB97F2E22059600929796 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = 9C3FB97E2E22059600929796 /* pose_landmarker_full.task */; };
+		9C3FB9832E2222D300929796 /* GRUsmd.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */; };
 		9C4B115D2E13775600C69C6D /* TTS.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C4B115C2E13775400C69C6D /* TTS.m */; };
-		9C4B11612E15890C00C69C6D /* GRUsmd.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C4B11602E15890C00C69C6D /* GRUsmd.mlpackage */; };
 		9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */; };
 		AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72963B96E00B094C16768759 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
@@ -30,9 +32,11 @@
 		87F39A93186C524275BD8B0A /* Pods-fitech.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fitech.release.xcconfig"; path = "Target Support Files/Pods-fitech/Pods-fitech.release.xcconfig"; sourceTree = "<group>"; };
 		9B112B2F31484420900D2335 /* poseDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = poseDetection.m; sourceTree = "<group>"; };
 		9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml4.mlpackage; sourceTree = "<group>"; };
+		9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = CHAINED_MODEL_coreml.mlpackage; sourceTree = "<group>"; };
+		9C3FB97E2E22059600929796 /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
+		9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = GRUsmd.mlmodel; sourceTree = "<group>"; };
 		9C4B115B2E13773F00C69C6D /* TTS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TTS.h; sourceTree = "<group>"; };
 		9C4B115C2E13775400C69C6D /* TTS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TTS.m; sourceTree = "<group>"; };
-		9C4B11602E15890C00C69C6D /* GRUsmd.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRUsmd.mlpackage; sourceTree = "<group>"; };
 		9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml.mlpackage; sourceTree = "<group>"; };
 		A03F2ECE171E1E568FF4557F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = fitech/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-fitech.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -111,11 +115,13 @@
 				55ECB64FCD157A60143CC386 /* ExpoModulesProviders */,
 				243B2BDDF7004CA2A7F2DBFE /* poseDetection */,
 				9B112B2F31484420900D2335 /* poseDetection.m */,
-				9C4B11602E15890C00C69C6D /* GRUsmd.mlpackage */,
 				9C4B115B2E13773F00C69C6D /* TTS.h */,
 				9C4B115C2E13775400C69C6D /* TTS.m */,
 				9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */,
 				9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */,
+				9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */,
+				9C3FB97E2E22059600929796 /* pose_landmarker_full.task */,
+				9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -218,6 +224,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C3FB97F2E22059600929796 /* pose_landmarker_full.task in Resources */,
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
@@ -355,12 +362,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C3FB9832E2222D300929796 /* GRUsmd.mlmodel in Sources */,
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */,
 				AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */,
 				9C4B115D2E13775600C69C6D /* TTS.m in Sources */,
-				9C4B11612E15890C00C69C6D /* GRUsmd.mlpackage in Sources */,
 				9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */,
+				9C3FB97B2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage in Sources */,
 				9518585383384099B5EFFF3D /* poseDetection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -509,7 +517,10 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -568,7 +579,10 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

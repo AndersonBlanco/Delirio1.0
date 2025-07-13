@@ -31,7 +31,11 @@ target 'fitech' do
 
   #install MediapipeTaskVision
   #pod 'MediaPipeTasksVision'
+  #pod 'QuickPoseCore', :git => 'https://github.com/quickpose/quickpose-ios-sdk.git'
+
+
   end
+  
 
   config = use_native_modules!(config_command)
 
