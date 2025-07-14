@@ -28,6 +28,14 @@ import { Sound } from "expo-av/build/Audio";
 //react native ui kitten - for Date Picker and for spinner loading icon maybe 
 
 //open-ai api-key: 
+const openAI = new OpenAI({
+    apiKey: "key",
+    dangerouslyAllowBrowser: true
+});
+
+const eleven_client = ({
+    apiKey: "key",
+});
 
 export const generateVoice = async (txt) =>{
 
