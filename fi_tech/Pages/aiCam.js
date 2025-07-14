@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {Text, Animated, View, ActivityIndicator, StyleSheet, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, Easing, Touchable,  } from 'react-native';
 import { VStack} from "swiftui-react-native"; 
 import SideNav from '../components/sideNav';
@@ -34,11 +34,13 @@ import OneTwoAnimation from "../assets/OneTwoAnimation.json";
 import StraightRightAnimation from "../assets/straightRightAnimation1.json"; 
 import JabAnimation3 from "../assets/jabAnimation3.json";
 import { useNavigation } from "@react-navigation/native"; //in react native, this is a hook. Anything that starts with a 'use....' is a hook an dmust be declared inside a function soley.s
-import * as Reusable from "@react-native-reusables/cli";
-
+//import * as Reusable from "@react-native-reusables/cli";
+//import Collapsible from 'react-native-collapsible';
+//import Accordion from "react-native-collapsible/Accordion"; 
 //import custom components: START
+
 import AI_Chat from './chat';
-import ChatEnvironment from '../components/ChatEnvironment';
+import {ChatEnvironment, generateVoice} from '../components/ChatEnvironment';
 //import custom components: END
 
 const {TTS} = NativeModules; 
@@ -62,9 +64,10 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
   const nav = useNavigation(); 
    // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
    const strikes = useSharedValue(0);
-   const userGotStrikedOut = useSharedValue(true);
+   const userGotStrikedOut = useSharedValue(false);
    const userCorrectMoves = useSharedValue(0);
    const tempFrameCounter = useSharedValue(0); 
+   const max_GRU_idx = useSharedValue(-1); 
    /*
     const [userState, steUserState] = useState({
         userStrikes: useDerivedValue(() => strikes.value),
@@ -85,9 +88,15 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
           strikes.value = 0;
           userGotStrikedOut.value = true; 
           
-          if(textLabelSharedValm.value!= '-'){  //was textLabel != '-'
-         //  TTS.speak(textLabel); 
-          }
+          //if(textLabelSharedValm.value!= '-'){  //was textLabel != '-'
+        
+          //generateVoice(textLabelSharedValm.value); 
+            //TTS.speak(textLabelSharedValm.value); 
+
+         // }
+
+          //console.log(textLabelSharedValm.value)
+
 
         }else{
           strikes.value = val; 
@@ -104,9 +113,14 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
           strikes.value = 0;
           userGotStrikedOut.value = true; 
           
-            if(textLabelSharedValm.value!= '-'){ //was textLabel != '-'
-           //TTS.speak(textLabel); 
-          }
+            //if(textLabelSharedValm.value!= '-'){ //was textLabel != '-'
+          // TTS.speak(textLabelSharedValm.value); 
+            
+           // generateVoice(textLabelSharedValm.value); 
+            //console.log(textLabelSharedValm.value)
+
+
+       //   }
 
       
   
@@ -216,12 +230,9 @@ if(!device){ //if valid <Camera/> hardware device is not found, this content wil
 //const [frameW, setFrameWidth] = useState(0);
 //const p = useSharedValue([]); 
 useAnimatedReaction(()=>textLabelSharedValm.value, (curr, prev) =>{ //currently unused, can be deleted confidently, but is better if kept and ignored just in case for future errors or bugs, these can invoked as potential solutions instead 
- if(prev){
-    //setTextLabel(prev); 
-    
-  }
+
  
-});
+}, [userGotStrikedOut]);
 
 const updateExternals = Worklets.createRunOnJS((v, moveWindowIsOpenVal, fH, fW) =>{ //unused for now, may becoime useful in future to combat bugs 
     if(v != textLabelSharedValm.value){ //was textLabel
@@ -244,7 +255,6 @@ useAnimatedReaction(() =>{'worklet'; return moveWindowIsOpen.value}, (curr, prev
         })
     }
 }, [set_moveWindowIsOpen])
-//Tts.addEventListener('tts-start', (event) => console.log("start", event));
 
 //below is the SKiaFrameProcessor execution - no longerused 
 /*
@@ -471,11 +481,6 @@ const updatePoses = Worklets.createRunOnJS((p) =>{ //updates pose, called from w
     setPoses(p); 
 });
 
-const speakFeedback = Worklets.createRunOnJS((v, moveWIndowOpen_) =>{//invokes peaking mechanics
-   if(!moveWIndowOpen_){
-        //  TTS.speak(v); //speak the feedback
-    }
-});
 
 //FLoat32 array buffer test:  START 
 /*
@@ -502,6 +507,17 @@ Pose:  [{"head_joint": {"conf": 0.8154296875, "name": "head_joint", "x": 0.27557
 
 
 */
+
+
+
+
+useAnimatedReaction(() => userGotStrikedOut.value, (curr, prev) =>{
+  if(curr == true){
+    console.log('user got striked out');
+    
+  }
+}, [userGotStrikedOut.value])
+
 const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important piece, it does exactly what it sname reflects: processes frames incoming from the <Camera/> tag and passes it onto the th enative side for evaluation and predictions 
     'worklet'; 
 
@@ -511,12 +527,11 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
     if(detectPlugin == null){
       console.log("null value for plugin ")
     }else{
-
- 
+    
     let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
     //console.log(res[0]); 
     //console.log(res[3]); xx
-  
+    max_GRU_idx.value = res[4]; 
     updatePoses(res[1]); //updates poses
     //console.log('Training Angles angles', res[2]);
     if(res[2].length > 0){
@@ -545,14 +560,15 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
       textLabelSharedValm.value = res[6]; 
 
      // console.log(res[2][0][0])
+
       
      if(res[4] % 2 != 0){
-      incrimentUserStrikes()
+      incrimentUserStrikes();
      }else{
       userCorrectMoves.value++; 
      };
 
-     console.log(strikes.value)
+    // console.log(strikes.value)
 
      }
 
@@ -570,7 +586,7 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
     //latestPoseRef.current = res[1][0]; 
 
 
-      /*
+/*
     if(!res[5] && res[4] % 2 == 0 && res[4] > -1){ //since all incorrect representing labels are at uneven indecies in the labelArray hot-encoding prediction output array
        //  incrimentUserStrikes(); 
        incrimentUserStrikes();
@@ -588,7 +604,7 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
    // console.log(`Count ${res[0]}: ${res[3]}`) 
    //}
 
- 
+     
     if(!userGotStrikedOut.value){
       if(res[5] && res[6] != textLabelSharedValm.value && res[6] != "Wait for break to be over, punchClass" && res[6] != -1){ //was if res[3] == 0
        // updateExternals(res[3], res[5], frame.height, frame.width); 
@@ -915,10 +931,12 @@ const countDown = useSharedValue(180);  // initial count, in seconds
 
   const skipFeedback_opacity = useRef(new Animated.Value(0)).current;
 
+const [showFeedChat, setShowFeedChat] = useState(false); 
 const midChat = (
-    <View style = {{ paddingBottom: 0, borderRadius: 10, right: 10.1, top: 43, zIndex: 100, backgroundColor: "rgb(42, 42, 42)", position:"absolute", height: Dimensions.get('screen').height * .25, width: Dimensions.get('screen').width * .95, }}>
+    <View style = {{ paddingBottom: 0, borderRadius: 10, right: 10.1, top: 43, zIndex: 100, backgroundColor: "rgb(42, 42, 42)", position:"absolute", height: Dimensions.get('screen').height * .34, width: Dimensions.get('screen').width * .95, }}>
              <ChatEnvironment isKeyboardInternallyHandled = {false} viewStyle={{flex: 1, paddingVertical: 0, paddingHorizontal: 2, paddingTop: 1, paddingBottom: 25}}/>
-     
+        <TouchableOpacity onPress={() => setShowFeedChat(!showFeedChat)} style = {{zIndex: 300, position:"absolute", right: 20, top: 20,}}><Icon size = {25} color={"white"} name = 'close' backgroundColor={"red"} borderRadius={100}/></TouchableOpacity>
+
         </View>
 )
 const FeedbackInteruptionScreen = (
@@ -930,8 +948,13 @@ const FeedbackInteruptionScreen = (
 
         </View>
 
-            <TouchableOpacity style = {{backgroundColor:"black", top: 59, width: 200, alignSelf:'center', borderRadius: 100, paddingVertical: 10, alignItems:"center", }}><Text textFieldStyle='roundedBorder' style ={{color:"white"}}>Discuss</Text></TouchableOpacity>
-
+            <TouchableOpacity onPress={() => setShowFeedChat(!showFeedChat)} style = {{backgroundColor:"black", top: 59, width: 200, alignSelf:'center', borderRadius: 100, paddingVertical: 10, alignItems:"center", }}><Text textFieldStyle='roundedBorder' style ={{color:"white"}}>Discuss</Text></TouchableOpacity>
+         {
+          showFeedChat?
+           null//  midChat
+          :
+          null
+         }
         </>
     );
 
@@ -972,12 +995,23 @@ const loopAnimation = Animated.loop(
         }),
       ])
     );
+
+    useEffect(() =>{
+      if(max_GRU_idx.value > -1){
+        if(max_GRU_idx.value % 2 > 0){
+        generateVoice(textLabelSharedValm.value);
+        max_GRU_idx.value = -1; 
+      }
+    }
+    }, [max_GRU_idx.value]);
+    
   useEffect(() =>{
   if(userGotStrikedOut.value){
     skipFeedback_opacity.setValue(0); 
     loopAnimation.start();
 
-    //TTS.speak(textLabel); 
+    //TTS.speak(textLabelSharedValm.value); 
+    //generateVoice(textLabelSharedValm.value);
   }else{
     loopAnimation.stop();
     skipFeedback_opacity.setValue(0);

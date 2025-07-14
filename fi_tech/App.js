@@ -47,7 +47,7 @@ function App() {
           },
           
         }}
-        initialRouteName="AI_Chat"
+        initialRouteName="H_ome"
       >
         <Stack.Screen name="I_ntro" component={Intro}  /> 
         <Stack.Screen name="Auth" component={AuthScreen} />
