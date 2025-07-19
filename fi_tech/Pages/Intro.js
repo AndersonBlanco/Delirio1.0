@@ -3,6 +3,8 @@ import {Profiler, useState} from "react";
 import coachSlideBackImage from "../assets/coachSlideImg.jpg"; 
 import AnimatedDotsCarousel  from "react-native-animated-dots-carousel"; 
 import ChatBotImg from "../assets/bot.png"; 
+import Logo2_SVG from "../assets/logo2_SVG"; 
+import Logo2_white from "../assets/logo2.jpeg"; 
 import { nav } from "../redux/navigationSlice";
 import { useDispatch, useSelector} from "react-redux";
 import User from "../assets/user.png"; 
@@ -83,12 +85,12 @@ export default function Services(){
         }}>
               <DropShadow style = {{height: screenHeight, width: screenWidth}}/>
 
-              <Image source = {ChatBotImg} height = {100} width = {100} />
+            <Logo2_SVG style = {{top: -50,height: 50, width: 50, backgroundColor:"transparent"}} height = {200} fill = "white" />
             <Text style = {{
                 color:"white",
                 width: 250,
                 textAlign:"center",
-                marginTop: 25,
+                marginTop: 0,
                 fontSize: fontS
 
              }}>Address your inquiries with your personal assitant powered by AI!</Text>

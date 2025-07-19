@@ -3,7 +3,12 @@
 <plist version="1.0">
   <dict>
    
+   <!--Mic permissions: START-->
+   <key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone for real-time voice interaction.</string>
+   <!--Mic permissions: END-->
 
+   
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
     <key>CFBundleDevelopmentRegion</key>

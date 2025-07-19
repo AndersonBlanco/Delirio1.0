@@ -15,12 +15,16 @@
 #import "punchClassification_coreml4.h"
 #import "GRUsmd.h"
 #import <math.h>
-#import "TTS.h"
+
 //#import "MediaPipeTasksVision/MPPPoseLandmarker.h" // Import MediaPipe Header
 #import <CoreMedia/CoreMedia.h>
 #import <CoreVideo/CoreVideo.h>
 #import <Accelerate/Accelerate.h>
 #import "CHAINED_MODEL_coreml.h"
+ 
+
+
+
 /*
 //gray scale buffer concerter: START
 CMSampleBufferRef createGrayscaleCMSampleBuffer(CMSampleBufferRef sourceSampleBuffer) {
@@ -263,7 +267,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
   BOOL moveWindowIsOpen;
   NSTimeInterval lastSampleTimestamp;
   NSTimeInterval sampleInterval;
-  TTS *tts;
+ 
   int maxConf_idx;
   int punchClassify_max_conf_idx;
   int chained_max_idx;
@@ -291,8 +295,9 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     // self->chained_model = [[CHAINED_MODEL_coreml alloc] init];
     self->moveWindowIsOpen = YES;
      self->lastSampleTimestamp = -1.0;
-     self->sampleInterval = 0.15; //was (40/30)/10; // e.g. sample at 30 fps
-     self->tts = [[TTS alloc] init];
+     
+     self->sampleInterval = 40/30; //was (40/30)/10; // e.g. sample at 30 fps
+ 
      self->maxConf_idx = -1;
      self->punchClassify_max_conf_idx = -1;
      self->chained_max_idx = -1;
@@ -319,7 +324,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
      //initiate audio session:
      AVAudioSession *session = [AVAudioSession sharedInstance];
      
-     NSLog(@"Output route: %@", [[AVAudioSession sharedInstance] currentRoute]);
+    // NSLog(@"Output route: %@", [[AVAudioSession sharedInstance] currentRoute]);
      
      NSError *audioSessionError = nil;
 
@@ -421,6 +426,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
   if(arguments[@"userStrikedOut"] != nil){
     userStrikedOut = [arguments[@"userStrikedOut"] boolValue];
   };
+
   
   /*
   if(self->maxConf_idx > 0){
@@ -488,22 +494,22 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
    // VNImageOptionOrientation: @(orientation)
   }];
 
-  CGFloat paddingPercentage = 0.1;
+  //CGFloat paddingPercentage = 0.1;
 
   // Calculate the new origin (x, y)
   // The left padding is 10%, so the x-coordinate starts at 0.1
   // The bottom padding is 10%, so the y-coordinate starts at 0.1
-  CGFloat originX = paddingPercentage; // 0.1
-  CGFloat originY = paddingPercentage; // 0.1
+  //CGFloat originX = paddingPercentage; // 0.1
+  //CGFloat originY = paddingPercentage; // 0.1
 
   // Calculate the new width and height
   // Each side has 10% padding, so the total width reduction is 20% (10% left + 10% right)
   // The width and height of the ROI will be 100% - 20% = 80%
-  CGFloat width = 1.0 - (2 * paddingPercentage); // 1.0 - 0.2 = 0.8
-  CGFloat height = 1.0 - (2 * paddingPercentage); // 1.0 - 0.2 = 0.8
+ // CGFloat width = 1.0 - (2 * paddingPercentage); // 1.0 - 0.2 = 0.8
+  //CGFloat height = 1.0 - (2 * paddingPercentage); // 1.0 - 0.2 = 0.8
 
   // Create the CGRect using normalized coordinates
-  CGRect regionOfInterest = CGRectMake(originX, originY, width, height);
+ // CGRect regionOfInterest = CGRectMake(originX, originY, width, height);
   VNDetectHumanBodyPoseRequest *request = [[VNDetectHumanBodyPoseRequest alloc] init];
   //request.regionOfInterest =regionOfInterest;
 
@@ -596,8 +602,8 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
       poses,
     @[],
        @"Wait for break to end",// predictions, could also be any other string
-      @0, //max confidence index | returns 0 when unavailable
-      @(moveWindowIsOpen) //if this is false, then the string above likey is true, else, string above ,ight not fit context of situation
+      @(self->maxConf_idx), //max confidence index | returns 0 when unavailable
+      @(self->moveWindowIsOpen) //if this is false, then the string above likey is true, else, string above ,ight not fit context of situation
     ];
   }
   
@@ -677,27 +683,34 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     */
     //model prediction:
     
-    if (currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
-      lastSampleTimestamp = currentTimeSec;
+    
+//frame flow control section: START///////////////////////////////////////////
+    //if (currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
+      //lastSampleTimestamp = currentTimeSec;
       double *angles_40frame_dataPointer = (double *)angles_40frame.dataPointer;
       
       for (int i = 0; i < anglesOfInterest.count; i++) {
         double angleValue = [anglesOfInterest[i] doubleValue];
         //was:
         /*
-         
          */
         //NSLog((angleValue));
         //below, flat index is used: batch * (maxFrames * maxAnglesWithinEachFrame) + currentFrames*maxAnglesWithinEachFrame + currentAngle
+        
         angles_40frame_dataPointer[count * 8 + i] = (isnan(angleValue) || isinf(angleValue)) ? 0.0 : angleValue;
       }
       
   
       count++; //incriment count after each subsequent frame
-    }
-    
+   // }
+//frame flow control section: END///////////////////////////////////////////
+
 
     if(count >= 39){ //dont wait until count == 40, count = 0 also appends a angle_extract_from_frame array to the angles_40_frame array
+      
+      //print angles_40frame:
+ 
+      
     
       //set moveWindowIsOpen to false since now the frame cap ha sbeen reached, so the minor break for / to improve GRU model preformance must initiate
       self->moveWindowIsOpen = NO;
@@ -730,6 +743,8 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
       //generate valid array with valid data type to pass to JS thread
       NSMutableArray *angleFramesArray = [NSMutableArray arrayWithCapacity:40];
       double *ptr = (double *)angles_40frame.dataPointer;
+      
+ 
 
       for (int frame = 0; frame < 39; frame++) {
         NSMutableArray *frameAngles = [NSMutableArray arrayWithCapacity:8];
@@ -743,10 +758,13 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
       //add to set100_training:
       [self->set100_training addObject:angleFramesArray];
       
+ 
       
       
       
       self->maxConf_idx = getLabel(model_output.Identity);
+  
+      
       //self->punchClassify_max_conf_idx = getPunchTypeMaxConfIdx(punchClassificationOutput.Identity);
      // self->chained_max_idx = getCHAIEND_maxIdx(chainedModelOutput.Identity);
       /*
@@ -757,6 +775,18 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
        */
       //count = 0;
 // temp,//raw prediciotn hot-encoding array
+      
+      
+     /* //handle live voice and text generation natively: START
+      [
+        tts
+        prompt_gpt:@"Hello Universe"
+        resolver:^(NSString * _Nullable result, NSError * _Nullable error) {
+          
+        }
+      ];
+      //handle live voice and text generation natively: END */
+      
       
 
       return @[
@@ -769,10 +799,10 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
           @[@(RightKneeAngle), @(LeftKneeAngle)]
         ],
         //labelArray[maxConf_idx], //predictions,
-        @0,
-        @(maxConf_idx),//was @(chained_max_idx) //was @(punchClassify_max_conf_idx), //was maxConf_idx
-        @(moveWindowIsOpen),
-        labelArray[maxConf_idx],//was: punchClassArray[punchClassify_max_conf_idx],
+        @(-1),
+        @(self->maxConf_idx),//was @(chained_max_idx) //was @(punchClassify_max_conf_idx), //was maxConf_idx
+        @(self->moveWindowIsOpen),
+        labelArray[self->maxConf_idx],//was: punchClassArray[punchClassify_max_conf_idx],
         set100_training
       ];
     }else{
@@ -788,7 +818,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
        ],
        @"Wait for break to be over", //no predicitons available yet,
        @-1, //max confiddence Index  | returns 0 when unavailable
-       @(moveWindowIsOpen),
+       @(self->moveWindowIsOpen),
        @"Wait for break to be over, punchClass",
        set100_training //no predictions for punch classififxation available yet
       ];
@@ -802,7 +832,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     @[],
       @"Get into camera view",// predictions
       @-1, //max confidence index  | returns 0 when unavailable
-      @(moveWindowIsOpen),
+      @(self->moveWindowIsOpen),
       @-1, //max confidence for punch classification model
       set100_training
     ];
