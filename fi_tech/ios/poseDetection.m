@@ -296,7 +296,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     self->moveWindowIsOpen = YES;
      self->lastSampleTimestamp = -1.0;
      
-     self->sampleInterval = 40/30; //was (40/30)/10; // e.g. sample at 30 fps
+     self->sampleInterval = 0.15; //was 40/30; //was (40/30)/10; // e.g. sample at 30 fps
  
      self->maxConf_idx = -1;
      self->punchClassify_max_conf_idx = -1;
@@ -312,8 +312,8 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
        @"good rest",
        @"bad rest, wrong stance",
        
-        @"good rest",//@"bad jab, dont punch down",
-       @"bad rest, straigthnen your back and up your guard"]; //  was bad kick
+        @"good kick",//@"bad jab, dont punch down",
+       @"bad kick, dont lounge leg out"]; //@"bad rest, straigthnen your back and up your guard"]; //  was bad kick
      punchClassArray = @[
        @"jab",
        @"straightRight",
@@ -683,10 +683,10 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     */
     //model prediction:
     
-    
+     
 //frame flow control section: START///////////////////////////////////////////
-    //if (currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
-      //lastSampleTimestamp = currentTimeSec;
+    if(currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
+      lastSampleTimestamp = currentTimeSec;
       double *angles_40frame_dataPointer = (double *)angles_40frame.dataPointer;
       
       for (int i = 0; i < anglesOfInterest.count; i++) {
@@ -702,7 +702,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
       
   
       count++; //incriment count after each subsequent frame
-   // }
+   }
 //frame flow control section: END///////////////////////////////////////////
 
 

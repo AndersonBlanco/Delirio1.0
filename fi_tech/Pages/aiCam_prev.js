@@ -127,10 +127,8 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
     const resetUserState = () =>{ //resets the stats of the user (ie number of strikes, and sets the booolean of userGotStrikedOut to false)
         strikes.value = 0; 
         userGotStrikedOut.value = false; 
-       // jabFrameIdx.value = 0; 
-       poseHistriy.current = []; 
-      
-        console.log('user stats resetted');
+        poseHistriy.current = []; 
+        //console.log('user stats resetted');
         //reset pose history: 
     
       // console.log("pose histriy: ", poseHistriy.current.length); 
@@ -195,14 +193,12 @@ useAnimatedReaction(() => userGotIncorrectedMovement.value, (curr, prev) =>{
 const customFormat = useCameraFormat(device, [{ //settings / formats for the <Camera/> tag found below in the main retiurn statement
     fps: 30, 
     videoStabilizationMode:'off', 
-    //photoAspectRatio:ScreenWidth/ScreenHeight,
-    //videoAspectRatio:ScreenWidth/ScreenHeight,
-    photoResolution:{height: ScreenHeight, width:ScreenWidth},
-    videoResolution:{height:ScreenHeight, width:ScreenWidth}
     //photoAspectRatio: 1/2,
     //videoAspectRatio: 1/2,
+    videoResolution: {height: ScreenHeight, width:ScreenWidth},
+    videoAspectRatio:ScreenWidth/ScreenHeight
 }]) //fps set to max
-
+ 
  
 useEffect(() =>{ //useEffects allow code to execute without interfearing with the 'main thread' playing. This 'main thread' is better understood as the main program running and the code inide the useEffect runs in the background like a very sneaky ninja!
     if(!hasPermission){
@@ -238,12 +234,12 @@ const synced_text_to_speech_runOnJS = (txt) => TTS.synced_text_to_speech(txt); /
 //invokes continous conversation with AI, agentic-like conversation 
 const triggerConverse = () => TTS.converse(`Additional instructions/preprompt: The user just executed an incorrect movement, here is the statement describing the evaluation of the movement: ${textLabelSharedValm.value}`)
                      .then(r =>{
-                     console.log(r); 
-                      console.log("Conversed"); 
+                     //console.log(r); 
+                     // console.log("Conversed"); 
                        
                       }).catch(e =>{
-                     console.log(e)
-                       console.log("Spoken"); 
+                    // console.log(e)
+                      // console.log("Spoken"); 
                       TTS.stopConverse();
                       });
 
@@ -252,27 +248,26 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
   //trigger once ai feed back for per user movement evaluation during lesson, while user has not beedn striked out 
   if(!curr.dep3){
       if(curr.dep1 != '-' && !curr.dep2 && (curr.dep1 == prev.dep1 || curr.dep1 != prev.dep1) ){
-       runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
+      //runOnJS(speak)(curr);
+      runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
     }
   } 
   
  
   //Agentic AI conversation trigger when user gets striekd out 
     if(curr.dep2){
-      
       //control oscilator for animation play
 
       //Agentic AI converse native function implementation 
-        console.log('agentic ai');
+     //   console.log('agentic ai');
+        //runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
        runOnJS(triggerConverse)()
     }else{
-
-      //remove the first element of the poseJistroy array // essentially resetting the array / clearing it
-      
+ 
     }
     totalMovements.value++; 
-    console.log("Total moves: ", totalMovements.value)
-    console.log("Correct moves: ", userCorrectMoves.value)
+   // console.log("Total moves: ", totalMovements.value)
+    //console.log("Correct moves: ", userCorrectMoves.value)
 
 }, [textLabelSharedValm.value, userGotStrikedOut.value, moveWindowIsOpen.value]);
 
@@ -553,6 +548,13 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
     
     let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
   
+    //print set_100: 
+    try{
+      console.log("Length ", res[7].length, res[7]);
+    }catch{
+      
+    }
+
     max_GRU_idx.value = res[4] > 0 ? res[4] : max_GRU_idx.value; 
   //  console.log(max_GRU_idx.value, res[4]); 
 
@@ -576,9 +578,9 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
        // updateExternals(res[3], res[5], frame.height, frame.width); 
      
           //textLabelSharedValm.value = res[6]; 
-           console.log(res[3]); 
+       //    console.log(res[3]); 
 
-         console.log(res[1]); 
+         //console.log(res[1]); 
       }
         //if res[5] == true:
    
@@ -672,7 +674,7 @@ const SKELETON_CONNECTIONS = [
 ]; //skeleton connections used for drawing connections between joints correctly to represent a human like drawing of the human body 
 const normalizeGLCoords = (x, y) => [ //nomralizes joint cordinates 
       1 - y * 2.005  ,
-      1-x * 2    // Convert to [-1, 1] range
+  1-x * 2    // Convert to [-1, 1] range
      // Flip vertically (WebGL Y-down to screen Y-up)
 ];
 function createShaderProgram(gl, vertexSrc, fragmentSrc) { //comonent required to initiate the OpenGLView setup which enables drawing onverlays on screen 
@@ -697,7 +699,7 @@ function createShaderProgram(gl, vertexSrc, fragmentSrc) { //comonent required t
 const vertexShaderSource = `
         attribute vec2 position;
         void main() {
-          gl_Position = vec4(position.x/0.57 - .03, position.y, 0.0, 1.0);
+          gl_Position = vec4(position, 0.0, 1.0);
           gl_PointSize = 20.0; 
         }
         `;
@@ -720,7 +722,7 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
     if (!j1 || !j2 || j1.conf < 0.2 || j2.conf < 0.2) return;
 
     const [x1, y1] = normalizeGLCoords(j1.x, j1.y);
-    const [x2, y2] = normalizeGLCoords(j2.x , j2.y);
+    const [x2, y2] = normalizeGLCoords(j2.x, j2.y);
         gl.lineWidth(10);
         gl.LINE_LOOP; 
 /*
@@ -739,7 +741,6 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
     const posLoc = gl.getAttribLocation(shaderProgram, "position");
-    
     gl.enableVertexAttribArray(posLoc);
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
     
@@ -808,7 +809,7 @@ if (!shaderProgramRef.current) {
   }
    const colorUniformLocation = gl.getUniformLocation(shaderProgramRef.current, 'u_color');     
 
-  //let target_animation = poseHistriy.current;
+  let target_animation = poseHistriy.current; 
 
   const renderLoop = () => {
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -816,16 +817,16 @@ if (!shaderProgramRef.current) {
   
     if (latestPoseRef.current) {
              
-      if(userGotStrikedOut.value &&  poseHistriy.current.length > 0){
+      if(userGotStrikedOut.value && poseHistriy.current.length > 0){
       //drawSkeleton(gl, StraightRightAnimation[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation);
      //skeleton_color.value = [0.1, 0.0, 0.0, 1.0]; 
 
  
-    drawSkeleton(gl,  poseHistriy.current[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation); 
+    drawSkeleton(gl, target_animation[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation); 
       
       jabFrameIdx.value++;
 
-     if(jabFrameIdx.value >  poseHistriy.current.length-1){ //|| jabFrameIdx.value > StraightRightAnimation.length-1){
+     if(jabFrameIdx.value > target_animation.length-1){ //|| jabFrameIdx.value > StraightRightAnimation.length-1){
       jabFrameIdx.value = 0; 
      }
   
@@ -886,25 +887,21 @@ if (!shaderProgramRef.current) {
 
 //const step = useSharedValue(1); 
 const array_multiplier_speed_emulator_variable = 10; 
-const poseHistCount = useSharedValue(0); 
 useEffect(() => { //updates the latestPoseRef, very important
   if (poses?.[0]){ 
       latestPoseRef.current = poses;
-    if(strikes.value >= 2){
-
-    if(moveWindowIsOpen.value){
-      //poseHistriy.current[poseHistriy.current.length] = poses[0]; //[poseHistriy.current.length]// =/Array.from(poses[0], poses[0]);//Array.from(poses[0],poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0])[0];
-   //   console.log("poseHistroyLength: ", poseHistriy.current.length)
-      
+      if(strikes.value == 2){
+      if(moveWindowIsOpen.value){
+        
       poseHistriy.current[poseHistriy.current.length] = Array(array_multiplier_speed_emulator_variable).fill(poses[0])[0];//Array.from(poses[0],poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0])[0];
+      
 
-  }
-    
-   }
+      }
+      }
  
   }
 
-}, [poses, strikes.value, moveWindowIsOpen.value]); //passing in this as last argument just specifies upon what should the function executed inside the useEffect hook shoul depend on / purpose based on some data(in this case, poses variable)
+}, [poses]); //passing in this as last argument just specifies upon what should the function executed inside the useEffect hook shoul depend on / purpose based on some data(in this case, poses variable)
 
 
 
@@ -1035,6 +1032,32 @@ const FeedbackInteruptionScreen = (
 
             <TouchableOpacity onPress={() => {
                SheetManager.show("ChatSheet")
+             // alert("Test")
+              /*
+            SheetManager.show("Lesson", {
+            payload:{
+            freeStyle: true,
+            title:"FreeStyle",
+             img:TestImg,
+            difficulty: "Advanced",
+            description:"Execute any movement at your heart's desire as FiTech evaluates your executions!"
+        }
+       }) 
+        */
+
+              //setShowFeedChat(!showFeedChat);
+            /*
+                    TTS.converse(`Additional instructions/preprompt: The user just executed an incorrect movement, here is the statement describing the evaluation of the movement: ${textLabelSharedValm.value}`)
+                     .then(r =>{
+                     console.log(r); 
+                      console.log("Conversed"); 
+                    
+                      }).catch(e =>{
+                     console.log(e)
+                       console.log("Spoken"); 
+                      TTS.stopConverse();
+                      })
+                      p*/
               }} style = {{backgroundColor:"black", top: 59, alignSelf:'center', borderRadius: 100, padding: 10, alignItems:"center", flexDirection:"row", columnGap:0, justifyContent:"center", }}>
               <Image source = {TransparentLogo} style = {{height: 40, width: 40}} />
                 </TouchableOpacity>
@@ -1167,25 +1190,25 @@ const loopAnimation = Animated.loop(
           
            isMirrored = {true}
            shouldRasterizeIOS = {false}
-            enableBufferCompression = {true}
+         //   enableBufferCompression = {true}
          enableFpsGraph = {false}
-        
+       
          isActive = {true}
          device={device}
          format={customFormat}
          pixelFormat={"rgb"}
-         
+        
          frameProcessor={default_useFramePorcessor}
-        videoBitRate={"extra-low"}
+     //   videoBitRate={"extra-low"}
          style = {{
-            height: ScreenHeight,
-            width:ScreenWidth,
+            height: Dimensions.get("screen").height,
+            width:Dimensions.get("screen").width,
             position:"absolute"
          }}
          />
        <View style={[StyleSheet.absoluteFill, {backgroundColor: userGotStrikedOut.value? "white" : "transparent"}]}>
       <GLView
-        
+      
         style={StyleSheet.absoluteFill}
         onContextCreate={onContextCreate2}
 
@@ -1285,26 +1308,3 @@ export const styles = StyleSheet.create({
          display:"flex", 
     }
 })
-
-
-/*
-
-good rest 
-bad rest -[knee lvl lack, hands down, too curved back, narrow stance]
-bad rest - complex - incorrect,incorrect - [(lack knee lvl + bent back)]
-
-good jab 
-bad jab - [lack of knee lvl, oppose guard low, lack of hip rotation, lack end guard, lack of extension]
-bad jab - complex flaw - incorrect, incorrect - [(lack of end guard + lack of opposite)]
-
-good straight 
-bad straight - [ opposite guard low, lack of extension, lack of hip rotation, lack of end guard, lack of knee lvl,  ]
-bad straight - complex - incorrect, incorrect - [()]
-
-good upper-cut 
-bad upper-cut - [ lack of rotation, lack of end guard, lack of opposite guard]
-bad uppercut - complex - incorrect - [(over-wind up + over-extension-too-high-up)]
-
-[straight jab, jab, uppercut, rest]
-[punchtype, .....] = [flaw, .....] = [correct, incorrect]
-*/

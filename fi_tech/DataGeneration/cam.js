@@ -56,10 +56,13 @@ const latestPoseRef = useRef(null);
 
 
 const customFormat = useCameraFormat(device, [{
-    fps: 'max', 
+    fps: 30, 
     videoStabilizationMode:'off', 
-    //photoAspectRatio: 1/2,
-    //videoAspectRatio: 1/2,
+        //photoAspectRatio: 1/2,
+        //videoAspectRatio: 1/2,
+        videoResolution: {height: ScreenHeight, width:ScreenWidth},
+        videoAspectRatio:ScreenWidth/ScreenHeight
+
 }]) //fps set to max
 
  
@@ -107,9 +110,14 @@ useAnimatedReaction(() => recording.value, (curr, prev) =>{
 })
 const default_useFramePorcessor = useFrameProcessor((frame) =>{
     'worklet'; 
-    let res = detectPlugin.call(frame, {userGotStrikedOut: false});
-
-   
+    let res = detectPlugin.call(frame, {userGotStrikedOut: false});  
+    //print set_100: 
+    try{
+      console.log("Length ", res[7].length, res[7]);
+    }catch{
+      
+    }
+    /*
     updatePoses(res[1]); 
    // console.log(res[1])
    let frameCount = res[0]; 
@@ -119,6 +127,9 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{
    }else{
     recording.value = false; 
    }
+
+   */
+
 
    
 

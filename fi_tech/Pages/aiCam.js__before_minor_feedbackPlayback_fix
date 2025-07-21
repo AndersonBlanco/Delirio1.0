@@ -128,13 +128,13 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
         strikes.value = 0; 
         userGotStrikedOut.value = false; 
        // jabFrameIdx.value = 0; 
-       poseHistriy.current = []; 
+       poseHistCount.value = 0; 
       
         console.log('user stats resetted');
         //reset pose history: 
     
       // console.log("pose histriy: ", poseHistriy.current.length); 
-      TTS.stopConverse()
+     // TTS.stopConverse()
 
     }
 
@@ -252,7 +252,8 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
   //trigger once ai feed back for per user movement evaluation during lesson, while user has not beedn striked out 
   if(!curr.dep3){
       if(curr.dep1 != '-' && !curr.dep2 && (curr.dep1 == prev.dep1 || curr.dep1 != prev.dep1) ){
-       runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
+      //runOnJS(speak)(curr);
+     // runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
     }
   } 
   
@@ -264,7 +265,8 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
 
       //Agentic AI converse native function implementation 
         console.log('agentic ai');
-       runOnJS(triggerConverse)()
+        //runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
+       //runOnJS(triggerConverse)()
     }else{
 
       //remove the first element of the poseJistroy array // essentially resetting the array / clearing it
@@ -808,7 +810,7 @@ if (!shaderProgramRef.current) {
   }
    const colorUniformLocation = gl.getUniformLocation(shaderProgramRef.current, 'u_color');     
 
-  //let target_animation = poseHistriy.current;
+  let target_animation = poseHistriy.current;
 
   const renderLoop = () => {
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -816,16 +818,16 @@ if (!shaderProgramRef.current) {
   
     if (latestPoseRef.current) {
              
-      if(userGotStrikedOut.value &&  poseHistriy.current.length > 0){
+      if(userGotStrikedOut.value && target_animation.length > 0){
       //drawSkeleton(gl, StraightRightAnimation[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation);
      //skeleton_color.value = [0.1, 0.0, 0.0, 1.0]; 
 
  
-    drawSkeleton(gl,  poseHistriy.current[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation); 
+    drawSkeleton(gl, target_animation[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation); 
       
       jabFrameIdx.value++;
 
-     if(jabFrameIdx.value >  poseHistriy.current.length-1){ //|| jabFrameIdx.value > StraightRightAnimation.length-1){
+     if(jabFrameIdx.value > target_animation.length-1){ //|| jabFrameIdx.value > StraightRightAnimation.length-1){
       jabFrameIdx.value = 0; 
      }
   
@@ -895,8 +897,8 @@ useEffect(() => { //updates the latestPoseRef, very important
     if(moveWindowIsOpen.value){
       //poseHistriy.current[poseHistriy.current.length] = poses[0]; //[poseHistriy.current.length]// =/Array.from(poses[0], poses[0]);//Array.from(poses[0],poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0])[0];
    //   console.log("poseHistroyLength: ", poseHistriy.current.length)
-      
-      poseHistriy.current[poseHistriy.current.length] = Array(array_multiplier_speed_emulator_variable).fill(poses[0])[0];//Array.from(poses[0],poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0], poses[0])[0];
+
+     poseHistriy.current[poseHistriy.current.length] = poses[0];
 
   }
     
@@ -904,7 +906,7 @@ useEffect(() => { //updates the latestPoseRef, very important
  
   }
 
-}, [poses, strikes.value, moveWindowIsOpen.value]); //passing in this as last argument just specifies upon what should the function executed inside the useEffect hook shoul depend on / purpose based on some data(in this case, poses variable)
+}, [poses, strikes.value]); //passing in this as last argument just specifies upon what should the function executed inside the useEffect hook shoul depend on / purpose based on some data(in this case, poses variable)
 
 
 
@@ -1035,6 +1037,32 @@ const FeedbackInteruptionScreen = (
 
             <TouchableOpacity onPress={() => {
                SheetManager.show("ChatSheet")
+             // alert("Test")
+              /*
+            SheetManager.show("Lesson", {
+            payload:{
+            freeStyle: true,
+            title:"FreeStyle",
+             img:TestImg,
+            difficulty: "Advanced",
+            description:"Execute any movement at your heart's desire as FiTech evaluates your executions!"
+        }
+       }) 
+        */
+
+              //setShowFeedChat(!showFeedChat);
+            /*
+                    TTS.converse(`Additional instructions/preprompt: The user just executed an incorrect movement, here is the statement describing the evaluation of the movement: ${textLabelSharedValm.value}`)
+                     .then(r =>{
+                     console.log(r); 
+                      console.log("Conversed"); 
+                    
+                      }).catch(e =>{
+                     console.log(e)
+                       console.log("Spoken"); 
+                      TTS.stopConverse();
+                      })
+                      p*/
               }} style = {{backgroundColor:"black", top: 59, alignSelf:'center', borderRadius: 100, padding: 10, alignItems:"center", flexDirection:"row", columnGap:0, justifyContent:"center", }}>
               <Image source = {TransparentLogo} style = {{height: 40, width: 40}} />
                 </TouchableOpacity>
