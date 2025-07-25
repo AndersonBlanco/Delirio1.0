@@ -5,18 +5,21 @@ import { useDispatc, useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import SideMenu from "../components/sideMenu";
 import SideNav from "../components/sideNav";
-import CardioImg from "../assets/run.jpg"; 
+import CoverImg from "../assets/MannyPacquiao1.jpg"; 
 import User from "../assets/profile8.png"; 
  import { ActionSheetIOS } from "react-native";
 import {Sheet,  Avatar,Separator, XGroup, YGroup, Select, Label, SelectIcon, Tooltip, TooltipGroup, Paragraph, } from "tamagui"; 
 import * as Progress from "react-native-progress";
-import { Card } from "react-native-elements";
+import { Badge, Card } from "react-native-elements";
 import { animations } from "@tamagui/config";
 import { Icon } from "react-native-elements";
 import Logo from "../assets/logo2.jpeg";
 import LogoSVG from "../assets/logo2_SVG";
 import Svg from "react-native-svg";
+import Fire from "../assets/fire.png";
 import Logo2SVG from "../assets/logo2_SVG";
+import Wrong from "../assets/wrong.png"; 
+import Boxing_Glove from "../assets/boxing_glove.png"; 
 //import {LinearGradient} from"tamagui/linear-gradient";
 //import { LinearGradient } from "expo-linear-gradient";
 import ChatBubble from "react-native-chat-bubble";
@@ -101,7 +104,7 @@ const Timeline = ({data, orientation = 0})=>{
                     <TouchableOpacity style = {[styles.column, {borderColor: "transparent", borderWidth: 2, borderRadius: 10, rowGap: 0, backgroundColor: "transparents", alignItems:"center", justifyContent:"center", width: "100%"}]}>
                        
                        <View style = {{borderRadius: 10, overflow: "hidden"}}>
-                       <Image source={CardioImg} style = {{width: Dimensions.get("screen").width*.9, height: Dimensions.get("screen").height * .25}}/>
+                       <Image source={CoverImg} style = {{width: Dimensions.get("screen").width*.9, height: Dimensions.get("screen").height * .25}}/>
                       </View>
                     </TouchableOpacity>
                     <View style = {[styles.row]}>
@@ -146,7 +149,7 @@ const DayPlan = ({day}) =>{
           <TouchableOpacity style = {[styles.column, {borderColor: "transparent", borderWidth: 2, borderRadius: 10, rowGap: 0, backgroundColor: "transparents", alignItems:"center", justifyContent:"center", width: "100%"}]}>
                        
                        <View style = {{borderRadius: 10, overflow: "hidden"}}>
-                       <Image source={CardioImg} style = {{width: Dimensions.get("screen").width*.9, height: Dimensions.get("screen").height * .15}}/>
+                       <Image source={CoverImg} style = {{width: Dimensions.get("screen").width*.9, height: Dimensions.get("screen").height * .15}}/>
                       </View>
                     
                     </TouchableOpacity>
@@ -192,13 +195,13 @@ const WeekDaysUI = ()=>{
 
 
 const TodayLesson = (
-    <Card containerStyle = {{ marginVertical: 50, borderWidth: 0, borderRadius: 17, backgroundColor:"rgba(0, 0, 0, .05)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8}}>
+    <Card containerStyle = {{ marginVertical: 50, borderRadius: 17, backgroundColor:"rgba(0, 0, 0, .0)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,.75)",}}>
         <XGroup alignItems="center" justifyContent="left"> 
-        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 17, fontWeight: 250}}>Jab - </Card.Title>
-        <Card.Title style = {{alignSelf:"flex-start", color:"black", fontWeight: "200", top: 2}}>Intermediate</Card.Title>
+        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 17, fontWeight: 250}}>Jab </Card.Title>
+        <Card.Title style = {{alignSelf:"right", color:"black", fontWeight: "200", top: 5, position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:0, borderRadius: 100}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Fundamental" status = {"success"}/></View></Card.Title>
         </XGroup>
 
-        <Card.Image source = {CardioImg} borderRadius={10}/>
+        <Card.Image source = {CoverImg} borderRadius={10}/>
         
         <Card.FeaturedTitle style = {{ paddingHorizontal: 15, paddingTop: 20, paddingBottom: 2.5, color:"rgba(0,0,0,.5)", fontWeight: 400, fontSize: 12}}> The Jab is the most used punch type in the book, dont miss out on it. Learn the jab at the next level awating you! </Card.FeaturedTitle>
  
@@ -214,12 +217,13 @@ const TodayLesson = (
 // <Text style = {{alignSelf: 'left', left: 15, fontSize: 15, marginVertical: 25}}>Last Performance Stats</Text>
 
 const LastPerformanceStats = () => 
-    <YGroup alignItems="center" justifyContent="center" marginVertical={25}>
+    <YGroup alignItems="center" justifyContent="center" marginVertical={15}>
        
-        <XGroup justifyContent="space-between" alignItems="center" columnGap={25}>
+        <XGroup justifyContent="space-between" alignItems="center" columnGap={10} marginVertical={7}>
             <XGroup.Item>
-                 <TouchableOpacity style = {{rowGap: 12}}>
-                <Icon name = "speed" color = "rgba(0,0,0,.73)" size = {34} />
+                 <TouchableOpacity style = {{rowGap: 7, borderRadius: 15, paddingHorizontal: 15, paddingVertical: 5}}>
+                                <Image source={Fire} style = {{height: 25, width: 25, alignSelf:"center"}}/>
+
                 <Text color = "lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.65)" }}>1.5 p/s</Text>
                 <Text color ="lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.65)", fontSize: 11 }}>Punch Speed</Text>
             </TouchableOpacity>
@@ -228,19 +232,20 @@ const LastPerformanceStats = () =>
             <Separator vertical borderColor = "lightgray" borderWidth={1} height = {80}/>
 
               <XGroup.Item>
-                <TouchableOpacity style = {{rowGap: 12}}>
-                <Icon name = "timelapse" color = "rgba(0,0,0,.73)" size = {34} />
-                <Text color ="lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.65)" }}>3:00 mins</Text>
+                <TouchableOpacity style = {{rowGap: 7, borderRadius: 15, paddingHorizontal: 12, paddingVertical: 5}}>
+                   <Image source={Boxing_Glove} style = {{height: 25, width: 25, alignSelf:"center", transform: [{rotateZ:"45deg"}]}}/>
+
+  
+                 <Text color ="lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.65)" }}>3:00 mins</Text>
                 <Text color = "lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.65)", fontSize: 11 }}>Lesosns Time</Text>
             </TouchableOpacity>
             </XGroup.Item>
       
             <Separator vertical borderColor={"lightgray"} borderWidth={1} height={80}/>
-
               <XGroup.Item>
-                <TouchableOpacity style = {{rowGap: 12}}>
-                <Icon name = "rule" color = "rgba(0,0,0,.73)" size = {34} />
-                <Text color = "lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.65)"}}>2</Text>
+                <TouchableOpacity style = {{rowGap: 7, borderRadius: 15, paddingHorizontal: 20, paddingVertical: 5}}>
+                        <Image source={Wrong} style = {{height: 25, width: 25, alignSelf:"center"}}/>
+                  <Text color = "lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.65)"}}>2</Text>
                 <Text color = "lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.65)", fontSize: 11}}>Incorrects</Text>
             </TouchableOpacity>
             </XGroup.Item>
@@ -248,22 +253,45 @@ const LastPerformanceStats = () =>
         </XGroup>
 
 
-<View>
+
+
+         <YGroup scrollable backgroundColor={"transparent"} height={500} alignItems="top" justifyContent="top">
+             <Card containerStyle = {{ marginVertical: 15, borderRadius: 17, backgroundColor:"rgba(0, 0, 0, .0)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,.75)",}}>
+        <XGroup alignItems="center" justifyContent="left"> 
+        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 15, fontWeight: 250}}>One-Two <Text style = {{fontSize: 12, color:"rgba(0,0,0,.5)", }}>- Recomended</Text>  </Card.Title>
+        <Card.Title style = {{top: 3,color:"black", fontWeight: "200", position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:0, borderRadius: 100}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Intermediate" status = {"warning"}/></View></Card.Title>
+        </XGroup>
+
+       
+        <Card.FeaturedTitle style = {{ paddingHorizontal: 0, paddingTop: 1, paddingBottom: 0, color:"rgba(0,0,0,.5)", fontWeight: 400, fontSize: 12, textAlign:"left"}}>The One-Two combination is built upon the fundamental punches Jab and Straight-Right, a lethal and speedy combo. </Card.FeaturedTitle>
+         <TouchableOpacity onPress = {() => {
+           //TTS.speak("Hello Universe, i hope you are well."); 
+           //generateVoice_jsthread("Hello Universe, i hope your well! Try to maintain your guard up and twist your hips to generate forward thrust!!")
+         }} style = {{borderColor:"rgba(0,0,0,1)", borderStyle:"solid", alignSelf:"flex-start",  alignItems:"center", justifyContent:"center", borderRadius: 100, borderWidth: 2, paddingVertical: 7, paddingHorizontal: 20, marginTop: 5}}>
+            <Text style = {{color:"black", fontSize:12}}>Try Now</Text>
+         </TouchableOpacity>
+    </Card>
+         </YGroup>
+         
+            
+        
+    
+    </YGroup>
+
+
+const AI_PastLesson_re4view = (
+    <View>
         <View      
         style = {{
-          paddingHorizontal: 10, alignItems:"center",justifyContent:"center", backgroundColor:"rgba(0,0,0,.05)", left: 15, bottom: -55, width:Dimensions.get('screen').width * .8, height: Dimensions.get('screen').height*.12, borderRadius: 25,borderTopLeftRadius: 0, }}>
+             borderStyle:"solid", borderWidth: 1.7, borderColor:"rgba(0,0,0,.07)",
+          paddingHorizontal: 10, alignItems:"center",justifyContent:"center", backgroundColor:"rgba(0,0,0,.0)", left: 15, bottom: -55, width:Dimensions.get('screen').width * .8, height: Dimensions.get('screen').height*.12, borderRadius: 25,borderTopLeftRadius: 0, }}>
           <Avatar position="absolute" left = {-43} bottom = {77}>
             <Logo2SVG height = {40} />
         </Avatar>
         <Text style = {{color:"rgba(0,0,0,.75)", alignSelf:"center", textAlign:"left", paddingLeft: 10}}>Nice stats, but your punch speed could increase, why dont you give it another try this in today's lesson?</Text>
         </View>
 </View>
-
-
-            
-        
-    
-    </YGroup>
+)
 
 return(
     <>

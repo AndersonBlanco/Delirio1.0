@@ -299,6 +299,8 @@ PODS:
     - SDWebImageWebPCoder (~> 0.14.6)
   - ExpoKeepAwake (14.1.4):
     - ExpoModulesCore
+  - ExpoMeshGradient (0.3.4):
+    - ExpoModulesCore
   - ExpoModulesCore (2.4.2):
     - DoubleConversion
     - glog
@@ -2583,6 +2585,7 @@ DEPENDENCIES:
   - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - ExpoMeshGradient (from `../node_modules/expo-mesh-gradient/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSpeech (from `../node_modules/expo-speech/ios`)
   - "ExpoUI (from `../node_modules/@expo/ui/ios`)"
@@ -2731,6 +2734,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-image/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
+  ExpoMeshGradient:
+    :path: "../node_modules/expo-mesh-gradient/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   ExpoSpeech:
@@ -2933,6 +2938,7 @@ SPEC CHECKSUMS:
   ExpoHaptics: 0ff6e0d83cd891178a306e548da1450249d54500
   ExpoImage: 785f7673cfecd97045cf333fd6486b57ccab4b71
   ExpoKeepAwake: bf0811570c8da182bfb879169437d4de298376e7
+  ExpoMeshGradient: 0cf84ffc9edb16fa2866f940a2dafd4aa7981992
   ExpoModulesCore: e0409d8c674a651a183e941be663e1966b49e2a2
   ExpoSpeech: 9b3bdf552e69c8015c246dc52b5ad5fcdbec878e
   ExpoUI: d67b6d76bb31c025df33e9ee68b20b031436d70e

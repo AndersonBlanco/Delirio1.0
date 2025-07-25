@@ -65,7 +65,23 @@ useEffect(() =>{
         easing: Easing.bounce,
         duration: 1500,
      }).start(); 
-}, [fade_in_animation, zoom_out])
+}, [fade_in_animation, zoom_out]);
+
+const BeltAward = (
+       <View style={{alignSelf:"center", top:120}}>
+            <Animated.Image source={Belt1} style = {{height:150, transform: [{scale: zoom_out}], width: 150, opacity:fade_in_animation}}/>
+        </View>
+ 
+);
+
+
+const RecomendedLessons = (
+    <>
+    <YGroup>
+        
+    </YGroup>
+    </>
+)
 return(
     <SafeAreaView style = {{
  
@@ -79,6 +95,7 @@ return(
         <YGroup rowGap={25}>
             <Text
             style = {{
+        
                 fontSize: 25,
                 paddingLeft: 28
 
@@ -115,18 +132,18 @@ return(
                             
                             return(
                             <XGroup columnGap={10} key = {key} paddingHorizontal={50} justifyContent='space-between' alignItems='center' >
-                                <Text style = {{fontSize: 20}}>{stats_titles[key]}</Text>
+                                <Text style = {{fontSize: 20, fontWeight: 300, color:"rgba(0,0,0,.65)"}}>{stats_titles[key]}</Text>
                                <Separator borderColor = "rgba(0, 0, 0, .15)" borderWidth={1} top = {3.7} borderSty borderRadius={100}/>
                                 {
                                     key == "duration"?
                                         <XGroup>
-                                        <Text style = {{fontSize: 20}}>{stats_data_point.stats[key].minutes}m</Text>
-                                        <Text style = {{fontSize: 20}}>,</Text>
-                                        <Text style = {{fontSize: 20}}>{stats_data_point.stats[key].minutes<10? `0${stats_data_point.stats[key].minutes}` : stats_data_point.stats[key].minutes}s</Text>
+                                        <Text style = {{fontSize: 20, fontWeight: 300,  color:"rgba(0,0,0,.7)"}}>{stats_data_point.stats[key].minutes}m</Text>
+                                        <Text style = {{fontSize: 20, fontWeight: 300,  color:"rgba(0,0,0,.7)"}}>,</Text>
+                                        <Text style = {{fontSize: 20, fontWeight: 300,  color:"rgba(0,0,0,.7)"}}>{stats_data_point.stats[key].minutes<10? `0${stats_data_point.stats[key].minutes}` : stats_data_point.stats[key].minutes}s</Text>
                                         </XGroup>
 
                                     :
-                                        <Text style = {{fontSize: 20}}>{stats_data_point.stats[key]}</Text>
+                                        <Text style = {{fontSize: 20, fontWeight: 300,  color:"rgba(0,0,0,.7)"}}>{stats_data_point.stats[key]}</Text>
                                     
                                 }
                             </XGroup>
@@ -141,10 +158,7 @@ return(
         <Icon name = 'share' iconStyle = {{ color:"rgba(0,0,0,.35)"}} size = {27} reverseColor='blue'/>
         </TouchableOpacity>
 
-        <View style={{alignSelf:"center", top:120}}>
-            <Animated.Image source={Belt1} style = {{height:150, transform: [{scale: zoom_out}], width: 150, opacity:fade_in_animation}}/>
-        </View>
- 
+     {RecomendedLessons}
        
        <TouchableOpacity onPress={() => nav.replace("AI_Cam")} style={{ alignSelf:"center", bottom: -175, paddingVertical: 10, backgroundColor:"black", borderRadius: 100, width: ScreenWidth/2, justifyContent:'center', alignItems:'center'}}>
         <Text style = {{color:"white"}}>Again?</Text>

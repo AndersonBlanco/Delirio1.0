@@ -28,7 +28,7 @@ RCT_EXPORT_MODULE();
   self->timerValue = 1.25;
   self->recording = NO;
   self->timer_clock = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(timeTick) userInfo:nil repeats:YES];
-  self->apiKey = @"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";
+  self->apiKey = @"";
   if (self = [super init]) {
     _audioPlayer = [[AVPlayer alloc] init];
   }

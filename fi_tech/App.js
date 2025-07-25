@@ -121,7 +121,7 @@ const Lessons_with_activity_indicator_screen = () => (
         component={AICam_with_loadingIndicatorScreen} 
         options ={{
           contentStyle:{
-            backgroundColor: colorScheme.sixty
+            backgroundColor: "rgba(255,255,255, .75)"
           }
         }}/>
 

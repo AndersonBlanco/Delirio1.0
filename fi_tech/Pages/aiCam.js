@@ -49,6 +49,8 @@ import LessonSummarry from './LessonSummarry';
 import Logo2SVG from '../assets/logo2_SVG';
 
 
+import {MeshGradient} from 'rn-mesh-gradient'; 
+
 
 
 const midChat = (
@@ -117,7 +119,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
   const nav = useNavigation(); 
    // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
    const strikes = useSharedValue(0);
-   const userGotStrikedOut = useSharedValue(false);
+   const userGotStrikedOut = useSharedValue(true);
    const userCorrectMoves = useSharedValue(0);
    const tempFrameCounter = useSharedValue(0); 
    const max_GRU_idx = useSharedValue(-1); 
@@ -126,7 +128,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
 
     const resetUserState = () =>{ //resets the stats of the user (ie number of strikes, and sets the booolean of userGotStrikedOut to false)
         strikes.value = 0; 
-        userGotStrikedOut.value = false; 
+       // userGotStrikedOut.value = false; 
        // jabFrameIdx.value = 0; 
        poseHistriy.current = []; 
       
@@ -134,7 +136,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
         //reset pose history: 
     
       // console.log("pose histriy: ", poseHistriy.current.length); 
-      TTS.stopConverse()
+      //TTS.stopConverse()
 
     }
 
@@ -143,7 +145,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
        let val = strikes.value + 1; 
         if (val >=3){
           strikes.value = 0;
-          userGotStrikedOut.value = true; 
+        //  userGotStrikedOut.value = true; 
       
         }else{
           strikes.value = val; 
@@ -156,7 +158,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
         let val = strikes.value + 1; 
         if (val >=3){ //extra to 4, not 3 for padding space
           strikes.value = 0;
-          userGotStrikedOut.value = true; 
+         // userGotStrikedOut.value = true; 
 
   
         }else{
@@ -252,7 +254,7 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
   //trigger once ai feed back for per user movement evaluation during lesson, while user has not beedn striked out 
   if(!curr.dep3){
       if(curr.dep1 != '-' && !curr.dep2 && (curr.dep1 == prev.dep1 || curr.dep1 != prev.dep1) ){
-       runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
+       //runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
     }
   } 
   
@@ -264,15 +266,15 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
 
       //Agentic AI converse native function implementation 
         console.log('agentic ai');
-       runOnJS(triggerConverse)()
+      // runOnJS(triggerConverse)()
     }else{
 
       //remove the first element of the poseJistroy array // essentially resetting the array / clearing it
       
     }
     totalMovements.value++; 
-    console.log("Total moves: ", totalMovements.value)
-    console.log("Correct moves: ", userCorrectMoves.value)
+   // console.log("Total moves: ", totalMovements.value)
+   // console.log("Correct moves: ", userCorrectMoves.value)
 
 }, [textLabelSharedValm.value, userGotStrikedOut.value, moveWindowIsOpen.value]);
 
@@ -539,6 +541,23 @@ const updatePoseBuffer = (p) =>{
 Pose:  [{"head_joint": {"conf": 0.8154296875, "name": "head_joint", "x": 0.2755799889564514, "y": 0.8650012016296387}, "left_ear_joint": {"conf": 0.7626953125, "name": "left_ear_joint", "x": 0.27416253089904785, "y": 0.772429883480072}, "left_eye_joint": {"conf": 0.83935546875, "name": "left_eye_joint", "x": 0.25808513164520264, "y": 0.8358705043792725}, "left_foot_joint": {"conf": 0.2548828125, "name": "left_foot_joint", "x": 0.916772723197937, "y": 0.7006985545158386}, "left_forearm_joint": {"conf": 0.75927734375, "name": "left_forearm_joint", "x": 0.47521519660949707, "y": 0.6458866596221924}, "left_hand_joint": {"conf": 0.7451171875, "name": "left_hand_joint", "x": 0.585648238658905, "y": 0.7250705361366272}, "left_leg_joint": {"conf": 0.345458984375, "name": "left_leg_joint", "x": 0.7474462389945984, "y": 0.8088974356651306}, "left_shoulder_1_joint": {"conf": 0.740234375, "name": "left_shoulder_1_joint", "x": 0.3587661385536194, "y": 0.6952054500579834}, "left_upLeg_joint": {"conf": 0.3740234375, "name": "left_upLeg_joint", "x": 0.6154303550720215, "y": 0.7841629981994629}, "neck_1_joint": {"conf": 0.658203125, "name": "neck_1_joint", "x": 0.36932146549224854, "y": 0.8048836886882782}, "right_ear_joint": {"conf": 0.298583984375, "name": "right_ear_joint", "x": 0.27111393213272095, "y": 0.9224628806114197}, "right_eye_joint": {"conf": 0.751953125, "name": "right_eye_joint", "x": 0.2619226276874542, "y": 0.8966839909553528}, "right_foot_joint": {"conf": 0.177490234375, "name": "right_foot_joint", "x": 0.9470490217208862, "y": 0.9034504890441895}, "right_forearm_joint": {"conf": 0.196533203125, "name": "right_forearm_joint", "x": 0.4512541890144348, "y": 0.955840528011322}, "right_leg_joint": {"conf": 0.173828125, "name": "right_leg_joint", "x": 0.7485769987106323, "y": 0.8617675304412842}, "right_shoulder_1_joint": {"conf": 0.576171875, "name": "right_shoulder_1_joint", "x": 0.3798767924308777, "y": 0.914561927318573}, "right_upLeg_joint": {"conf": 0.35009765625, "name": "right_upLeg_joint", "x": 0.5963930487632751, "y": 0.9102357029914856}, "root": {"conf": 0.362060546875, "name": "root", "x": 0.6059117019176483, "y": 0.8471993505954742}}]
 
 */
+ let data_paths = [
+    ("jab_end_guard_left_guard", 0),
+    ("jab_endguard", 1),
+    ("jab_good", 2),
+    ("jab_leftguard", 3),
+    ("jab_rotation", 4),
+    ("rest_good", 5),
+    ("rest_hunchedback", 6),
+    ("rest_low_guard_hunched_back", 7),
+    ("rest_lowguard", 8),
+    ("straight_good", 9),
+    //("straight_rotation", 10),
+    ("straight_left_guard", 11),
+    ("uppercut_good", 12),
+    ("uppercut_lackrotation", 13),
+    //("uppercut_overcharge_overreach", 14),
+    ]
 
 
 const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important piece, it does exactly what it sname reflects: processes frames incoming from the <Camera/> tag and passes it onto the th enative side for evaluation and predictions 
@@ -560,7 +579,7 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
 
 
      if(res[2].length > 0 && res[6] != "Wait for break to be over, punchClass"){
-      textLabelSharedValm.value = res[6]; 
+     // textLabelSharedValm.value = res[6]; //////////////previous textLabel set
       
      if(res[4] % 2 != 0){
       incrimentUserStrikes();
@@ -571,14 +590,19 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
      }
 
 
+      if(res[8] != undefined){
+    console.log("PredicitonP: ", res[8])
+      textLabelSharedValm.value = res[8]; 
+      }
+      
     if(!userGotStrikedOut.value){
       if(res[5] && res[6] != textLabelSharedValm.value && res[6] != "Wait for break to be over, punchClass" && res[6] != -1){ //was if res[3] == 0
        // updateExternals(res[3], res[5], frame.height, frame.width); 
      
           //textLabelSharedValm.value = res[6]; 
-           console.log(res[3]); 
+         //  console.log(res[3]); 
 
-         console.log(res[1]); 
+         //console.log(res[1]); 
       }
         //if res[5] == true:
    
@@ -1024,8 +1048,30 @@ const [showFeedChat, setShowFeedChat] = useState(false);
 const FeedbackInteruptionScreen = (
  <>
         <SheetProvider>
-        <View onTouchStart={resetUserState} style = {{ position:"absolute", height: ScreenHeight, width:ScreenWidth, backgroundColor:"transparent"}}>
+        
+        <View onTouchStart={resetUserState} style = {{ position:"absolute", height: ScreenHeight, width:ScreenWidth, backgroundColor:"rgba(0,0,0,.5"}}>
+          <MeshGradient
+          mask = {true}
+         
+           style={{flex: 1  }}
+           columns={9}
+      rows={9}
+      smoothsColors
+      colors={['4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4']}
+      points={[
+        [0.0, 0.0],
+        [0.5, 0.0],
+        [1.0, 0.0],
+        [0.0, 0.5],
+        [0.5, 0.5],
+        [1.0, 0.5],
+        [0.0, 1.0],
+        [0.5, 1.0],
+        [1.0, 1.0],
+      ]}
+           />
 
+        
             <View>{/*animation skeleton for correction*/}</View>         
             <Animated.Text style = {{position:"absolute", bottom: 50, color:"black", left: ScreenWidth/5.25, opacity: skipFeedback_opacity}}>Tap anywhere on screen to skip</Animated.Text>
 

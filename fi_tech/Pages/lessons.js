@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
-import { ImageBackground, ActivityIndicator, StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, ActionSheetIOS,  } from 'react-native';
+import { ImageBackground, ActivityIndicator, StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button, NativeEventEmitter, NativeModules, ActionSheetIOS, Touchable,  } from 'react-native';
 import SideNav from '../components/sideNav';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 import TestImg from "../assets/workoutCat.jpg";
 import { styles } from './aiCam';
+import Item1 from "../assets/item1.jpg"
+import Item2 from "../assets/item2.jpg"
 import * as Speech from "expo-speech"; 
 import { PermissionStatus } from 'expo-permissions';
 import * as Permissions from "expo-permissions"; 
@@ -123,20 +125,24 @@ const LessonSheet = ({payload}) =>{
 
         </YGroup>
 
-        
-
-         
-                 
-      
-        
-
-                <Text>
+                <Text style = {{color:"rgba(0,0,0,.7)"}}>
                     {payload.description}
              </Text>
-
-
     </YStack>
   
+
+  
+     <YGroup style = {{position:"absolute"}}>
+
+ <Text style = {{color:"rgba(0,0,0,.85)", top:25}}>Want to get the best out of the workout? Try these products:</Text>
+ 
+ <XGroup>
+    <TouchableOpacity><Text>Item1</Text></TouchableOpacity>
+ </XGroup>
+
+</YGroup>
+            
+
       </View>
     </ActionSheet>
     )

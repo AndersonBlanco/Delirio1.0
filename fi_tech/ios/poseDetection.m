@@ -13,7 +13,7 @@
 //#import "punchClassification_coreml.h"
 //#import "punchClassification_coreml3.h"
 #import "punchClassification_coreml4.h"
-#import "GRUsmd.h"
+//#import "GRUsmd.h"
 #import <math.h>
 
 //#import "MediaPipeTasksVision/MPPPoseLandmarker.h" // Import MediaPipe Header
@@ -21,8 +21,9 @@
 #import <CoreVideo/CoreVideo.h>
 #import <Accelerate/Accelerate.h>
 #import "CHAINED_MODEL_coreml.h"
- 
+#import "GRU12.h"
 
+//GRU12 is bets version yet
 
 
 /*
@@ -217,10 +218,10 @@ double getAngle(NSArray *jointTrio, BOOL random) {
 }
 
 
-int getLabel(MLMultiArray *pred){
+int getLabel(MLMultiArray *pred, int max_len){
   int maxConfidenceIndex_in_pred = 0;
   
-  for(int i = 0; i < 8; i++){
+  for(int i = 0; i < max_len; i++){
     if([pred[maxConfidenceIndex_in_pred] doubleValue] < [pred[i] doubleValue]){
       maxConfidenceIndex_in_pred = i;
     }
@@ -258,7 +259,8 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
   bool reached40;
   BOOL nilValuefound;
   MLMultiArray *angles_40frame;
-  GRUsmd *model;
+  //GRUsmd *model;
+  GRU12 *model7;
   //punchClassification_coreml4 *punchClassificationModel;
   //CHAINED_MODEL_coreml *chained_model;
   NSArray *labelArray;
@@ -269,12 +271,14 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
   NSTimeInterval sampleInterval;
  
   int maxConf_idx;
+  int maxModel7Idx;
   int punchClassify_max_conf_idx;
   int chained_max_idx;
   
   NSMutableArray *set100_training;
   CIContext *contxt;
   //MLMultiArray *test_input;
+  NSArray *labels7;
 }
 @end
 
@@ -290,7 +294,8 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
      reached40 = false;
      nilValuefound = NO;
     angles_40frame = [[MLMultiArray alloc] initWithShape:@[@1, @40, @8] dataType:MLMultiArrayDataTypeDouble error:&_error];
-      model = [[GRUsmd alloc] init];
+      //model = [[GRUsmd alloc] init];
+     self->model7 = [[GRU12 alloc] init];
      //punchClassificationModel = [[punchClassification_coreml4 alloc] init];
     // self->chained_model = [[CHAINED_MODEL_coreml alloc] init];
     self->moveWindowIsOpen = YES;
@@ -302,6 +307,26 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
      self->punchClassify_max_conf_idx = -1;
      self->chained_max_idx = -1;
      self->set100_training = [[NSMutableArray alloc] init];
+     self->labels7 = @[
+       @"good jab",
+       @"jab endguard",
+       @"jab opposite guad",
+       @"jab lowguard",
+       @"good rest",
+       @"rest curvedback",
+       @"rest lowguard",
+       @"good straight",
+       @"straight oppositeguard",
+       @"straight rotation",
+       @"good uppercut",
+       @"uppercut rotation",
+       
+       
+       @"jab rotation",
+       @"rest curvedback & lowguard"
+     ];
+     self->maxModel7Idx = -1;
+     
      labelArray = @[
        @"good jab",
        @"bad jab - knee level lack",
@@ -512,7 +537,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
  // CGRect regionOfInterest = CGRectMake(originX, originY, width, height);
   VNDetectHumanBodyPoseRequest *request = [[VNDetectHumanBodyPoseRequest alloc] init];
   //request.regionOfInterest =regionOfInterest;
-
+  request.revision = VNDetectHumanBodyPoseRequestRevision1;
   BOOL success = [requestHandler performRequests:@[request] error:&error];
 
    if (!success) {
@@ -607,7 +632,49 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     ];
   }
   
+  /*
+   GRU12:
+   data_paths = [
+    ("jab_end_guard_left_guard", 0),
+    ("jab_endguard", 1),
+    ("jab_good", 2),
+    ("jab_leftguard", 3),
+    ("jab_rotation", 4),
+    ("rest_good", 5),
+    ("rest_hunchedback", 6),
+    ("rest_low_guard_hunched_back", 7),
+    ("rest_lowguard", 8),
+    ("straight_good", 9),
+    #("straight_rotation", 10),
+    ("straight_left_guard", 10),
+    ("uppercut_good", 11),
+    ("uppercut_lackrotation", 12),
+    #("uppercut_overcharge_overreach", 14),
+    ]
+   
+   GRU12, GRU12:
+   data_paths = [
+       ("jab_end_guard_left_guard", 0),
+       ("jab_endguard", 1),
+       ("jab_good", 2),
+       ("jab_leftguard", 3),
+       ("jab_rotation", 4),
+       ("rest_good", 5),
+       ("rest_hunchedback", 6),
+       ("rest_low_guard_hunched_back", 7),
+       ("rest_lowguard", 8),
+       ("straight_good", 9),
+       ("straight_rotation", 10),
+       ("straight_left_guard", 11),
+       ("uppercut_good", 12),
+       ("uppercut_lackrotation", 13),
+       ("uppercut_overcharge_overreach", 14),
+       ]
+   
+*/
   
+  
+
   
   
   
@@ -685,8 +752,8 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
     
      
 //frame flow control section: START///////////////////////////////////////////
-    if(currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
-      lastSampleTimestamp = currentTimeSec;
+    //if(currentTimeSec - lastSampleTimestamp >= sampleInterval) { //if true, one frame elpased here
+      //lastSampleTimestamp = currentTimeSec;
       double *angles_40frame_dataPointer = (double *)angles_40frame.dataPointer;
       
       for (int i = 0; i < anglesOfInterest.count; i++) {
@@ -702,7 +769,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
       
   
       count++; //incriment count after each subsequent frame
-   }
+   //}
 //frame flow control section: END///////////////////////////////////////////
 
 
@@ -724,14 +791,21 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
         self->lastSampleTimestamp =-1.0;
       });
       
-      GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
-      GRUsmdOutput *model_output = [model predictionFromFeatures:model_input error:&error];
+      //GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
+      //GRUsmdOutput *model_output = [model predictionFromFeatures:model_input error:&error];
+      
+      ///implementing GRU12: START####################/////////////////////////
+      GRU12Input *model7_input = [[GRU12Input alloc] initWithInput_1:angles_40frame];
+      GRU12Output *model7_output = [self->model7 predictionFromFeatures:model7_input error:&error];
+      self->maxModel7Idx = getLabel(model7_output.Identity, model7_output.Identity.count);
+      ///implementing GRU12: END####################/////////////////////////
       
       
       //punchClassification_coreml4Output *punchClassificationOutput = [punchClassificationModel predictionFromInput_1:angles_40frame error:&error];
 
       //CHAINED_MODEL_coremlOutput *chainedModelOutput = [chained_model predictionFromInput_2:test_input error:&error];
     
+      /*
       NSMutableArray *temp = [[NSMutableArray alloc] init];
       for(int x = 0; x < model_output.Identity.count; x++){
        // NSNumber *val = chainedModelOutput.Identity[x];
@@ -739,31 +813,34 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
           [temp addObject:model_output.Identity[x]];
       //  }
       }
+      */
+      
       
       //generate valid array with valid data type to pass to JS thread
       NSMutableArray *angleFramesArray = [NSMutableArray arrayWithCapacity:40];
       double *ptr = (double *)angles_40frame.dataPointer;
+     
       
- 
-
-      for (int frame = 0; frame < 39; frame++) {
+    
+      for (int frame = 0; frame < 40; frame++) {
         NSMutableArray *frameAngles = [NSMutableArray arrayWithCapacity:8];
         for (int angle = 0; angle < 8; angle++) {
           double value = ptr[frame * 8 + angle];
           [frameAngles addObject:@(value)];
         }
-        [angleFramesArray addObject:frameAngles];
+        [angleFramesArray addObject:[frameAngles copy]];
       }
-      
-      //add to set100_training:
-      [self->set100_training addObject:angleFramesArray];
+
+      // Store the clean 40-frame array
+      [set100_training addObject:[angleFramesArray copy]];
+  
+      [angleFramesArray removeAllObjects];
       
  
-      
-      
-      
-      self->maxConf_idx = getLabel(model_output.Identity);
+    
+      //self->maxConf_idx = getLabel(model_output.Identity, 8);
   
+      
       
       //self->punchClassify_max_conf_idx = getPunchTypeMaxConfIdx(punchClassificationOutput.Identity);
      // self->chained_max_idx = getCHAIEND_maxIdx(chainedModelOutput.Identity);
@@ -802,8 +879,9 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
         @(-1),
         @(self->maxConf_idx),//was @(chained_max_idx) //was @(punchClassify_max_conf_idx), //was maxConf_idx
         @(self->moveWindowIsOpen),
-        labelArray[self->maxConf_idx],//was: punchClassArray[punchClassify_max_conf_idx],
-        set100_training
+        labels7[self->maxModel7Idx], //was: labelArray[self->maxConf_idx],//was: punchClassArray[punchClassify_max_conf_idx],
+        set100_training,
+        labels7[self->maxModel7Idx]
       ];
     }else{
       

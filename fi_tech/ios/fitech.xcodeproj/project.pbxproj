@@ -12,6 +12,13 @@
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		629CFED5E5E8AB3FB7786128 /* libPods-fitech.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */; };
 		9518585383384099B5EFFF3D /* poseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B112B2F31484420900D2335 /* poseDetection.m */; };
+		9C383C1F2E31A21600D66038 /* GRU7.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C1E2E31A21500D66038 /* GRU7.mlpackage */; };
+		9C383C212E31B4FB00D66038 /* GRU9.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C202E31B4FB00D66038 /* GRU9.mlpackage */; };
+		9C383C2D2E31FA2A00D66038 /* GRU10.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C2C2E31FA2A00D66038 /* GRU10.mlpackage */; };
+		9C383C2F2E32C20300D66038 /* GRU11.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C2E2E32C20300D66038 /* GRU11.mlpackage */; };
+		9C383C312E32C73900D66038 /* GRU11_5.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C302E32C73900D66038 /* GRU11_5.mlpackage */; };
+		9C383C332E33095400D66038 /* GRU12.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C322E33095400D66038 /* GRU12.mlpackage */; };
+		9C383C352E330F2700D66038 /* GRUA2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C342E330F2700D66038 /* GRUA2.mlpackage */; };
 		9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */; };
 		9C3FB97B2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */; };
 		9C3FB97F2E22059600929796 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = 9C3FB97E2E22059600929796 /* pose_landmarker_full.task */; };
@@ -31,6 +38,13 @@
 		72963B96E00B094C16768759 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-fitech/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		87F39A93186C524275BD8B0A /* Pods-fitech.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fitech.release.xcconfig"; path = "Target Support Files/Pods-fitech/Pods-fitech.release.xcconfig"; sourceTree = "<group>"; };
 		9B112B2F31484420900D2335 /* poseDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = poseDetection.m; sourceTree = "<group>"; };
+		9C383C1E2E31A21500D66038 /* GRU7.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU7.mlpackage; sourceTree = "<group>"; };
+		9C383C202E31B4FB00D66038 /* GRU9.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU9.mlpackage; sourceTree = "<group>"; };
+		9C383C2C2E31FA2A00D66038 /* GRU10.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU10.mlpackage; sourceTree = "<group>"; };
+		9C383C2E2E32C20300D66038 /* GRU11.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU11.mlpackage; sourceTree = "<group>"; };
+		9C383C302E32C73900D66038 /* GRU11_5.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU11_5.mlpackage; sourceTree = "<group>"; };
+		9C383C322E33095400D66038 /* GRU12.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU12.mlpackage; sourceTree = "<group>"; };
+		9C383C342E330F2700D66038 /* GRUA2.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRUA2.mlpackage; sourceTree = "<group>"; };
 		9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml4.mlpackage; sourceTree = "<group>"; };
 		9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = CHAINED_MODEL_coreml.mlpackage; sourceTree = "<group>"; };
 		9C3FB97E2E22059600929796 /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
@@ -122,6 +136,13 @@
 				9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */,
 				9C3FB97E2E22059600929796 /* pose_landmarker_full.task */,
 				9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */,
+				9C383C1E2E31A21500D66038 /* GRU7.mlpackage */,
+				9C383C202E31B4FB00D66038 /* GRU9.mlpackage */,
+				9C383C2C2E31FA2A00D66038 /* GRU10.mlpackage */,
+				9C383C2E2E32C20300D66038 /* GRU11.mlpackage */,
+				9C383C302E32C73900D66038 /* GRU11_5.mlpackage */,
+				9C383C322E33095400D66038 /* GRU12.mlpackage */,
+				9C383C342E330F2700D66038 /* GRUA2.mlpackage */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -364,14 +385,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C383C352E330F2700D66038 /* GRUA2.mlpackage in Sources */,
+				9C383C212E31B4FB00D66038 /* GRU9.mlpackage in Sources */,
 				9C3FB9832E2222D300929796 /* GRUsmd.mlmodel in Sources */,
+				9C383C312E32C73900D66038 /* GRU11_5.mlpackage in Sources */,
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */,
 				AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */,
 				9C4B115D2E13775600C69C6D /* TTS.m in Sources */,
+				9C383C2F2E32C20300D66038 /* GRU11.mlpackage in Sources */,
+				9C383C1F2E31A21600D66038 /* GRU7.mlpackage in Sources */,
 				9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */,
 				9C3FB97B2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage in Sources */,
+				9C383C2D2E31FA2A00D66038 /* GRU10.mlpackage in Sources */,
 				9518585383384099B5EFFF3D /* poseDetection.m in Sources */,
+				9C383C332E33095400D66038 /* GRU12.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
