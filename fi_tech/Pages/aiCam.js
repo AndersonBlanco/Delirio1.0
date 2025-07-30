@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { VisionCameraProxy, Camera, useCameraDevice, useCameraFormat, useCameraPermission, useFrameProcessor, runAsync, runAtTargetFps} from 'react-native-vision-camera';
 import { createWorkletRuntime, runOnJS, useAnimatedReaction, useDerivedValue } from 'react-native-reanimated';
 import { useSkiaFrameProcessor } from 'react-native-vision-camera';
-import {Skia, Path, rect} from '@shopify/react-native-skia';
+import {Skia, Path, rect, vec} from '@shopify/react-native-skia';
 import storage from '../components/storage';
 import { useSharedValue, useWorklet, worklet, Worklets, start } from 'react-native-worklets-core';
 //import { useSharedValue } from 'react-native-worklets-core';
@@ -31,7 +31,7 @@ import Animation1 from "../assets/animation1.json";
 import Animation2 from "../assets/animation2.json";
 import JabAnimation2 from "../assets/jabAnimation2.json";
 import OneTwoAnimation from "../assets/OneTwoAnimation.json"; 
-import StraightRightAnimation from "../assets/straightRightAnimation1.json"; 
+//import StraightRightAnimation from "../assets/straightRightAnimation1.json"; 
 import JabAnimation3 from "../assets/jabAnimation3.json";
 import { useNavigation } from "@react-navigation/native"; //in react native, this is a hook. Anything that starts with a 'use....' is a hook an dmust be declared inside a function soley.s
 //import * as Reusable from "@react-native-reusables/cli";
@@ -43,15 +43,16 @@ import {ChatEnvironment, generateVoice_jsthread, promptGPT, synced_textGen_to_sp
 //import custom components: END
 import TransparentLogo from "../assets/transparent_logo.png";
 
-import { Sheet, Spinner } from 'tamagui';
+import { Separator, Sheet, Spinner } from 'tamagui';
 import ActionSheet, { registerSheet, SheetManager, SheetProvider} from 'react-native-actions-sheet';
 import LessonSummarry from './LessonSummarry';
 import Logo2SVG from '../assets/logo2_SVG';
-
-
-import {MeshGradient} from 'rn-mesh-gradient'; 
-
-
+import {LinearGradient} from "react-native-linear-gradient";
+import GoodRest from "../assets/GoodRest.json";
+import GoodJab from "../assets/GoodJab.json";
+import GoodStraightRight from "../assets/GoodStraightRight.json";
+import GoodUppercut from "../assets/GoodUppercut.json";
+import {mat4} from 'gl-matrix';
 
 const midChat = (
     <View style = {{ paddingBottom: 5, top: 43, zIndex: 100, backgroundColor: "transparent", position:"absolute", height: ScreenHeight*.8, width: ScreenWidth, }}>
@@ -119,7 +120,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
   const nav = useNavigation(); 
    // const {userStrikes, incrimentUserStrikes, resetUserStrikes, userStrikedOut} = useUserState(); 
    const strikes = useSharedValue(0);
-   const userGotStrikedOut = useSharedValue(true);
+   const userGotStrikedOut = useSharedValue(false);
    const userCorrectMoves = useSharedValue(0);
    const tempFrameCounter = useSharedValue(0); 
    const max_GRU_idx = useSharedValue(-1); 
@@ -128,7 +129,7 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
 
     const resetUserState = () =>{ //resets the stats of the user (ie number of strikes, and sets the booolean of userGotStrikedOut to false)
         strikes.value = 0; 
-       // userGotStrikedOut.value = false; 
+        userGotStrikedOut.value = false; 
        // jabFrameIdx.value = 0; 
        poseHistriy.current = []; 
       
@@ -136,16 +137,17 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
         //reset pose history: 
     
       // console.log("pose histriy: ", poseHistriy.current.length); 
-      //TTS.stopConverse()
+      TTS.stopConverse()
 
     }
 
+    const strikes_upperBound = 10; 
     const incrimentUserStrikes_alt = () =>{ //also responsible for incirmenting the variable userIncorrectMoves | as seen at the end of the function name "alt", its an alternative to the first incrimentUserStrikes function as a replacement or alternative
 
        let val = strikes.value + 1; 
-        if (val >=3){
+        if (val >=strikes_upperBound){
           strikes.value = 0;
-        //  userGotStrikedOut.value = true; 
+          userGotStrikedOut.value = true; 
       
         }else{
           strikes.value = val; 
@@ -156,9 +158,9 @@ export default function AICam({theme}){ //main function of the page 'AI_Cam'
     const incrimentUserStrikes = Worklets.createRunOnJS(() =>{ //incriments user's strikes by 1 
         'worklet';
         let val = strikes.value + 1; 
-        if (val >=3){ //extra to 4, not 3 for padding space
+        if (val >=strikes_upperBound){ //extra to 4, not 3 for padding space
           strikes.value = 0;
-         // userGotStrikedOut.value = true; 
+          userGotStrikedOut.value = true; 
 
   
         }else{
@@ -254,7 +256,7 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
   //trigger once ai feed back for per user movement evaluation during lesson, while user has not beedn striked out 
   if(!curr.dep3){
       if(curr.dep1 != '-' && !curr.dep2 && (curr.dep1 == prev.dep1 || curr.dep1 != prev.dep1) ){
-       //runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
+       runOnJS(synced_text_to_speech_runOnJS)(`User just executed an incorrect movement, return a coach statement taht is under 3 seconds long that gives them feedback based on the statement '${textLabelSharedValm.value}' which describes their mistake`);
     }
   } 
   
@@ -266,7 +268,7 @@ useAnimatedReaction(()=>{return {dep1: textLabelSharedValm.value, dep2: userGotS
 
       //Agentic AI converse native function implementation 
         console.log('agentic ai');
-      // runOnJS(triggerConverse)()
+       runOnJS(triggerConverse)()
     }else{
 
       //remove the first element of the poseJistroy array // essentially resetting the array / clearing it
@@ -541,38 +543,37 @@ const updatePoseBuffer = (p) =>{
 Pose:  [{"head_joint": {"conf": 0.8154296875, "name": "head_joint", "x": 0.2755799889564514, "y": 0.8650012016296387}, "left_ear_joint": {"conf": 0.7626953125, "name": "left_ear_joint", "x": 0.27416253089904785, "y": 0.772429883480072}, "left_eye_joint": {"conf": 0.83935546875, "name": "left_eye_joint", "x": 0.25808513164520264, "y": 0.8358705043792725}, "left_foot_joint": {"conf": 0.2548828125, "name": "left_foot_joint", "x": 0.916772723197937, "y": 0.7006985545158386}, "left_forearm_joint": {"conf": 0.75927734375, "name": "left_forearm_joint", "x": 0.47521519660949707, "y": 0.6458866596221924}, "left_hand_joint": {"conf": 0.7451171875, "name": "left_hand_joint", "x": 0.585648238658905, "y": 0.7250705361366272}, "left_leg_joint": {"conf": 0.345458984375, "name": "left_leg_joint", "x": 0.7474462389945984, "y": 0.8088974356651306}, "left_shoulder_1_joint": {"conf": 0.740234375, "name": "left_shoulder_1_joint", "x": 0.3587661385536194, "y": 0.6952054500579834}, "left_upLeg_joint": {"conf": 0.3740234375, "name": "left_upLeg_joint", "x": 0.6154303550720215, "y": 0.7841629981994629}, "neck_1_joint": {"conf": 0.658203125, "name": "neck_1_joint", "x": 0.36932146549224854, "y": 0.8048836886882782}, "right_ear_joint": {"conf": 0.298583984375, "name": "right_ear_joint", "x": 0.27111393213272095, "y": 0.9224628806114197}, "right_eye_joint": {"conf": 0.751953125, "name": "right_eye_joint", "x": 0.2619226276874542, "y": 0.8966839909553528}, "right_foot_joint": {"conf": 0.177490234375, "name": "right_foot_joint", "x": 0.9470490217208862, "y": 0.9034504890441895}, "right_forearm_joint": {"conf": 0.196533203125, "name": "right_forearm_joint", "x": 0.4512541890144348, "y": 0.955840528011322}, "right_leg_joint": {"conf": 0.173828125, "name": "right_leg_joint", "x": 0.7485769987106323, "y": 0.8617675304412842}, "right_shoulder_1_joint": {"conf": 0.576171875, "name": "right_shoulder_1_joint", "x": 0.3798767924308777, "y": 0.914561927318573}, "right_upLeg_joint": {"conf": 0.35009765625, "name": "right_upLeg_joint", "x": 0.5963930487632751, "y": 0.9102357029914856}, "root": {"conf": 0.362060546875, "name": "root", "x": 0.6059117019176483, "y": 0.8471993505954742}}]
 
 */
- let data_paths = [
-    ("jab_end_guard_left_guard", 0),
-    ("jab_endguard", 1),
-    ("jab_good", 2),
-    ("jab_leftguard", 3),
-    ("jab_rotation", 4),
-    ("rest_good", 5),
-    ("rest_hunchedback", 6),
-    ("rest_low_guard_hunched_back", 7),
-    ("rest_lowguard", 8),
-    ("straight_good", 9),
-    //("straight_rotation", 10),
-    ("straight_left_guard", 11),
-    ("uppercut_good", 12),
-    ("uppercut_lackrotation", 13),
-    //("uppercut_overcharge_overreach", 14),
-    ]
-
-
+      //console.log("AnimationPoses: START");
+const animationPoses = useSharedValue([]);
 const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important piece, it does exactly what it sname reflects: processes frames incoming from the <Camera/> tag and passes it onto the th enative side for evaluation and predictions 
     'worklet'; 
-
+    let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
+  
     //let res2 = mediapipePose_swiftPlugin.call(frame); 
     //console.log(res2); 
+   
+    if(res[1].length >0){
+    if(animationPoses.value.length <= 100){
+      
+     // console.log((res[1]));
+       
+
+    //  animationPoses.value.push(res[1]); //forces the animatioPoses.value to overreach pass length 40, which would trigger no more console.log visually distracting from the foucs section of interest of the array in the temrinal
+ 
+    }else{
+ //console.log("AnimationPoses: END");
+ 
+
+    }
+    }
+ 
+
 
     if(detectPlugin == null){
       console.log("null value for plugin ")
     }else{
-    
-    let res = detectPlugin.call(frame, {userGotStrikedOut: userGotStrikedOut.value}); //detectPlugin.call, calls the native side function and passes {frame} as one argument, and userGotStrikedOut as another for native side processing 
   
-    max_GRU_idx.value = res[4] > 0 ? res[4] : max_GRU_idx.value; 
+    max_GRU_idx.value = res[4] > -1 ? res[4] : max_GRU_idx.value; 
   //  console.log(max_GRU_idx.value, res[4]); 
 
     updatePoses(res[1]); //updates poses
@@ -580,8 +581,9 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
 
      if(res[2].length > 0 && res[6] != "Wait for break to be over, punchClass"){
      // textLabelSharedValm.value = res[6]; //////////////previous textLabel set
-      
-     if(res[4] % 2 != 0){
+
+
+     if([1,2,3,5,6,8,9,11,12,13].includes(res[4])){
       incrimentUserStrikes();
      }else{
       userCorrectMoves.value++; 
@@ -592,7 +594,7 @@ const default_useFramePorcessor = useFrameProcessor((frame) =>{ //veyr important
 
       if(res[8] != undefined){
     console.log("PredicitonP: ", res[8])
-      textLabelSharedValm.value = res[8]; 
+      textLabelSharedValm.value = res[8]; //Best textLabel set
       }
       
     if(!userGotStrikedOut.value){
@@ -655,44 +657,84 @@ const limb_color_map = useSharedValue({
 
 const gru_output_limb_color_map = {
   1:{
-    target_SKELETON_CONNECTIONS: [2, 3, 4, 5],
-    color:[1.0, 0.0, 0.0, 1.0]
+    target_SKELETON_CONNECTIONS: [12, 13],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction: GoodJab
   },
+
+    2:{
+    target_SKELETON_CONNECTIONS: [9,10],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction: GoodJab
+  },
+
     3:{
+    target_SKELETON_CONNECTIONS: [9,10,12,13],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction: GoodJab
+  },
+
+      5:{
+    target_SKELETON_CONNECTIONS: [6],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction: GoodRest
+  },
+    6:{
+    target_SKELETON_CONNECTIONS: [9,10,12,13],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction: GoodRest
+  },
+
+      8:{
+    target_SKELETON_CONNECTIONS: [12,13],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction: GoodStraightRight
+  },
+
+      9 :{
     target_SKELETON_CONNECTIONS: [0,1],
-    color:[1.0, 0.0, 0.0, 1.0]
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction:GoodStraightRight
   },
 
-   5:{
-    target_SKELETON_CONNECTIONS: [2,3, 4, 5, 9,10, 12, 13],
-    color:[1.0, 0.0, 0.0, 1.0]
-  },
-   7:{
-    target_SKELETON_CONNECTIONS: [6, 9, 10, 12, 13],
-    color:[1.0, 0.0, 0.0, 1.0]
+      11:{
+    target_SKELETON_CONNECTIONS: [0,1],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction:GoodUppercut
   },
 
+      12:{
+    target_SKELETON_CONNECTIONS: [0,1],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction:GoodJab
+  },
+
+      13:{
+    target_SKELETON_CONNECTIONS: [9,10,12,13,6],
+    color:[1.0, 0.0, 0.0, 1.0],
+    correction:GoodRest
+  },
 
 }
 const SKELETON_CONNECTIONS = [
-  ["root", "left_upLeg_joint"],
-  ["root", "right_upLeg_joint"],
-  ["left_upLeg_joint", "left_leg_joint"],
-  ["left_leg_joint", "left_foot_joint"],
-  ["right_upLeg_joint", "right_leg_joint"],
-  ["right_leg_joint", "right_foot_joint"],
-  ["root", "neck_1_joint"],
-  ["neck_1_joint", "head_joint"],
-  ["neck_1_joint", "left_shoulder_1_joint"],
-  ["left_shoulder_1_joint", "left_forearm_joint"],
-  ["left_forearm_joint", "left_hand_joint"],
-  ["neck_1_joint", "right_shoulder_1_joint"],
-  ["right_shoulder_1_joint", "right_forearm_joint"],
-  ["right_forearm_joint", "right_hand_joint"],
-  ["head_joint", "left_eye_joint"],
-  ["head_joint", "right_eye_joint"],
-  ["left_eye_joint", "left_ear_joint"],
-  ["right_eye_joint", "right_ear_joint"]
+  ["root", "left_upLeg_joint"],//0
+  ["root", "right_upLeg_joint"],//1
+  ["left_upLeg_joint", "left_leg_joint"],//2
+  ["left_leg_joint", "left_foot_joint"],//3
+  ["right_upLeg_joint", "right_leg_joint"],//4
+  ["right_leg_joint", "right_foot_joint"],//5
+  ["root", "neck_1_joint"],//6
+  ["neck_1_joint", "head_joint"],//7
+  ["neck_1_joint", "left_shoulder_1_joint"],//8
+  ["left_shoulder_1_joint", "left_forearm_joint"],//9
+  ["left_forearm_joint", "left_hand_joint"],//10
+  ["neck_1_joint", "right_shoulder_1_joint"],//11
+  ["right_shoulder_1_joint", "right_forearm_joint"],//12
+  ["right_forearm_joint", "right_hand_joint"],//13
+  ["head_joint", "left_eye_joint"],//14
+  ["head_joint", "right_eye_joint"],//15
+  ["left_eye_joint", "left_ear_joint"],//16
+  ["right_eye_joint", "right_ear_joint"]//17
 ]; //skeleton connections used for drawing connections between joints correctly to represent a human like drawing of the human body 
 const normalizeGLCoords = (x, y) => [ //nomralizes joint cordinates 
       1 - y * 2.005  ,
@@ -732,7 +774,7 @@ const skeleton_color = useSharedValue('vec4(0.0, 1.0, 0.0, 1.0)');
   // gl.uniform4fv(unifrom_color_space, [0.0, 0.0, 1.0, 1.0]); 
 
 
-const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {//drawSkeleton : START
+const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc, inverted = false, incorrectDrawing = true) => {//drawSkeleton : START
 
 
   //create uniform color space: 
@@ -756,7 +798,7 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
     */
 
 
-    const vertices = new Float32Array([x1, y1, x2, y2]);
+    const vertices = new Float32Array([inverted? -x1 : x1, y1, inverted? -x2 : x2, y2]);
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -767,12 +809,10 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
     gl.enableVertexAttribArray(posLoc);
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
     
-    if(max_GRU_idx.value % 2 >= 1){ //max_GRU_idx.value % 2 >= 1){
-      let idx_in_gru_color_map = gru_output_limb_color_map[max_GRU_idx.value].target_SKELETON_CONNECTIONS.includes(idx);
-      gl.uniform4fv(colorUnformLoc, idx_in_gru_color_map? new Float32Array([1.0, 0.0, 0.0, 1.0] ) : new Float32Array([0.0, 1.0, 0.0, 1.0]));
-    } else{
-        gl.uniform4fv(colorUnformLoc, [0.0, 1.0, 0.0, 1.0]);
-
+    if(gru_output_limb_color_map[max_GRU_idx.value] && max_GRU_idx.value != -1 && incorrectDrawing){
+      gl.uniform4fv(colorUnformLoc, gru_output_limb_color_map[max_GRU_idx.value].target_SKELETON_CONNECTIONS.includes(idx)? new Float32Array([1.0, 0.0, 0.0, 1.0] ) : new Float32Array([0.0, 1.0, 0.0, 1.0]));
+    }else{
+          gl.uniform4fv(colorUnformLoc, new Float32Array([0.0, 1.0, 0.0, 1.0]));
     }
     /*
     if(userGotStrikedOut.value){
@@ -786,7 +826,7 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
 
 
     //drawing circlel articulations/joints: /////////////////
-    const joints_vertecies = new Float32Array([x2, y2]);
+    const joints_vertecies = new Float32Array([inverted? -x2:x2, y2]);
     const joints_buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, joints_buffer);
     gl.bufferData(gl.ARRAY_BUFFER, joints_vertecies, gl.STATIC_DRAW);
@@ -794,7 +834,7 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
     gl.enableVertexAttribArray(posLoc);
     gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
-    gl.uniform4fv(colorUnformLoc, [1.0, 1.0, 1.0, 1.0]);
+    gl.uniform4fv(colorUnformLoc, [0.0, 1.0, 0.0, 1.0]);
     gl.drawArrays(gl.POINTS, 0, 1);
     gl.deleteBuffer(joints_buffer);
     
@@ -813,8 +853,9 @@ const drawSkeleton = useCallback((gl, joints, shaderProgram,colorUnformLoc) => {
 const shaderProgramRef = useRef(null);
 
 const userRecentAnimation = useSharedValue(null); 
-const jabFrameIdx = useSharedValue(0); //although the name specififes jab, its used as a general index tracker for the animations to be displayed on the FeedbackScreen
-
+const jabFrameIdx = useSharedValue(0),//although the name specififes jab, its used as a general index tracker for the animations to be displayed on the FeedbackScreen
+      correctAnimationIdx = useSharedValue(0); 
+      
  const fragmentShaderSource = `
         precision mediump float;
         uniform vec4 u_color;
@@ -844,21 +885,33 @@ if (!shaderProgramRef.current) {
       //drawSkeleton(gl, StraightRightAnimation[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation);
      //skeleton_color.value = [0.1, 0.0, 0.0, 1.0]; 
 
- 
-    drawSkeleton(gl,  poseHistriy.current[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation); 
-      
+    //draw recent user poses: START
+    gl.viewport(0,ScreenHeight*0.25,ScreenWidth*0.925, ScreenHeight*1.5); 
+    drawSkeleton(gl,  poseHistriy.current[jabFrameIdx.value], shaderProgramRef.current, colorUniformLocation, true, true); 
       jabFrameIdx.value++;
-
      if(jabFrameIdx.value >  poseHistriy.current.length-1){ //|| jabFrameIdx.value > StraightRightAnimation.length-1){
       jabFrameIdx.value = 0; 
      }
+    //draw recent user poses: END
+
+    
+    //draw correct poses example: START
+    gl.viewport(ScreenWidth*1.07,ScreenHeight*0.25,ScreenWidth*1, ScreenHeight*1.5); 
+    drawSkeleton(gl,  gru_output_limb_color_map[max_GRU_idx.value].correction[correctAnimationIdx.value], shaderProgramRef.current, colorUniformLocation, true, false); 
+      correctAnimationIdx.value++;
+     if(correctAnimationIdx.value >  gru_output_limb_color_map[max_GRU_idx.value].correction.length-1){ //|| jabFrameIdx.value > StraightRightAnimation.length-1){
+      correctAnimationIdx.value = 0; 
+     }
+    //draw correct poses example: END
+
+
   
     
          // console.log(jabFrameIdx.value)
          
 
     }else{
-      
+  gl.viewport(0,0,ScreenWidth*2, ScreenHeight*2); 
    drawSkeleton(gl, latestPoseRef.current[0], shaderProgramRef.current, colorUniformLocation);
     }
     
@@ -1044,46 +1097,72 @@ const is_conversation_loop = useSharedValue(false);
 
 const [showFeedChat, setShowFeedChat] = useState(false); 
 
+const gradirntAnimation = useRef(new Animated.Value(0)).current;
+const backgrouhndColorAnimation_duration = useSharedValue(1000);
+useEffect(() => {
+  
+  if (userGotStrikedOut.value) {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(gradirntAnimation, {
+          toValue: 1,
+          duration: backgrouhndColorAnimation_duration.value,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true, // must be false for color interpolation
+        }),
+        Animated.timing(gradirntAnimation, {
+          toValue: 0,
+          duration: backgrouhndColorAnimation_duration.value,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }
+
+}, [userGotStrikedOut.value]);
+
+const animatedBackground = gradirntAnimation.interpolate({
+  inputRange: [0, 0.35, .7, 1],
+  outputRange: [
+    'rgba(41,41,232,0.4)',
+    'rgba(41,41,232,0.3)',
+    'rgba(41,41,232,0.2)',
+    'rgba(41,41,232,0.1)'
+  ],
+});
 
 const FeedbackInteruptionScreen = (
  <>
         <SheetProvider>
         
-        <View onTouchStart={resetUserState} style = {{ position:"absolute", height: ScreenHeight, width:ScreenWidth, backgroundColor:"rgba(0,0,0,.5"}}>
-          <MeshGradient
-          mask = {true}
+        <Animated.View 
+        onTouchStart={resetUserState} 
+        style = {{ position:"absolute", 
+        height: ScreenHeight, 
+        width:ScreenWidth, 
+        backgroundColor:"transparent"}}
+        >
          
-           style={{flex: 1  }}
-           columns={9}
-      rows={9}
-      smoothsColors
-      colors={['4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4', '4ECDC4']}
-      points={[
-        [0.0, 0.0],
-        [0.5, 0.0],
-        [1.0, 0.0],
-        [0.0, 0.5],
-        [0.5, 0.5],
-        [1.0, 0.5],
-        [0.0, 1.0],
-        [0.5, 1.0],
-        [1.0, 1.0],
-      ]}
-           />
 
         
             <View>{/*animation skeleton for correction*/}</View>         
             <Animated.Text style = {{position:"absolute", bottom: 50, color:"black", left: ScreenWidth/5.25, opacity: skipFeedback_opacity}}>Tap anywhere on screen to skip</Animated.Text>
 
-        </View>
+        </Animated.View>
       </SheetProvider>
+      
+     
 
-
-            <TouchableOpacity onPress={() => {
+ 
+    <TouchableOpacity onPress={() => {
                SheetManager.show("ChatSheet")
-              }} style = {{backgroundColor:"black", top: 59, alignSelf:'center', borderRadius: 100, padding: 10, alignItems:"center", flexDirection:"row", columnGap:0, justifyContent:"center", }}>
-              <Image source = {TransparentLogo} style = {{height: 40, width: 40}} />
+              }} style = {{backgroundColor:"white", top: 59, alignSelf:'center', borderRadius: 100, padding: 5, alignItems:"center", flexDirection:"row", columnGap:0, justifyContent:"center", }}>
+          <Logo2SVG fill = "black" height = {70} width = {70}  />
                 </TouchableOpacity>
+        
+        
+                <View style = {{backgroundColor:"rgba(0,0,0,.75)", width: 2.5, height: ScreenHeight/1.34, position:"relative", right: -ScreenWidth/2.01, bottom: -45, zIndex: 10000}}/>
         
         </>
       );
@@ -1180,7 +1259,7 @@ const loopAnimation = Animated.loop(
   const Clock = (
 <>
 
-  <View style ={[styles.row, {columnGap: 10, position:"absolute", top: 150, backgroundColor:"transparent", alignItems:"center", justifyContent:"center", width:ScreenWidth, }]}>
+  <View style ={[styles.row, {columnGap: 10, position:"absolute", top: 97, right: -6.5, backgroundColor:"transparent", alignItems:"center", justifyContent:"center", width:ScreenWidth, }]}>
       <Animated.Text style = {{ color: userGotStrikedOut.value? 'black' : 'white',  fontSize: 50}}>{minutes}</Animated.Text>
       <Animated.Text style ={{color:userGotStrikedOut.value? "black" : "white", fontSize: 50, top: -7}}>:</Animated.Text>
       {
@@ -1201,6 +1280,26 @@ const loopAnimation = Animated.loop(
 //const RestartLeson = () => nav.navigate("AI_Cam");
 //<Animated.Text style = {{color:"black", fontSize: 21}}>View Summarry</Animated.Text>
 
+const PredicitonTextBubble = (
+     <View style = {{ alignSelf:"center", top: 50, right: 34, backgroundColor:"white", 
+                height: Dimensions.get("screen").height*.07,
+                width:Dimensions.get("screen").width*.7,
+                position:"absolute",
+                borderTopEndRadius: 25,
+                borderTopLeftRadius: 25,
+                borderRadius: 25, 
+                alignItems:"center",
+                justifyContent:"center",
+           
+                pointerEvents:"auto"
+            }}>
+
+      <TouchableOpacity onPress={incrimentUserStrikes_alt}>
+            <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabelSharedValm.value}</Animated.Text>
+            </TouchableOpacity>
+
+            </View>
+); 
 
     return(
  
@@ -1248,24 +1347,7 @@ FeedbackInteruptionScreen
 <View style = {{flex: 1, zIndex: 1}}>
     {flipIcon}
     <SideNav buttonColor={theme? "black": "white"} style = {{top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-           <View style = {{ alignSelf:"center", top: 50, right: 34, backgroundColor:"white", 
-                height: Dimensions.get("screen").height*.07,
-                width:Dimensions.get("screen").width*.7,
-                position:"absolute",
-                borderTopEndRadius: 25,
-                borderTopLeftRadius: 25,
-                borderRadius: 25, 
-                alignItems:"center",
-                justifyContent:"center",
-           
-                pointerEvents:"auto"
-            }}>
-
-      <TouchableOpacity onPress={incrimentUserStrikes_alt}>
-            <Animated.Text style = {{color: "black", fontSize: 20}} >{textLabelSharedValm.value}</Animated.Text>
-            </TouchableOpacity>
-
-            </View>
+        
 
             {
                 countDown.value <= 0?
@@ -1303,12 +1385,12 @@ FeedbackInteruptionScreen
   
 }
 
-  {
+  {(
     (see)?
     <Animated.Text style = {{display: "flex", position:"absolute", color: "white", fontWeight: "bold", bottom: ScreenHeight/2.3, right: ScreenWidth/4.7, fontSize: 90, opacity: go_opacity}}>GO!</Animated.Text>
     :
     <Animated.Text style = {{display: "flex", position:"absolute", color: "white", fontWeight: "bold", bottom: ScreenHeight/2.3, right: ScreenWidth/5, fontSize: 90, opacity: go_opacity}}>PAUSE!</Animated.Text>
-
+)
   }
 
    {userGotStrikedOut.value? null : Clock}

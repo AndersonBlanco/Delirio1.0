@@ -68,7 +68,7 @@ const Lessons_with_activity_indicator_screen = () => (
           },
           
         }}
-        initialRouteName="AI_Cam"
+        initialRouteName="I_ntro"
       >
         <Stack.Screen name="I_ntro" component={Intro}  /> 
         <Stack.Screen name="Auth" component={AuthScreen} />

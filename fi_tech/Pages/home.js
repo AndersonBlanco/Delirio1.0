@@ -23,7 +23,7 @@ import Boxing_Glove from "../assets/boxing_glove.png";
 //import {LinearGradient} from"tamagui/linear-gradient";
 //import { LinearGradient } from "expo-linear-gradient";
 import ChatBubble from "react-native-chat-bubble";
-import { ScreenWidth } from "react-native-elements/dist/helpers";
+import { ScreenHeight, ScreenWidth } from "react-native-elements/dist/helpers";
 import { NativeModules } from "react-native";
 import { generateVoice_jsthread } from "../components/ChatEnvironment";
 
@@ -182,8 +182,8 @@ const WeekDaysUI = ()=>{
         weekDaysInitials.map((item, idx) =>{
                     return(
                         <TouchableOpacity key = {item} onPress={() => setSelectedWeekDay(idx)}>
-                        <Avatar circular borderRadius = {100}  borderColor = {idx == selectedWeekDay? "rgba(0,0,0,.85)" : "rgba(0,0,0,.05)"} borderStyle="solid" borderWidth={1.5}>
-                            <Text style = {{color: idx == selectedWeekDay? "black" : "black"}}>{item}</Text>
+                        <Avatar circular borderRadius = {0}  borderTopColor = {idx == selectedWeekDay? "rgba(0,0,0,.75)" : "rgba(0,0,0,.05)"} borderStyle="solid"  borderTopWidth={idx == selectedWeekDay? 1.5 : 0} borderBottomWidth={idx == selectedWeekDay? 0 : 0} >
+                            <Text style = {{color: idx == selectedWeekDay? "black" : "rgba(0,0,0,.5)"}}>{item}</Text>
                         </Avatar>
                         </TouchableOpacity>
                     )
@@ -195,37 +195,49 @@ const WeekDaysUI = ()=>{
 
 
 const TodayLesson = (
-    <Card containerStyle = {{ marginVertical: 50, borderRadius: 17, backgroundColor:"rgba(0, 0, 0, .0)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,.75)",}}>
+    <View style = {{marginVertical: 12}}>
+       <Text style = {{alignSelf:'left', fontWeight: 400, paddingHorizontal:20, bottom: -37, left: -8.1,fontSize: 19}}>Today's Lesson</Text>
+    <Card containerStyle = {{ marginVertical: 50, borderRadius: 17, borderColor:"rgba(0, 0, 0, .05)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,0)",}}>
+        
         <XGroup alignItems="center" justifyContent="left"> 
-        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 17, fontWeight: 250}}>Jab </Card.Title>
-        <Card.Title style = {{alignSelf:"right", color:"black", fontWeight: "200", top: 5, position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:0, borderRadius: 100}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Fundamental" status = {"success"}/></View></Card.Title>
+        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 20, fontWeight: 400}}>Jab </Card.Title>
+        <Card.Title style = {{alignSelf:"right", color:"black", fontWeight: "200", top: 5, position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:7, borderRadius: 100, borderColor: "red", borderWidth: 0}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Advanced" status = {"primary"}/></View></Card.Title>
         </XGroup>
 
         <Card.Image source = {CoverImg} borderRadius={10}/>
         
-        <Card.FeaturedTitle style = {{ paddingHorizontal: 15, paddingTop: 20, paddingBottom: 2.5, color:"rgba(0,0,0,.5)", fontWeight: 400, fontSize: 12}}> The Jab is the most used punch type in the book, dont miss out on it. Learn the jab at the next level awating you! </Card.FeaturedTitle>
+        <Card.FeaturedTitle style = {{ paddingHorizontal: 15, paddingTop: 20, paddingBottom: 2.5, color:"rgba(0,0,0,.75)", fontWeight: 400, fontSize: 12}}> The Jab is the most used punch type in the book, dont miss out on it. Learn the jab at the next level awating you! </Card.FeaturedTitle>
  
          <TouchableOpacity onPress = {() => {
            //TTS.speak("Hello Universe, i hope you are well."); 
            //generateVoice_jsthread("Hello Universe, i hope your well! Try to maintain your guard up and twist your hips to generate forward thrust!!")
-         }} style = {{backgroundColor:"rgba(0,0,0,.9)", alignSelf:"flex-end",  alignItems:"center", justifyContent:"center", borderRadius: 100, borderWidth: 0, paddingVertical: 5, paddingHorizontal: 25}}>
+         }} style = {{backgroundColor:"rgba(0,0,0,.85)", alignSelf:"flex-end",  alignItems:"center", justifyContent:"center", borderRadius: 100, borderWidth: 0, paddingVertical: 5, paddingHorizontal: 25}}>
             <Text style = {{color:"white", fontSize:17}}>Start</Text>
          </TouchableOpacity>
 
     </Card>
+    </View>
 );
 // <Text style = {{alignSelf: 'left', left: 15, fontSize: 15, marginVertical: 25}}>Last Performance Stats</Text>
 
+/*  <TouchableOpacity onPress = {() => {
+           //TTS.speak("Hello Universe, i hope you are well."); 
+           //generateVoice_jsthread("Hello Universe, i hope your well! Try to maintain your guard up and twist your hips to generate forward thrust!!")
+         }} style = {{backgroundColor:"rgba(0,0,0,1)", borderStyle:"solid", alignSelf:"flex-start",  alignItems:"center", justifyContent:"center", borderRadius: 100, borderWidth: 2, paddingVertical: 7, paddingHorizontal: 20, marginTop: 5}}>
+            <Text style = {{color:"white", fontSize:12}}>Try Now</Text>
+         </TouchableOpacity>
+*/
+
 const LastPerformanceStats = () => 
-    <YGroup alignItems="center" justifyContent="center" marginVertical={15}>
-       
-        <XGroup justifyContent="space-between" alignItems="center" columnGap={10} marginVertical={7}>
+    <YGroup alignItems="center" justifyContent="center" marginVertical={15} backgroundColor={"transparent"}>
+            <Text style = {{alignSelf:"left", fontWeight: 400, fontSize: 19, left: 10, top: -10}}>Recent Performance</Text>
+        <XGroup justifyContent="space-between" alignItems="center" columnGap={10} marginVertical={2}>
             <XGroup.Item>
                  <TouchableOpacity style = {{rowGap: 7, borderRadius: 15, paddingHorizontal: 15, paddingVertical: 5}}>
                                 <Image source={Fire} style = {{height: 25, width: 25, alignSelf:"center"}}/>
 
-                <Text color = "lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.65)" }}>1.5 p/s</Text>
-                <Text color ="lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.65)", fontSize: 11 }}>Punch Speed</Text>
+                <Text color = "lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.75)" }}>1.5 p/s</Text>
+                <Text color ="lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.75)", fontSize: 11 }}>Punch Speed</Text>
             </TouchableOpacity>
             </XGroup.Item>
            
@@ -236,8 +248,8 @@ const LastPerformanceStats = () =>
                    <Image source={Boxing_Glove} style = {{height: 25, width: 25, alignSelf:"center", transform: [{rotateZ:"45deg"}]}}/>
 
   
-                 <Text color ="lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.65)" }}>3:00 mins</Text>
-                <Text color = "lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.65)", fontSize: 11 }}>Lesosns Time</Text>
+                 <Text color ="lightgray" style = {{textAlign:"center", color: "rgba(0,0,0,.75)" }}>3:00 mins</Text>
+                <Text color = "lightgray" style = {{textAlign:"center",color: "rgba(0,0,0,.75)", fontSize: 11 }}>Lesosns Time</Text>
             </TouchableOpacity>
             </XGroup.Item>
       
@@ -254,28 +266,9 @@ const LastPerformanceStats = () =>
 
 
 
-
-         <YGroup scrollable backgroundColor={"transparent"} height={500} alignItems="top" justifyContent="top">
-             <Card containerStyle = {{ marginVertical: 15, borderRadius: 17, backgroundColor:"rgba(0, 0, 0, .0)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,.75)",}}>
-        <XGroup alignItems="center" justifyContent="left"> 
-        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 15, fontWeight: 250}}>One-Two <Text style = {{fontSize: 12, color:"rgba(0,0,0,.5)", }}>- Recomended</Text>  </Card.Title>
-        <Card.Title style = {{top: 3,color:"black", fontWeight: "200", position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:0, borderRadius: 100}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Intermediate" status = {"warning"}/></View></Card.Title>
-        </XGroup>
-
-       
-        <Card.FeaturedTitle style = {{ paddingHorizontal: 0, paddingTop: 1, paddingBottom: 0, color:"rgba(0,0,0,.5)", fontWeight: 400, fontSize: 12, textAlign:"left"}}>The One-Two combination is built upon the fundamental punches Jab and Straight-Right, a lethal and speedy combo. </Card.FeaturedTitle>
-         <TouchableOpacity onPress = {() => {
-           //TTS.speak("Hello Universe, i hope you are well."); 
-           //generateVoice_jsthread("Hello Universe, i hope your well! Try to maintain your guard up and twist your hips to generate forward thrust!!")
-         }} style = {{borderColor:"rgba(0,0,0,1)", borderStyle:"solid", alignSelf:"flex-start",  alignItems:"center", justifyContent:"center", borderRadius: 100, borderWidth: 2, paddingVertical: 7, paddingHorizontal: 20, marginTop: 5}}>
-            <Text style = {{color:"black", fontSize:12}}>Try Now</Text>
-         </TouchableOpacity>
-    </Card>
-         </YGroup>
+ 
          
             
-        
-    
     </YGroup>
 
 
@@ -295,9 +288,9 @@ const AI_PastLesson_re4view = (
 
 return(
     <>
-    <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <StatusBar barStyle="dark-content" backgroundColor="#000" />
 
-    <View style = {[styles.row, {paddingBottom: 43,paddingHorizontal: 15, justifyContent:"center", alignItems:"center", alignContent:"center"}]}>
+    <View style = {[styles.row, {paddingBottom: 40,paddingHorizontal: 15, justifyContent:"center", alignItems:"center", alignContent:"center"}]}>
     <SideNav buttonColor={theme? "black": "black"} style = {{top: 70, left: 64, marginBottom: 50, position:"relative"}}/>
    
    
@@ -311,11 +304,65 @@ return(
 
     </View>
    
+      <ScrollView horizontal = {false} style = {{bottom: 0}} centerContent contentContainerStyle = {{alignItems:"center", justifyContent:"center", }} showsVerticalScrollIndicator = {false} >
+
    
    <WeekDaysUI/>
+
    {TodayLesson}
+
+ 
      <LastPerformanceStats/>
+
+
+<View style = {{justifyContent:"center", backgroundColor:"transparent", paddingVertical: 10, paddingBottom: 37}}>
+<XGroup paddingBottom = {0}>
+      <Text style = {{fontSize: 19, fontWeight: 400, alignSelf:"left", right: -26.5, bottom: -2 }}>New Releases</Text>
+            <TouchableOpacity style = {{position:"absolute", right: 21, alignSelf:"flex-end", bottom:-5}}> <Text style = {{ color:"gray",  borderBottomColor:"gray", borderBottomWidth: 1, fontSize: 12}}>see more</Text></TouchableOpacity>
+</XGroup>
+
+         <XGroup showScrollIndicator = {false} scrollable backgroundColor={"transparent"} alignItems="top" justifyContent="center" paddingTop = {1} alignSelf="center" paddingHorizontal = {11}>
+            
+                  <TouchableOpacity>
+             <Card containerStyle = {{ marginVertical: 15, borderRadius: 17, borderColor:"rgba(0, 0, 0, .05)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,0)",}}>
+        <XGroup alignItems="center" justifyContent="left"> 
+        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 15, fontWeight: 250}}> Angles </Card.Title>
+        <Card.Title style = {{top: 3,color:"black", fontWeight: "200", position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:7, borderRadius: 100, borderWidth: 0}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Advanced" status = {"primary"}/></View></Card.Title>
+        </XGroup>
+        <Card.FeaturedTitle style = {{ paddingHorizontal: 0, paddingTop: 1, paddingBottom: 0, color:"rgba(0,0,0,.75)", fontWeight: 400, fontSize: 12, textAlign:"left"}}>The One-Two combination is built upon the fundamental punches Jab and Straight-Right, a lethal and speedy combo. </Card.FeaturedTitle>
+    </Card>
+    </TouchableOpacity>
+
+            
+            <TouchableOpacity>
+             <Card containerStyle = {{ marginVertical: 15, borderRadius: 17, borderColor:"rgba(0, 0, 0, .0)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,.75)",}}>
+        <XGroup alignItems="center" justifyContent="left"> 
+        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 15, fontWeight: 250}}>One-Two </Card.Title>
+        <Card.Title style = {{top: 3,color:"black", fontWeight: "200", position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:7, borderRadius: 100, borderWidth: 0}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Intermediate" status = {"warning"}/></View></Card.Title>
+        </XGroup>
+        <Card.FeaturedTitle style = {{ paddingHorizontal: 0, paddingTop: 1, paddingBottom: 0, color:"rgba(0,0,0,.75)", fontWeight: 400, fontSize: 12, textAlign:"left"}}>The One-Two combination is built upon the fundamental punches Jab and Straight-Right, a lethal and speedy combo. </Card.FeaturedTitle>
+    </Card>
+    </TouchableOpacity>
     
+    
+
+      <TouchableOpacity>
+             <Card containerStyle = {{ marginVertical: 15, borderRadius: 17, borderColor:"rgba(0, 0, 0, 0)"}} wrapperStyle = {{width: Dimensions.get('screen').width*.8,  borderStyle:"solid", borderWidth: 0, borderColor:"rgba(0,0,0,.75)",}}>
+        <XGroup alignItems="center" justifyContent="left"> 
+        <Card.Title style = {{ alignSelf:"flex-start", color:"black", fontSize: 15, fontWeight: 250}}> Pull-Back Counter</Card.Title>
+        <Card.Title style = {{top: 3,color:"black", fontWeight: "200", position:"absolute", right: 0}}><View><Badge badgeStyle = {{paddingVertical:0, paddingHorizontal:7, borderRadius: 100, borderWidth: 0}} containerStyle = {{borderRadius: 100, boxSizing:"content-box"}} value = "Advamced" status = {"primary"}/></View></Card.Title>
+        </XGroup>
+        <Card.FeaturedTitle style = {{ paddingHorizontal: 0, paddingTop: 1, paddingBottom: 0, color:"rgba(0,0,0,.75)", fontWeight: 400, fontSize: 12, textAlign:"left"}}>The One-Two combination is built upon the fundamental punches Jab and Straight-Right, a lethal and speedy combo. </Card.FeaturedTitle>
+    </Card>
+    </TouchableOpacity>
+
+         </XGroup>
+</View>
+      
+ 
+       </ScrollView>
+
+
     </>    
 )
 }

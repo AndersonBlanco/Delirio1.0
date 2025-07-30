@@ -3,9 +3,157 @@
 #import <React/RCTLog.h>
 #import <AVFoundation/AVFoundation.h>
 
+#import <QuartzCore/QuartzCore.h>
+
+/////////////////////////////// UI Background Component ///////////////////////////////
+
+@interface AnimatedRingView : UIView
+@property (nonatomic, strong) CAShapeLayer *ringLayer;
+@end
+
+@implementation AnimatedRingView{
+  CGFloat adjustedCornerRadius;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+  
+    if (self = [super initWithFrame:frame]) {
+        self.backgroundColor = [UIColor clearColor];
+
+        
+        //  ring layer
+        self.ringLayer = [CAShapeLayer layer];
+        CGFloat inset = self->adjustedCornerRadius*.5;
+        CGRect ringRect = CGRectInset(self.bounds, inset, inset);
+      
+      // Set anchor point to center for proper scaling
+        self.ringLayer.anchorPoint = CGPointMake(0.5, 0.5);
+      
+      // Set position to center of the view
+        //self.ringLayer.position = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
+        self->adjustedCornerRadius = MIN(34, MIN(CGRectGetWidth(ringRect), CGRectGetHeight(ringRect)) / 2.0);
+
+        
+        UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:ringRect cornerRadius:self->adjustedCornerRadius];
+      
+        self.ringLayer.path = path.CGPath;
+      self.ringLayer.fillColor = [UIColor colorWithRed:1 green:1 blue:1 alpha:1.0].CGColor;  //[UIColor colorWithRed:0.25 green:0.25 blue:0.95 alpha:0.9].CGColor;
+        self.ringLayer.strokeColor = [UIColor clearColor].CGColor;
+        self.ringLayer.lineWidth = 6.5;
+      self.ringLayer.opacity = 0.7;
+      
+      //gaussian filter
+      CIFilter *blurFilter = [CIFilter filterWithName:@"CIGaussianBlur"];
+         [blurFilter setValue:@50.0 forKey:kCIInputRadiusKey];
+         self.ringLayer.filters = @[blurFilter];
+   
+        
+        // glow effect
+        self.ringLayer.shadowColor = [UIColor colorWithRed:0 green:0 blue:1 alpha:1].CGColor;
+        self.ringLayer.shadowOpacity = 1.0;
+      self.ringLayer.shadowRadius =25;
+        self.ringLayer.shadowOffset = CGSizeZero;
+      
+    
+  
+        [self.layer addSublayer:self.ringLayer];
+    }
+    return self;
+}
+
+- (void)pulse {
+    [self stop_pulse]; // Remove existing animations if any
+  
+  CGFloat startInset = 0.5; // Smaller ring (larger inset)
+  CGFloat endInset = self->adjustedCornerRadius*.9;                    // Larger ring (smaller inset)
+  
+  // Create start path (smaller ring)
+  CGRect startRect = CGRectInset(self.bounds, startInset, startInset);
+  CGFloat startCornerRadius = MIN(self->adjustedCornerRadius, MIN(CGRectGetWidth(startRect), CGRectGetHeight(startRect)) / 2.0);
+  UIBezierPath *start_path = [UIBezierPath bezierPathWithRoundedRect:startRect cornerRadius:startCornerRadius];
+  
+  // Create end path (larger ring)
+  CGRect endRect = CGRectInset(self.bounds, endInset, endInset);
+  CGFloat endCornerRadius = MIN(self->adjustedCornerRadius, MIN(CGRectGetWidth(endRect), CGRectGetHeight(endRect)) / 2.0);
+  UIBezierPath *end_path = [UIBezierPath bezierPathWithRoundedRect:endRect cornerRadius:endCornerRadius];
+  
+  
+  CABasicAnimation *path_animation = [CABasicAnimation animationWithKeyPath:@"path"];
+  path_animation.fromValue = (__bridge id)start_path.CGPath;
+  path_animation.toValue = (__bridge id)end_path.CGPath;
+  path_animation.duration = 0.5;
+  path_animation.autoreverses = YES;
+  path_animation.repeatCount = HUGE_VALF;
+  path_animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+
+  
+  
+  
+  
+  /*
+    CABasicAnimation *scaleAnim = [CABasicAnimation animationWithKeyPath:@"transorm.scale"];
+    scaleAnim.fromValue = @0.85;
+    scaleAnim.toValue = @2.0;
+    scaleAnim.duration = 1.0;
+    scaleAnim.autoreverses = YES;
+    scaleAnim.repeatCount = HUGE_VALF;
+    scaleAnim.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+  */
+  
+  
+  CABasicAnimation *shadowAnimation = [CABasicAnimation animationWithKeyPath:@"shadowRadius"];
+  shadowAnimation.fromValue = @25;
+  shadowAnimation.toValue = @100;
+  shadowAnimation.duration = 1.0;
+  shadowAnimation.autoreverses = YES;
+  shadowAnimation.repeatCount = HUGE_VALF;
+  shadowAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+  
+  
+/*
+    CABasicAnimation *opacityAnim = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    opacityAnim.fromValue = @1;
+    opacityAnim.toValue = @0.25;
+    opacityAnim.duration = 0.75;
+    opacityAnim.autoreverses = YES;
+    opacityAnim.repeatCount = HUGE_VALF;
+    opacityAnim.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+ */
+  
+    [self.ringLayer addAnimation:path_animation forKey:@"pulsePath"];
+    //[self.ringLayer addAnimation:opacityAnim forKey:@"pulseOpacity"];
+    [self.ringLayer addAnimation:shadowAnimation forKey:@"shadowRadius_animation"];
+  
+   // self.ringLayer.position = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
+
+}
+
+- (void)stop_pulse {
+    [self.ringLayer removeAnimationForKey:@"pulsePath"];
+    //[self.ringLayer removeAnimationForKey:@"pulseOpacity"];
+    [self.ringLayer removeAnimationForKey:@"shadowRadius_animation"];
+}
+
+- (void)updateRingWithScale:(CGFloat)scale opacity:(CGFloat)opacity {
+  scale = MAX(0.0, MIN(scale, 2.0));    // Clamp scale
+  opacity = MAX(0.0, MIN(opacity, 1.0));
+  
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+  [CATransaction setAnimationDuration:10];
+  
+  self.ringLayer.opacity = opacity;
+  self.ringLayer.transform = CATransform3DMakeScale( scale, scale, 1.0);
+      
+  [CATransaction commit];
+}
+
+@end
+///////////////////////
 
 
 @interface TTS()
+@property (nonatomic, strong) AnimatedRingView *ringView;
 @end
 
 @implementation TTS{
@@ -31,10 +179,38 @@ RCT_EXPORT_MODULE();
   self->apiKey = @"";
   if (self = [super init]) {
     _audioPlayer = [[AVPlayer alloc] init];
+  };
+  
+  
+  //handle overlay of glowing responsive ring UI:START
+  dispatch_async(dispatch_get_main_queue(), ^{
+  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+  if (keyWindow) {
+      self.ringView = [[AnimatedRingView alloc] initWithFrame:keyWindow.bounds];
+    self.ringView.userInteractionEnabled = NO;
+    self.ringView.hidden = YES;
+      [keyWindow addSubview:self.ringView];
   }
+});
+  //handle overlay of glowing responsive ring UI:END
+  
   return self;
 }
 
+- (void)dealloc_ringView {
+    [self.ringView removeFromSuperview];
+    self.ringView = nil;
+}
+
+- (void)invalidate {
+    [self stopRecognitionSafely];   // Stop mic + recognition tasks
+    if (self.audioEngine) {
+        [self.audioEngine stop];
+        self.audioEngine = nil;
+    }
+    [self dealloc_ringView];        // Remove UI overlay
+    NSLog(@"TTS module fully invalidated");
+}
 
 
 -(void)timeTick{
@@ -53,13 +229,15 @@ RCT_EXPORT_MODULE();
         
         [self prompt_gpt:self->transcribedText additionalInstructions:self->recentInstructions resolve:^(NSString * _Nullable result, NSError * _Nullable err) {
           //prompt callback
+        
+          
             [self playOpenAIAudioFromText:result withCompletion:^{
             NSLog(@"transcribedText spoken");
-          
+              
               [self startMicCapture];
               
         
-          }];
+          } userGotStrikedOut:YES];
           
         }];
      
@@ -126,6 +304,12 @@ RCT_EXPORT_MODULE();
     [self.recognitionTask cancel];
     self.recognitionTask = nil;
   }
+  
+  //reset ringBView: START
+  dispatch_async(dispatch_get_main_queue(), ^{
+      self.ringView.hidden = YES;
+  });
+  //reset ringBView: END
   
   NSLog(@"capture stoppped");
 }
@@ -234,6 +418,17 @@ RCT_EXPORT_MODULE();
      float derived_amplitude = [self getMaxAudioBufferAmplitude:buffer];
      self->current_max_amplitude = derived_amplitude;
     // NSLog(@"Amplitude: %f",derived_amplitude);
+     
+     /*
+     //handle screen overlay ring glow:START
+     dispatch_async(dispatch_get_main_queue(), ^{
+       CGFloat scale = derived_amplitude * 2.0;
+       CGFloat opacity = fmax(1, derived_amplitude * 4.0);
+       [self.ringView updateRingWithScale:scale opacity:opacity];
+     });
+     //handle screen overlay ring glow:END
+     */
+     
   
    }];
 
@@ -243,6 +438,13 @@ RCT_EXPORT_MODULE();
    if (err) {
      NSLog(@"Audio engine start error: %@", err.localizedDescription);
    }
+  
+  
+  //un-hide ringView:START
+  dispatch_async(dispatch_get_main_queue(), ^{
+      self.ringView.hidden = YES;
+  });
+  //un-hide ringView:END
 
 
 }
@@ -253,6 +455,7 @@ RCT_REMAP_METHOD(stopConverse,
       {
   [self stopRecognitionSafely];
   resolve(@"speech detection paused");
+  self->_ringView.hidden = YES;
 }
 
 
@@ -272,6 +475,7 @@ RCT_REMAP_METHOD(
       //run audio capture function
       dispatch_async(dispatch_get_main_queue(), ^(){
         self->recentInstructions = instructions_extra;
+        self->_ringView.hidden = YES;
         [self startMicCapture ];
         resolve(@"conversation initialized");
       });
@@ -299,7 +503,7 @@ RCT_REMAP_METHOD(synced_text_to_speech,
   }else{
     [self playOpenAIAudioFromText:result withCompletion:^{
  
-    }];
+    } userGotStrikedOut:NO];
   }
 }];
   
@@ -416,9 +620,11 @@ RCT_REMAP_METHOD(promptGPT,
 RCT_EXPORT_METHOD(speak:(NSString *)txt) {
   [self playOpenAIAudioFromText:txt withCompletion:^{
     
-  }];
+  }  userGotStrikedOut:NO];
 }
-- (void)playOpenAIAudioFromText: (NSString *)txt withCompletion:(void (^)(void))completion  {
+- (void)playOpenAIAudioFromText: (NSString *)txt
+                 withCompletion:(void (^)(void))completion
+              userGotStrikedOut: (BOOL *) userGotStrikedOut  {
   NSError *error;
  
   NSURL *url = [NSURL URLWithString:@"https://api.openai.com/v1/audio/speech"];
@@ -442,6 +648,7 @@ RCT_EXPORT_METHOD(speak:(NSString *)txt) {
   NSURLSessionDataTask *task = [
     session dataTaskWithRequest:reqst
     completionHandler:^(NSData *data, NSURLResponse *url_response, NSError *error){
+      
       if(error){
         RCTLogError(@"Error in native side reqst: %@", error.localizedDescription);
         return;
@@ -452,21 +659,15 @@ RCT_EXPORT_METHOD(speak:(NSString *)txt) {
       NSURL *filePTH = [NSURL fileURLWithPath:tmpPath];
       [data writeToURL:filePTH atomically:YES];
       
-      /*
-      dispatch_async(dispatch_get_main_queue(),^{
-        AVPlayerItem *itm = [AVPlayerItem playerItemWithURL:filePTH];
-        [self.audioPlayer replaceCurrentItemWithPlayerItem:itm];
-        [self.audioPlayer play];
-        
-      });
-      */
+      
+ 
       
       dispatch_async(dispatch_get_main_queue(), ^{
         
         NSError *audioErr = nil;
         AVAudioSession *audioSession = [AVAudioSession sharedInstance];
 
-        // 🔊 Set playback mode before playing TTS to use loud speaker
+        //set playback mode before playing TTS to use loud speaker
         [audioSession setCategory:AVAudioSessionCategoryPlayback error:&audioErr];
         [audioSession setActive:YES error:&audioErr];
 
@@ -475,8 +676,17 @@ RCT_EXPORT_METHOD(speak:(NSString *)txt) {
          }
         
            AVPlayerItem *itm = [AVPlayerItem playerItemWithURL:filePTH];
+            
            [self.audioPlayer replaceCurrentItemWithPlayerItem:itm];
            [self.audioPlayer play];
+        
+        //fluctuate ringView fimensions
+        if (userGotStrikedOut == YES){
+          self->_ringView.hidden = NO;
+          [self->_ringView pulse];
+        }
+
+        
 
            // Safely handle playback completion
            __block id playbackObserver = [[NSNotificationCenter defaultCenter]
@@ -487,6 +697,8 @@ RCT_EXPORT_METHOD(speak:(NSString *)txt) {
              [[NSNotificationCenter defaultCenter] removeObserver:playbackObserver];
              if (completion) completion();
            }];
+        
+        
          });
       
     }];
@@ -498,7 +710,4 @@ RCT_EXPORT_METHOD(speak:(NSString *)txt) {
 //text input ---> speech translation (non-creative): END
 
 @end
-
-
-
 

@@ -37,12 +37,12 @@ const {TTS} = NativeModules;
 
 //open-ai api-key: 
 const openAI = new OpenAI({
-  apiKey: "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",
+  apiKey: "",
     dangerouslyAllowBrowser: true
 });
  
 const eleven_client = ({
-    apiKey: "sk_a28871c0df82cfaaf8e1f0859d468a01d95e7a5f79fd9e22",
+    apiKey: "",
 });
 
 const requestMicPermissions =()=>{

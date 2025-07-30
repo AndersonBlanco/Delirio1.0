@@ -12,14 +12,15 @@ import * as Speech from "expo-speech";
 import { PermissionStatus } from 'expo-permissions';
 import * as Permissions from "expo-permissions"; 
 import { Audio } from 'expo-av';
- import { Separator, XGroup, YGroup, YStack } from 'tamagui';
+ import { Group, Separator, TabsProvider, XGroup, YGroup, YStack } from 'tamagui';
 import ActionSheet, { SheetProvider, SheetManager, registerSheet } from 'react-native-actions-sheet';
-import { Badge, Icon } from 'react-native-elements';
-import Animated from 'react-native-reanimated';
+import { Badge, Icon, Tab } from 'react-native-elements';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ScreenHeight, ScreenWidth } from 'react-native-elements/dist/helpers';
 import { Label } from '@expo/ui/swift-ui';
 //import * as DropdownMenuPrimitive from "@rn-primitives/dropdown-menu";
 import { Spinner } from 'tamagui';
+
 import { ChatEnvironment } from '../components/ChatEnvironment';
 import Ali1 from "../assets/Ali1.jpeg";
 import Ali2 from "../assets/Ali2.jpeg";
@@ -131,8 +132,8 @@ const LessonSheet = ({payload}) =>{
     </YStack>
   
 
-  
-     <YGroup style = {{position:"absolute"}}>
+
+     <YGroup style = {{position:"absolute", display:"none"}}>
 
  <Text style = {{color:"rgba(0,0,0,.85)", top:25}}>Want to get the best out of the workout? Try these products:</Text>
  
@@ -375,6 +376,10 @@ const LessonTypes = (
 
 const DropDownOptions= ['Boxing', 'Takewandoo', 'Fencing', 'Basketball', 'Golf'];
 const [doropDown_idx, ste_doropDown_idx] = useState(0); 
+const [sportCategory, setSportCategory] = useState(0); 
+
+const animatedOpacity = useSharedValue(1); 
+
 
 const DoropDownMenu = () =>{
     return(
@@ -394,41 +399,53 @@ const LoadingActivity = (
 
 return(
     <SheetProvider>
-   
+               <StatusBar barStyle="light-content" backgroundColor="#000" />
+
          <View 
          style = {{
                  flex: 1,
                  backgroundColor: "white",
+                 paddingTop: 120
                 }}>
 
-         
-            <StatusBar barStyle="light-content" backgroundColor="#000" />
-              <SideNav buttonColor={'black'} style = {{zIndex: 1, top: 70, left: -173, marginBottom: 50, position:"relative"}}/>
-           
-           <View style = {[styles.column, {
-           paddingBottom: 25,
-            height: "auto", 
-            overflow:"hidden",
-             height: Dimensions.get('screen').height,
-             backgroundColor:"transparent", 
-             alignItems:"center",
-              justifyContent:"center",
-              display:"contents",
+{
+/*
+              <Tabs defaultValue='boxing'>
+                <Tabs.List>
+                    <Tabs.Tab value = "boxing">
+                        <Text>Boxing</Text>
+                    </Tabs.Tab>
+                </Tabs.List>
 
-              }]}> 
+              </Tabs>
+              */
+}
 
+ <SideNav buttonColor={'black'} style = {{zIndex: 1, position:"absolute", top: 70, left: 23, backgroundColor:"transparent",}}/>
  
+<ScrollView horizontal contentContainerStyle= {{backgroundColor:"transparent", alignItems:"center", justifyContent:"center", columnGap: 20, width: ScreenWidth}}>
+        {
+    ["Boxing", "Takewand", "Basketball", "Golf"].map((item, idx) =>{
+        return(
+ 
+              <TouchableOpacity style = {{}} onPress = {() =>{ 
+                setSportCategory(idx); 
+                 
+                }}>
+                <Text style = {{color:sportCategory == idx? "black" : "gray", borderBottomColor:"black", paddingBottom: 10, borderBottomWidth:idx == sportCategory? 1.25 : 0, paddingVertical: 1,}}>{item}</Text>
+            </TouchableOpacity>
+ 
+        )
+    })
+}
+    
 
-              <ScrollView horizontal = {false} style = {{marginTop: 25, paddingTop: 25, height: Dimensions.get("screen").height}}>
+</ScrollView>
+
+         <ScrollView horizontal = {false} style = {{marginTop: 12.5, paddingTop: 10, height: Dimensions.get("screen").height}}>
                 
                 {Punches}
          </ScrollView>
-
-
-        </View>
-              
- 
-                     
         </View>
         
         </SheetProvider>

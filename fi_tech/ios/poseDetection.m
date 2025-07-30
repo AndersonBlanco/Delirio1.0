@@ -308,22 +308,22 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
      self->chained_max_idx = -1;
      self->set100_training = [[NSMutableArray alloc] init];
      self->labels7 = @[
-       @"good jab",
-       @"jab endguard",
-       @"jab opposite guad",
-       @"jab lowguard",
-       @"good rest",
-       @"rest curvedback",
-       @"rest lowguard",
-       @"good straight",
-       @"straight oppositeguard",
-       @"straight rotation",
-       @"good uppercut",
-       @"uppercut rotation",
+       @"good jab",//0
+       @"jab endguard",//1
+       @"jab opposite guad",//2
+       @"jab lowguard",//3
+       @"good rest",//4
+       @"rest curvedback",//5
+       @"rest lowguard",//6
+       @"good straight",//7
+       @"straight oppositeguard",//8
+       @"straight rotation",//9
+       @"good uppercut",//10
+       @"uppercut rotation",//11
        
        
-       @"jab rotation",
-       @"rest curvedback & lowguard"
+       @"jab rotation",//12
+       @"rest curvedback & lowguard"//13
      ];
      self->maxModel7Idx = -1;
      
@@ -785,10 +785,13 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
       
      //automatic start timer
       __weak typeof(self) weakSelf = self;
-      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
           self->moveWindowIsOpen = YES;
           self->count = 0;
         self->lastSampleTimestamp =-1.0;
+        
+        //invoke sound cue here:
+        
       });
       
       //GRUsmdInput *model_input = [[GRUsmdInput alloc] initWithInput_3:angles_40frame];
@@ -877,7 +880,7 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
         ],
         //labelArray[maxConf_idx], //predictions,
         @(-1),
-        @(self->maxConf_idx),//was @(chained_max_idx) //was @(punchClassify_max_conf_idx), //was maxConf_idx
+        @(self->maxModel7Idx),//was @(chained_max_idx) //was @(punchClassify_max_conf_idx), //was maxConf_idx
         @(self->moveWindowIsOpen),
         labels7[self->maxModel7Idx], //was: labelArray[self->maxConf_idx],//was: punchClassArray[punchClassify_max_conf_idx],
         set100_training,
@@ -922,3 +925,4 @@ int getCHAIEND_maxIdx(MLMultiArray *prediction){
 VISION_EXPORT_FRAME_PROCESSOR(poseDetectionPlugin, detect)
 
 @end
+

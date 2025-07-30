@@ -28,7 +28,7 @@ export default function SideNav({style, buttonColor}){
            
             onPress = {() => setModalView(true)}
             style = {[{position:"absolute", top: 50, left: 25}, style]}>
-                <Icon name = "menu" color = {buttonColor} style = {{color: buttonColor, fontSize: 25}}/>
+                <Icon name = "menu" size = {27} color = {buttonColor} style = {{color: buttonColor, fontSize: 25}}/>
             </TouchableOpacity>
         
          <Modal animationType="fade" animationInTiming={100} animationOutTiming = {100} animationIn = "slideInLeft" animationOut= "slideOutLeft"    visible = {modalView} transparent={true}>
@@ -46,7 +46,7 @@ export default function SideNav({style, buttonColor}){
                                                     <TouchableOpacity style = {[styles.row, {bottom: 50, left: 34, position:"absolute", alignItems:"center", columnGap: 20}]} onPress={() => navigation.replace("S_ettings")}><Image source = {SettingsIcon} style = {{height: iconSize, width: iconSize}}/><Text style = {{fontWeight:"250"}}>Settings</Text></TouchableOpacity>
 
 
-                                                    <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20, position: "absolute", left: 155, top: 50}]} onPress = {() => setModalView(false)}><Text style = {{fontSize: 20}}>X</Text></TouchableOpacity>
+                                                    <TouchableOpacity style = {[styles.row, {alignItems:"center", columnGap: 20, position: "absolute", left: 140, top: 70}]} onPress = {() => setModalView(false)}><Icon name = 'menu-open' size = {34}/></TouchableOpacity>
 
 
                             </View> 
