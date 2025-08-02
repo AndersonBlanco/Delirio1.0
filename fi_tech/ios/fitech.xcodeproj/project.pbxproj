@@ -12,8 +12,19 @@
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		629CFED5E5E8AB3FB7786128 /* libPods-fitech.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */; };
 		9518585383384099B5EFFF3D /* poseDetection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B112B2F31484420900D2335 /* poseDetection.m */; };
-		9C7464862E07CBE20082963D /* GRUsmd.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C7464852E07CBE20082963D /* GRUsmd.mlpackage */; };
-		9C7464882E07D6000082963D /* GRUsmd.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C7464872E07D6000082963D /* GRUsmd.mlpackage */; };
+		9C383C1F2E31A21600D66038 /* GRU7.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C1E2E31A21500D66038 /* GRU7.mlpackage */; };
+		9C383C212E31B4FB00D66038 /* GRU9.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C202E31B4FB00D66038 /* GRU9.mlpackage */; };
+		9C383C2D2E31FA2A00D66038 /* GRU10.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C2C2E31FA2A00D66038 /* GRU10.mlpackage */; };
+		9C383C2F2E32C20300D66038 /* GRU11.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C2E2E32C20300D66038 /* GRU11.mlpackage */; };
+		9C383C312E32C73900D66038 /* GRU11_5.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C302E32C73900D66038 /* GRU11_5.mlpackage */; };
+		9C383C332E33095400D66038 /* GRU12.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C322E33095400D66038 /* GRU12.mlpackage */; };
+		9C383C352E330F2700D66038 /* GRUA2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C383C342E330F2700D66038 /* GRUA2.mlpackage */; };
+		9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */; };
+		9C3FB97B2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */; };
+		9C3FB97F2E22059600929796 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = 9C3FB97E2E22059600929796 /* pose_landmarker_full.task */; };
+		9C3FB9832E2222D300929796 /* GRUsmd.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */; };
+		9C4B115D2E13775600C69C6D /* TTS.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C4B115C2E13775400C69C6D /* TTS.m */; };
+		9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */; };
 		AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72963B96E00B094C16768759 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
@@ -27,8 +38,20 @@
 		72963B96E00B094C16768759 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-fitech/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		87F39A93186C524275BD8B0A /* Pods-fitech.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fitech.release.xcconfig"; path = "Target Support Files/Pods-fitech/Pods-fitech.release.xcconfig"; sourceTree = "<group>"; };
 		9B112B2F31484420900D2335 /* poseDetection.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; path = poseDetection.m; sourceTree = "<group>"; };
-		9C7464852E07CBE20082963D /* GRUsmd.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRUsmd.mlpackage; sourceTree = "<group>"; };
-		9C7464872E07D6000082963D /* GRUsmd.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRUsmd.mlpackage; sourceTree = "<group>"; };
+		9C383C1E2E31A21500D66038 /* GRU7.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU7.mlpackage; sourceTree = "<group>"; };
+		9C383C202E31B4FB00D66038 /* GRU9.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU9.mlpackage; sourceTree = "<group>"; };
+		9C383C2C2E31FA2A00D66038 /* GRU10.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU10.mlpackage; sourceTree = "<group>"; };
+		9C383C2E2E32C20300D66038 /* GRU11.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU11.mlpackage; sourceTree = "<group>"; };
+		9C383C302E32C73900D66038 /* GRU11_5.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU11_5.mlpackage; sourceTree = "<group>"; };
+		9C383C322E33095400D66038 /* GRU12.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRU12.mlpackage; sourceTree = "<group>"; };
+		9C383C342E330F2700D66038 /* GRUA2.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = GRUA2.mlpackage; sourceTree = "<group>"; };
+		9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml4.mlpackage; sourceTree = "<group>"; };
+		9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = CHAINED_MODEL_coreml.mlpackage; sourceTree = "<group>"; };
+		9C3FB97E2E22059600929796 /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
+		9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = GRUsmd.mlmodel; sourceTree = "<group>"; };
+		9C4B115B2E13773F00C69C6D /* TTS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TTS.h; sourceTree = "<group>"; };
+		9C4B115C2E13775400C69C6D /* TTS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TTS.m; sourceTree = "<group>"; };
+		9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = punchClassification_coreml.mlpackage; sourceTree = "<group>"; };
 		A03F2ECE171E1E568FF4557F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = fitech/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A36ED2A16E3882C0AE0EF354 /* libPods-fitech.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-fitech.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = fitech/SplashScreen.storyboard; sourceTree = "<group>"; };
@@ -106,8 +129,20 @@
 				55ECB64FCD157A60143CC386 /* ExpoModulesProviders */,
 				243B2BDDF7004CA2A7F2DBFE /* poseDetection */,
 				9B112B2F31484420900D2335 /* poseDetection.m */,
-				9C7464852E07CBE20082963D /* GRUsmd.mlpackage */,
-				9C7464872E07D6000082963D /* GRUsmd.mlpackage */,
+				9C4B115B2E13773F00C69C6D /* TTS.h */,
+				9C4B115C2E13775400C69C6D /* TTS.m */,
+				9C507E902E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage */,
+				9C3FB9642E1F7EDB00929796 /* punchClassification_coreml4.mlpackage */,
+				9C3FB97A2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage */,
+				9C3FB97E2E22059600929796 /* pose_landmarker_full.task */,
+				9C3FB9822E2222D300929796 /* GRUsmd.mlmodel */,
+				9C383C1E2E31A21500D66038 /* GRU7.mlpackage */,
+				9C383C202E31B4FB00D66038 /* GRU9.mlpackage */,
+				9C383C2C2E31FA2A00D66038 /* GRU10.mlpackage */,
+				9C383C2E2E32C20300D66038 /* GRU11.mlpackage */,
+				9C383C302E32C73900D66038 /* GRU11_5.mlpackage */,
+				9C383C322E33095400D66038 /* GRU12.mlpackage */,
+				9C383C342E330F2700D66038 /* GRUA2.mlpackage */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -179,7 +214,8 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1130;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
@@ -209,6 +245,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C3FB97F2E22059600929796 /* pose_landmarker_full.task in Resources */,
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
@@ -287,6 +324,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNPermissions/RNPermissionsPrivacyInfo.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVGFilters.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
@@ -305,6 +343,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNPermissionsPrivacyInfo.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNSVGFilters.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
@@ -346,11 +385,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C383C352E330F2700D66038 /* GRUA2.mlpackage in Sources */,
+				9C383C212E31B4FB00D66038 /* GRU9.mlpackage in Sources */,
+				9C3FB9832E2222D300929796 /* GRUsmd.mlmodel in Sources */,
+				9C383C312E32C73900D66038 /* GRU11_5.mlpackage in Sources */,
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				9C507E912E1F0CFD0078AF45 /* punchClassification_coreml.mlpackage in Sources */,
 				AD3587D6E349303FA91ACEEB /* ExpoModulesProvider.swift in Sources */,
+				9C4B115D2E13775600C69C6D /* TTS.m in Sources */,
+				9C383C2F2E32C20300D66038 /* GRU11.mlpackage in Sources */,
+				9C383C1F2E31A21600D66038 /* GRU7.mlpackage in Sources */,
+				9C3FB9652E1F7EDB00929796 /* punchClassification_coreml4.mlpackage in Sources */,
+				9C3FB97B2E21F8E300929796 /* CHAINED_MODEL_coreml.mlpackage in Sources */,
+				9C383C2D2E31FA2A00D66038 /* GRU10.mlpackage in Sources */,
 				9518585383384099B5EFFF3D /* poseDetection.m in Sources */,
-				9C7464862E07CBE20082963D /* GRUsmd.mlpackage in Sources */,
-				9C7464882E07D6000082963D /* GRUsmd.mlpackage in Sources */,
+				9C383C332E33095400D66038 /* GRU12.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,17 +413,20 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = fitech/fitech.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COREML_CODEGEN_LANGUAGE = "Objective-C";
 				COREML_CODEGEN_SWIFT_GLOBAL_MODULE = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU54R9648P;
 				ENABLE_BITCODE = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = fitech/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = FiTech;
+				INFOPLIST_KEY_CFBundleDisplayName = Delirio;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -389,6 +441,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ander913.fitech;
 				PRODUCT_NAME = fitech;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "fitech/fitech-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -404,12 +457,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = fitech/fitech.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COREML_CODEGEN_LANGUAGE = "Objective-C";
 				COREML_CODEGEN_SWIFT_GLOBAL_MODULE = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MU54R9648P;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = fitech/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = FiTech;
+				INFOPLIST_KEY_CFBundleDisplayName = Delirio;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -424,6 +480,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ander913.fitech;
 				PRODUCT_NAME = fitech;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "fitech/fitech-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -435,6 +492,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -454,6 +512,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -461,8 +520,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = MU54R9648P;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -498,6 +559,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -517,6 +579,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -524,8 +587,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = MU54R9648P;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -544,6 +609,7 @@
 				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};

@@ -18,7 +18,61 @@ import Profile8 from "../assets/profile8.png";
 import Profile9 from "../assets/profile9.png";
 import Profile10 from "../assets/profile10.png";
 import {Image} from "expo-image"; 
+
+const limb_color_map = {
+  0:[0.0, 0.0, 1.0, 1.0],
+  1:[0.0, 1.0, 1.0, 1.0],
+  2:[1.0, 0.0, 0.0, 1.0],
+  3:[0.0, 1.0, 0.0, 1.0],
+  4:[0.0, 0.0, 1.0, 1.0],
+  5:[0.0, 1.0, 0.0, 1.0],
+  6:[1.0, 0.0, 0.0, 1.0],
+  7:[1.0, 0.0, 0.0, 1.0],
+  8:[1.0, 0.0, 0.0, 1.0],
+  9:[1.0, 0.0, 0.0, 1.0],
+  10:[1.0, 0.0, 0.0, 1.0],
+  11:[1.0, 0.0, 0.0, 1.0],
+  12:[1.0, 0.0, 0.0, 1.0],
+  13:[1.0, 0.0, 0.0, 1.0],
+  14:[0.0, 1.0, 0.0, 1.0],
+  15:[1.0, 0.0, 0.0, 1.0],
+  16:[1.0, 1.0, 0.0, 1.0],
+  17:[1.0, 0.0, 0.0, 1.0],
+};
+
+const SKELETON_CONNECTIONS = [
+  ["root", "left_upLeg_joint"],
+  ["root", "right_upLeg_joint"],
+  ["left_upLeg_joint", "left_leg_joint"],
+  ["left_leg_joint", "left_foot_joint"],
+  ["right_upLeg_joint", "right_leg_joint"],
+  ["right_leg_joint", "right_foot_joint"],
+  ["root", "neck_1_joint"],
+  ["neck_1_joint", "head_joint"],
+  ["neck_1_joint", "left_shoulder_1_joint"],
+  ["left_shoulder_1_joint", "left_forearm_joint"],
+  ["left_forearm_joint", "left_hand_joint"],
+  ["neck_1_joint", "right_shoulder_1_joint"],
+  ["right_shoulder_1_joint", "right_forearm_joint"],
+  ["right_forearm_joint", "right_hand_joint"],
+  ["head_joint", "left_eye_joint"],
+  ["head_joint", "right_eye_joint"],
+  ["left_eye_joint", "left_ear_joint"],
+  ["right_eye_joint", "right_ear_joint"]
+];
+
+
+
+
+
 export default function Advice({theme}){
+
+    SKELETON_CONNECTIONS.forEach(([start,end], idx)=>{
+
+    console.log("@ ", idx, ": ", start, "to", end, 'with color:', limb_color_map[idx]);
+    
+})
+
     
     const [search, setSearch] = useState(""); 
     const hanfleFInalSearch = (event) =>{

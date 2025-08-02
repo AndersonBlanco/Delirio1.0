@@ -1,6 +1,6 @@
 import { useEffect, useState, memo, useRef, useCallback } from "react";
 import {Animated, View, Text, TouchableOpacity, BackHandler, StyleSheet, Image, Dimensions, StatusBar, TextInput, FlatList, Button, Modal, Touchable} from "react-native"; 
-import { ScrollView } from "react-native-gesture-handler";
+import { GestureDetector, ScrollView } from "react-native-gesture-handler";
 import { useDispatc, useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import SideMenu from "../components/sideMenu";
@@ -13,7 +13,12 @@ import Item1 from "../assets/item1.jpg"
 import Item2 from "../assets/item2.jpg"
 import WristWraps from "../assets/weightWraps.jpeg"
 import { color } from "react-native-elements/dist/helpers";
+import { BottomSheet } from "@expo/ui/swift-ui";
+import { Gesture } from "react-native-gesture-handler";
+import {Swipeable} from "react-native-gesture-handler/Swipeable";
+
 export default function Shop({theme}){
+ 
 const dispatch = useDispatch();
 const [hover, setHover] = useState(0);
 
@@ -194,17 +199,26 @@ const slideItemCartUp =  async(item) => {
       }).start();
     };
 
+const gest = Gesture.Pan(); 
+  gest.onChange((e) => {
+    console.log(e.velocityY)
+    e.velocityY? slideItemCartDown() : null
+  }
+    
+)
 const ItemCarted = (() =>{
   let [count, setCount] = useState(1); 
   count <1 ? set_modalView(false) : null; 
 
     return(
+  
+<GestureDetector gesture={gest}>
         <Animated.View style = {{
             backgroundColor:"white", width: Dimensions.get("screen").width, height: Dimensions.get("screen").height * .27, 
             position:"absolute",
             bottom: 0,
-            borderTopEndRadius: 40,
-            borderTopLeftRadius: 40,
+            borderTopEndRadius: 30,
+            borderTopLeftRadius: 30,
                paddingHorizontal: 50,
                alignItems:"center",
                justifyContent:"center",
@@ -212,7 +226,7 @@ const ItemCarted = (() =>{
                transform:[{translateY: slideItemRef}]
         }}
         >
-            <Text style = {{fontSize: 15}}>Total: ${itemSelect.price*count}</Text>
+            <Text style = {{fontSize: 15, textAlign:"left", alignSelf:"left", left: -15, fontWeight:"700"}}>Total: ${itemSelect.price*count}</Text>
             <View style = {[styles.row, { columnGap: 31, alignItems:"center", justifyContent:"center",}]}>
                   <View style = {[styles.column, {
                 alignItems:"center", justifyContent:"center",
@@ -247,6 +261,8 @@ const ItemCarted = (() =>{
             }} onPress={() =>{slideItemCartDown()}}><Text style = {{color:"white"}}>Add to cart</Text></TouchableOpacity>
     
         </Animated.View>
+
+  </GestureDetector> 
     )
 }
 )
@@ -329,7 +345,7 @@ return(
     </View>
     
     <ItemCarted/>
-    
+
   </>
   
 )
@@ -366,4 +382,8 @@ const styles = StyleSheet.create({
     },
 
 })
+
+
+
+
 
